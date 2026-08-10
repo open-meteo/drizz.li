@@ -1,0 +1,48 @@
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+AGENTS.md
+
+# Local agent/editor config
+.claude/
+
+# paraglide compiles the message runtime into the source tree
+/src/lib/paraglide
+/.inlang
+
+# Claude Code scratch: throwaway probe scripts, never committed
+/.scratch
+
+# Empty stubs the Claude Code sandbox mounts over shell/editor dotfiles while it
+# runs. They are not project files and keep sneaking into commits via `git add -A`.
+/.bash_profile
+/.bashrc
+/.profile
+/.zprofile
+/.zshrc
+/.gitconfig
+/.gitmodules
+/.ripgreprc
+/.idea
+/.mcp.json
