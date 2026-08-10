@@ -1,5 +1,0 @@
-# SPA fallback for routes that were not prerendered (unlisted cities, coordinate
-# routes). Pages would serve 404.html for these anyway, but with a 404 status -
-# this rewrites internally and answers 200. Static assets take precedence over
-# the rule, so prerendered pages are unaffected.
-/*  /404.html  200
