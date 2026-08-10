@@ -1,0 +1,13 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// Must match the Worker name in the Cloudflare dashboard
+	"name": "drizzli",
+	"compatibility_date": "2026-08-10",
+	// Static site: no worker script, just serve the SvelteKit build output.
+	// 404.html is the SPA fallback (see svelte.config.js) — "404-page" serves
+	// it for unknown paths, which is exactly the behavior the fallback expects.
+	"assets": {
+		"directory": "./build",
+		"not_found_handling": "404-page"
+	}
+}
