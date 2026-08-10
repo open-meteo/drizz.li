@@ -35,6 +35,12 @@ AGENTS.md
 # Claude Code scratch: throwaway probe scripts, never committed
 /.scratch
 
+# Large static assets live in R2, not git — fetch with `npm run assets:pull`
+# (see scripts/assets.config.json)
+/static/data/cities
+/static/images/country-flags
+/static/images/weather-icons
+
 # Empty stubs the Claude Code sandbox mounts over shell/editor dotfiles while it
 # runs. They are not project files and keep sneaking into commits via `git add -A`.
 /.bash_profile

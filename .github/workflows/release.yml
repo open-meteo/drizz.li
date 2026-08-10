@@ -29,6 +29,8 @@ jobs:
       - run: npm ci
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
         run: npm audit signatures
+      - name: Pull static assets
+        run: npm run assets:pull
       - run: npm run build
       # @semantic-release/npm ships with semantic-release, @semantic-release/git does not
       - name: Install semantic-release

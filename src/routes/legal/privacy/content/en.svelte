@@ -25,9 +25,9 @@
 		directly from the open-data APIs of
 		<a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a>
 		(api.open-meteo.com, geocoding-api.open-meteo.com, archive-api.open-meteo.com, ensemble-api.open-meteo.com,
-		and map tiles from maps.open-meteo.com / map-tiles.open-meteo.com / map-assets.open-meteo.com). Like
-		any web request, this transmits your IP address and the requested location or search term to Open-Meteo.
-		We do not receive or store any of this. See
+		and map tiles from maps.open-meteo.com / map-tiles.open-meteo.com / static-assets.open-meteo.com).
+		Like any web request, this transmits your IP address and the requested location or search term to
+		Open-Meteo. We do not receive or store any of this. See
 		<a href="https://open-meteo.com/en/terms" target="_blank" rel="noopener"
 			>Open-Meteo's terms and privacy information</a
 		>. Legal basis: our legitimate interest in delivering the content you request (Art. 6(1)(f)

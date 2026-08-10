@@ -1,0 +1,8 @@
+{
+	"baseUrl": "https://static-assets.open-meteo.com",
+	"assets": [
+		{ "prefix": "shared/country-flags", "dir": "static/images/country-flags" },
+		{ "prefix": "shared/weather-icons", "dir": "static/images/weather-icons", "readonly": true },
+		{ "prefix": "drizzli/cities/v1", "dir": "static/data/cities" }
+	]
+}
