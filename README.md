@@ -1,4 +1,4 @@
-# Drizz.li
+# <img src="static/favicon.svg" width="32" height="32" align="top" alt=""> Drizz.li
 
 [![codecov](https://codecov.io/gh/open-meteo/drizz.li/graph/badge.svg?token=ONBCGBA8PU)](https://codecov.io/gh/open-meteo/drizz.li)
 [![Tests & Build](https://github.com/open-meteo/drizz.li/actions/workflows/build.yml/badge.svg)](https://github.com/open-meteo/drizz.li/actions/workflows/build.yml)

@@ -334,7 +334,7 @@ export const hourly = [
 	],
 	[
 		{ value: 'et0_fao_evapotranspiration', label: 'Evapotranspiration' },
-		{ value: 'vapor_pressure_deficit', label: 'Vapor Pressure Deficit' },
+		{ value: 'vapor_pressure_deficit', label: 'Vapour Pressure Deficit' },
 		{ value: 'wind_speed_10m', label: 'Wind Speed 10m' },
 		{ value: 'wind_speed_80m', label: 'Wind Speed 80m' },
 		{ value: 'wind_speed_120m', label: 'Wind Speed 120m' },

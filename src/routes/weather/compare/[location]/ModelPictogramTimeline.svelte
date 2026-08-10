@@ -715,6 +715,11 @@
 			</button>
 		</div>
 		<div class="lg:px-4">
+			<!-- A labelled region that is also pannable/zoomable: the pointer handlers
+			     are an enhancement over the keyboard navigation onkeydown provides, so
+			     the region keeps its landmark role and stays focusable. -->
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 			<div
 				bind:this={containerEl}
 				class="relative w-full select-none overflow-hidden"
@@ -730,6 +735,10 @@
 				ondblclick={handleDoubleClick}
 				onkeydown={handleKeydown}
 			>
+				<!-- The canvas is only the drawing surface, all interaction lives on the
+				     region above, so role="img" + a caption is the correct exposure here
+				     (per MDN's canvas guidance) even though the rule forbids it. -->
+				<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
 				<canvas
 					bind:this={canvasEl}
 					class="block w-full"
