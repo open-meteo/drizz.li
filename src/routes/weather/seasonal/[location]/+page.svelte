@@ -8,9 +8,10 @@
 
 	import { skeletonOut } from '$lib/utils/skeleton-fade';
 
-	import { ChartContainer, ChartToolbar } from '$lib/components/charts';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
+
+	import { ChartContainer, ChartToolbar } from '$lib/components/charts';
 
 	import * as m from '$lib/paraglide/messages';
 	import {

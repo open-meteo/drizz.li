@@ -274,6 +274,8 @@
 	let tooltipFlip = $derived((hoverX ?? 0) > width * 0.55);
 	let hoverFrame = 0;
 	let queuedClientX = 0;
+	// plain bookkeeping for the canvas/pointer code, never read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const pointers = new Map<number, { x: number; y: number }>();
 	let gesture: 'none' | 'scroll' | 'inspect' | 'pan' | 'pinch' | 'select' = 'none';
 	let selectionStartX = 0;
@@ -462,6 +464,8 @@
 		if (hoverFrame !== 0) cancelAnimationFrame(hoverFrame);
 	});
 
+	// plain image cache, never read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const iconImageCache = new Map<string, Promise<HTMLImageElement>>();
 
 	function loadColoredIcon(name: string, color: string): Promise<HTMLImageElement> {
@@ -562,6 +566,8 @@
 			context.fillText(point.hour, point.x, yOffset + 27);
 		}
 
+		// local to one draw pass, never read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const iconNames = new Set<string>();
 		for (const model of displayModels) {
 			for (const point of visiblePoints) {
@@ -570,6 +576,8 @@
 				iconNames.add(getWeatherIconName(code, isDaytime(point.time)));
 			}
 		}
+		// local to one draw pass, never read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const images = new Map<string, HTMLImageElement>();
 		await Promise.all(
 			[...iconNames].map(async (name) => {

@@ -36,6 +36,8 @@ export function useNow(): { readonly current: Date } {
 	if (browser) {
 		$effect(() => {
 			if (subscribers++ === 0) {
+				// a fresh instance replaces the old one, it is never mutated in place
+				// eslint-disable-next-line svelte/prefer-svelte-reactivity
 				current = new Date();
 				scheduleTick();
 			}
@@ -50,6 +52,8 @@ export function useNow(): { readonly current: Date } {
 
 	return {
 		get current() {
+			// server-side render time, read once and never mutated
+			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			return browser ? current : new Date();
 		}
 	};

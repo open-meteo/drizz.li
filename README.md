@@ -1,5 +1,9 @@
 # Drizz.li
 
+[![codecov](https://codecov.io/gh/open-meteo/drizz.li/graph/badge.svg?token=ONBCGBA8PU)](https://codecov.io/gh/open-meteo/drizz.li)
+[![Tests & Build](https://github.com/open-meteo/drizz.li/actions/workflows/build.yml/badge.svg)](https://github.com/open-meteo/drizz.li/actions/workflows/build.yml)
+[![GitHub licence](https://img.shields.io/github/license/open-meteo/drizz.li)](https://github.com/open-meteo/drizz.li/blob/main/LICENSE)
+
 A high-performance weather forecast website, part of the
 [Open-Meteo](https://open-meteo.com/) project. Built with SvelteKit and powered
 by the Open-Meteo APIs.
@@ -109,6 +113,25 @@ per-location route). Everything else - unlisted cities, coordinate routes,
 localized city pages - is served by the SPA fallback described below. A
 transient geocoding failure skips that one page instead of failing the build.
 
+## Releases
+
+Releases are cut by [semantic-release](https://semantic-release.gitbook.io/)
+from the conventional-commit messages on `main` (see `.releaserc`). The
+[release workflow](.github/workflows/release.yml) runs nightly and on demand
+via `workflow_dispatch`; it no-ops when nothing releasable has landed.
+
+`fix:` bumps the patch, `feat:` bumps the minor, and `build(deps):` counts as a
+patch so dependabot updates show up in the notes. While the project is in beta
+the version stays in the `0.x` range: a breaking change is mapped to a minor
+bump instead of a major one, so nothing can reach `1.0.0` by accident. Drop that
+rule from `.releaserc` when the beta ends.
+
+Each release writes the new version into `package.json` and `package-lock.json`
+and pushes them back as a `chore(release): x.y.z [skip ci]` commit, so the
+committed version, the git tag and the GitHub release always agree. The package
+is `private`, so `@semantic-release/npm` only rewrites those files and never
+publishes to the registry.
+
 ## Deployment (Cloudflare Pages)
 
 The build output in `build/` is a fully static site.
@@ -158,3 +181,9 @@ so this site must be served with:
 COOP/COEP, so it is embeddable under these headers. All other assets are
 same-origin and the weather APIs are CORS requests, so `require-corp` is safe
 here.)
+
+## Licence
+
+Drizz.li is open-source under the GNU Affero General Public Licence Version 3
+(AGPLv3) or any later version. You can [find the licence here](LICENSE).
+Exceptions are third party source-code with individual licensing in each file.

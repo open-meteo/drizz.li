@@ -2,6 +2,7 @@
 	"name": "drizzli",
 	"private": true,
 	"version": "0.0.1",
+	"license": "AGPL-3.0-or-later",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
@@ -14,11 +15,10 @@
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
+		"coverage": "vitest run --coverage",
 		"upgrade:ui": "npx shadcn-svelte@latest add alert button card checkbox dialog input label popover select separator switch -y -o && prettier --write src/lib/components/ui"
 	},
 	"devDependencies": {
-		"@eslint/compat": "^2.1.0",
-		"@eslint/js": "^10.0.1",
 		"@inlang/paraglide-js": "^2.23.0",
 		"@internationalized/date": "^3.12.2",
 		"@lucide/svelte": "^1.25.0",
@@ -29,6 +29,7 @@
 		"@trivago/prettier-plugin-sort-imports": "^6.0.2",
 		"@types/node": "^26",
 		"@vitest/browser-playwright": "^4.1.10",
+		"@vitest/coverage-v8": "^4.1.10",
 		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",
 		"date-fns": "^4.4.0",

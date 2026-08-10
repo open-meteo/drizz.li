@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
-	import LanguageOptions from '$lib/components/language-options.svelte';
 	import * as Popover from '$lib/components/ui/popover';
+
+	import LanguageOptions from '$lib/components/language-options.svelte';
 
 	import * as m from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';

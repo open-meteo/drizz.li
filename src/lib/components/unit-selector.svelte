@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Popover from '$lib/components/ui/popover';
+
 	import UnitOptions from '$lib/components/unit-options.svelte';
 
 	import * as m from '$lib/paraglide/messages';

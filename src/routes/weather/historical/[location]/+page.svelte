@@ -68,6 +68,8 @@
 	// ─── Date range ───────────────────────────────────────────────────────────
 	const iso = (d: Date): string => d.toISOString().slice(0, 10);
 	const addDays = (d: Date, n: number): Date => {
+		// local copy inside a pure helper, never held as reactive state
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const c = new Date(d);
 		c.setUTCDate(c.getUTCDate() + n);
 		return c;

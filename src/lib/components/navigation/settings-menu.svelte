@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { type Theme, storedTheme } from '$lib/stores/settings';
 
-	import LanguageOptions from '$lib/components/language-options.svelte';
 	import * as Popover from '$lib/components/ui/popover';
+
+	import LanguageOptions from '$lib/components/language-options.svelte';
 	import UnitOptions from '$lib/components/unit-options.svelte';
 
 	import * as m from '$lib/paraglide/messages';
