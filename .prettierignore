@@ -12,3 +12,8 @@ package-lock.json
 
 # Miscellaneous
 /static/
+
+# inlang/paraglide regenerates these during `npm ci` (prepare); not prettier-formatted
+/project.inlang/.meta.json
+/project.inlang/README.md
+/project.inlang/cache
