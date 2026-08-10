@@ -24,8 +24,7 @@ path either as a city slug or as a coordinate pair (`52.09N5.12E`).
 
 ## Tech stack
 
-- **Framework**: [SvelteKit](https://kit.svelte.dev/) 2 / Svelte 5 (runes),
-  `@sveltejs/adapter-static`
+- **Framework**: [SvelteKit](https://kit.svelte.dev/) Svelte 5
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: Tailwind CSS 4 with [shadcn-svelte](https://shadcn-svelte.com/)
   components (`src/lib/components/ui`)
