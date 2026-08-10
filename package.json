@@ -6,6 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"prebuild": "node scripts/assets.mjs pull",
 		"build": "vite build",
 		"preview": "vite preview",
 		"paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
