@@ -139,10 +139,7 @@
 	}
 
 	/** Set the synchronized visible time range for a registered chart group. */
-	export function setGroupRange(
-		name: string,
-		range: { start: number; end: number } | null
-	): void {
+	export function setGroupRange(name: string, range: { start: number; end: number } | null): void {
 		const state = groups[name];
 		if (state) state.range = range;
 	}
@@ -862,7 +859,10 @@
 	let tooltipX = $derived(hoverIdx >= 0 ? xPix(timestamps[hoverIdx]) : 0);
 	let tooltipFlip = $derived(tooltipX > width * 0.55);
 	let crosshairVisible = $derived(
-		hoverIdx >= 0 && timestamps[hoverIdx] >= viewStart && timestamps[hoverIdx] <= viewEnd && width > 0
+		hoverIdx >= 0 &&
+			timestamps[hoverIdx] >= viewStart &&
+			timestamps[hoverIdx] <= viewEnd &&
+			width > 0
 	);
 
 	// ─── Pictograms (DOM overlay across the top) ─────────────────────────────────
@@ -1922,7 +1922,7 @@
 		{/if}
 
 		<!-- Wind-direction arrows: a matching band -->
-			{#if visibleWindArrows.length > 0}
+		{#if visibleWindArrows.length > 0}
 			<div
 				class="pointer-events-none absolute z-10 overflow-hidden rounded-t-lg border border-border/60 bg-muted/30"
 				style:left="{iconBandLeft}px"
@@ -1945,20 +1945,20 @@
 					</span>
 				{/each}
 			</div>
-			{/if}
+		{/if}
 
-			<!-- Hover is intentionally a DOM overlay: moving the crosshair must not
+		<!-- Hover is intentionally a DOM overlay: moving the crosshair must not
 			     repaint the expensive base canvas or every synchronized chart. -->
-			{#if crosshairVisible}
-	<div
-		class="pointer-events-none absolute left-0 z-[15] border-l border-dashed border-muted-foreground/70 will-change-transform"
-		style:transform="translateX({tooltipX}px)"
-		style:top="{padTop}px"
-		style:height="{plotH + agreementStripOffset}px"
-	></div>
-			{/if}
+		{#if crosshairVisible}
+			<div
+				class="pointer-events-none absolute left-0 z-[15] border-l border-dashed border-muted-foreground/70 will-change-transform"
+				style:transform="translateX({tooltipX}px)"
+				style:top="{padTop}px"
+				style:height="{plotH + agreementStripOffset}px"
+			></div>
+		{/if}
 
-			{#if tooltipVisible}
+		{#if tooltipVisible}
 			<div
 				class="pointer-events-none absolute z-20 rounded-md border border-border bg-popover px-3 py-2 text-xs whitespace-nowrap text-popover-foreground shadow-md"
 				style:top="{padTop + 8}px"

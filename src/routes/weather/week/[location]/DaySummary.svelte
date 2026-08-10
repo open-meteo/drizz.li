@@ -110,7 +110,7 @@
 	let overflows = $state(false);
 
 	$effect(() => {
-		sentences; // re-measure when the day (and so the text) changes
+		void sentences; // re-measure when the day (and so the text) changes
 		const el = textEl;
 		if (!el || expanded) return; // measuring while open would always say "fits"
 

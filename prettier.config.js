@@ -9,6 +9,8 @@ export default {
 		'\\$app/',
 		'\\$lib/stores',
 		'\\$lib/utils',
+		'.svx($)',
+		'\\$lib/components/ui',
 		'\\$lib/components',
 		'\\$lib/assets',
 		'\\$lib',

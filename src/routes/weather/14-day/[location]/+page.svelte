@@ -11,9 +11,10 @@
 	import { skeletonOut } from '$lib/utils/skeleton-fade';
 	import { syncSearchParams, unlessDefault } from '$lib/utils/url-state';
 
-	import { ChartContainer, ChartToolbar } from '$lib/components/charts';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
+
+	import { ChartContainer, ChartToolbar } from '$lib/components/charts';
 
 	import { CHART_COLORS, CanvasChart, type ChartSeries, isColumnUnit } from '$lib/charts';
 	import * as m from '$lib/paraglide/messages';

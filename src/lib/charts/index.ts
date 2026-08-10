@@ -13,11 +13,7 @@ export {
 	groupRange,
 	groupHover
 } from './CanvasChart.svelte';
-export type {
-	ChartAgreementPoint,
-	ChartAgreementStrip,
-	ChartSeries
-} from './CanvasChart.svelte';
+export type { ChartAgreementPoint, ChartAgreementStrip, ChartSeries } from './CanvasChart.svelte';
 
 export { buildDaylightBands } from './bands';
 export type { DaylightBand } from './bands';
