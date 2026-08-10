@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="%paraglide.lang%">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!-- Declared in the shell, not in the layout head: the SPA fallback page
+		     (404.html) ships no rendered head, so without this the browser falls
+		     back to requesting /favicon.ico and takes a 404 on every load of an
+		     unprerendered URL. -->
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<script>
+			// apply the persisted theme before first paint to avoid a flash
+			try {
+				var theme = JSON.parse(localStorage.getItem('theme') || '"system"');
+				if (
+					theme === 'dark' ||
+					(theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+				) {
+					document.documentElement.classList.add('dark');
+				}
+			} catch (e) {
+				/* ignore */
+			}
+		</script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

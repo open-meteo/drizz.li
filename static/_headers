@@ -1,0 +1,6 @@
+# Cross-origin isolation: the /weather/maps/ page embeds maps.open-meteo.com,
+# whose decoding worker pool needs SharedArrayBuffer. A cross-origin iframe only
+# gets SharedArrayBuffer when the embedding page is cross-origin isolated.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp

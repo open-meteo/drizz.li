@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+	<title></title>
+	<defs>
+		<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#e0f2fe" />
+			<stop offset="1" stop-color="#bae6fd" />
+		</linearGradient>
+		<linearGradient id="canopy" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#fb923c" />
+			<stop offset="1" stop-color="#ea580c" />
+		</linearGradient>
+		<linearGradient id="drop" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#38bdf8" />
+			<stop offset="1" stop-color="#2563eb" />
+		</linearGradient>
+	</defs>
+	<rect width="64" height="64" rx="14" fill="url(#sky)" />
+	<!-- raindrops falling onto the umbrella -->
+	<path d="M12 5c2 2.9 3 4.6 3 6.2a3 3 0 0 1-6 0c0-1.6 1-3.3 3-6.2Z" fill="url(#drop)" />
+	<path d="M53 4c2 2.9 3 4.6 3 6.2a3 3 0 0 1-6 0c0-1.6 1-3.3 3-6.2Z" fill="url(#drop)" />
+	<path d="M23 2.5c1.7 2.4 2.5 3.9 2.5 5.2a2.5 2.5 0 0 1-5 0c0-1.3.8-2.8 2.5-5.2Z" fill="url(#drop)" />
+	<path d="M45 12c1.7 2.4 2.5 3.9 2.5 5.2a2.5 2.5 0 0 1-5 0c0-1.3.8-2.8 2.5-5.2Z" fill="url(#drop)" />
+	<!-- pole with curved handle -->
+	<path
+		d="M33 35v17a4.5 4.5 0 0 1-9 0"
+		fill="none"
+		stroke="#475569"
+		stroke-width="3.25"
+		stroke-linecap="round"
+	/>
+	<!-- canopy tip -->
+	<path d="M33 13.5v4" fill="none" stroke="#475569" stroke-width="3" stroke-linecap="round" />
+	<!-- canopy with scalloped edge -->
+	<path
+		d="M11 37c0-11.6 9.8-21 22-21s22 9.4 22 21c-1.8-2.9-5.5-2.9-7.3 0-1.9-2.9-5.5-2.9-7.4 0-1.8-2.9-5.5-2.9-7.3 0-1.9-2.9-5.5-2.9-7.4 0-1.8-2.9-5.5-2.9-7.3 0-1.9-2.9-5.5-2.9-7.3 0Z"
+		fill="url(#canopy)"
+	/>
+	<!-- ribs -->
+	<path
+		d="M33 16.5c-5.2 3-7.4 11-7.3 19M33 16.5c5.2 3 7.4 11 7.3 19"
+		fill="none"
+		stroke="#9a3412"
+		stroke-width="1.5"
+		opacity="0.35"
+	/>
+</svg>

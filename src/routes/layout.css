@@ -1,0 +1,290 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+	--radius: 0.625rem;
+	--background: oklch(0.985 0.002 90);
+	--foreground: oklch(0.205 0.02 60);
+	--card: oklch(1 0 0);
+	--card-foreground: oklch(0.205 0.02 60);
+	--popover: oklch(1 0 0);
+	--popover-foreground: oklch(0.205 0.02 60);
+	--primary: oklch(0.65 0.17 55);
+	--primary-foreground: oklch(1 0 0);
+	--secondary: oklch(0.965 0.01 85);
+	--secondary-foreground: oklch(0.25 0.02 60);
+	--muted: oklch(0.96 0.008 85);
+	--muted-foreground: oklch(0.5 0.02 60);
+	--accent: oklch(0.95 0.02 70);
+	--accent-foreground: oklch(0.25 0.02 60);
+	--destructive: oklch(0.577 0.245 27.325);
+	--border: oklch(0.91 0.01 80);
+	--input: oklch(0.91 0.01 80);
+	--ring: oklch(0.65 0.17 55);
+	--chart-1: oklch(0.65 0.17 55);
+	--chart-2: oklch(0.62 0.16 250);
+	--chart-3: oklch(0.75 0.15 75);
+	--chart-4: oklch(0.55 0.12 250);
+	--chart-5: oklch(0.8 0.14 65);
+	--sidebar-foreground: oklch(0.3 0.02 60);
+	--sidebar-primary: oklch(0.65 0.17 55);
+	--sidebar-primary-foreground: oklch(1 0 0);
+	--sidebar-accent: oklch(0.95 0.03 70);
+	--sidebar-accent-foreground: oklch(0.3 0.02 60);
+	--sidebar-border: oklch(0.92 0.01 80);
+	--sidebar-ring: oklch(0.65 0.17 55);
+	--sidebar: oklch(0.99 0.003 85);
+	--topbar-bg: oklch(1 0 0);
+	--topbar-border: oklch(0.92 0.01 80);
+}
+
+.dark {
+	--background: oklch(0.17 0.015 60);
+	--foreground: oklch(0.96 0.005 85);
+	--card: oklch(0.22 0.015 60);
+	--card-foreground: oklch(0.96 0.005 85);
+	--popover: oklch(0.22 0.015 60);
+	--popover-foreground: oklch(0.96 0.005 85);
+	--primary: oklch(0.72 0.17 55);
+	--primary-foreground: oklch(0.15 0.02 60);
+	--secondary: oklch(0.26 0.015 60);
+	--secondary-foreground: oklch(0.96 0.005 85);
+	--muted: oklch(0.26 0.015 60);
+	--muted-foreground: oklch(0.65 0.02 60);
+	--accent: oklch(0.65 0.16 250);
+	--accent-foreground: oklch(0.96 0.005 85);
+	--destructive: oklch(0.704 0.191 22.216);
+	--border: oklch(1 0 0 / 10%);
+	--input: oklch(1 0 0 / 15%);
+	--ring: oklch(0.72 0.17 55);
+	--chart-1: oklch(0.72 0.17 55);
+	--chart-2: oklch(0.65 0.16 250);
+	--chart-3: oklch(0.8 0.14 65);
+	--chart-4: oklch(0.6 0.2 300);
+	--chart-5: oklch(0.7 0.22 20);
+	--sidebar-foreground: oklch(0.96 0.005 85);
+	--sidebar-primary: oklch(0.72 0.17 55);
+	--sidebar-primary-foreground: oklch(0.15 0.02 60);
+	--sidebar-accent: oklch(0.26 0.02 55);
+	--sidebar-accent-foreground: oklch(0.96 0.005 85);
+	--sidebar-border: oklch(1 0 0 / 10%);
+	--sidebar-ring: oklch(0.72 0.17 55);
+	--sidebar: oklch(0.19 0.015 60);
+	--topbar-bg: oklch(0.2 0.015 60);
+	--topbar-border: oklch(1 0 0 / 10%);
+}
+
+@theme inline {
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+	--color-topbar: var(--topbar-bg);
+	--color-topbar-border: var(--topbar-border);
+}
+
+@layer base {
+	/* color-scheme drives native widgets AND propagates into embedded
+	   iframes (the open-meteo map reads it via prefers-color-scheme) */
+	:root {
+		color-scheme: light;
+	}
+	.dark {
+		color-scheme: dark;
+	}
+	* {
+		@apply border-border outline-ring/50;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
+
+	/* ── Day switching ────────────────────────────────────────────────────────
+	   Only the three regions whose content depends on the selected day take part
+	   in the cross-fade - and nothing else is captured at all. A captured
+	   element is neither painted nor hit-testable in the live page for the
+	   length of the animation (per spec: as if it had visibility:hidden and
+	   pointer-events:none), and the root is captured by default, which captures
+	   the whole page. That is what made the strip unclickable and the page
+	   unscrollable while a switch played - no amount of pointer-events on the
+	   overlay could fix it, because the page underneath was gone too. With the
+	   root left un-named the strip, the chrome and the scroller keep their live
+	   pixels and stay fully interactive. */
+	:root.day-switch {
+		view-transition-name: none;
+	}
+	:root.day-switch .day-region-table {
+		view-transition-name: day-table;
+	}
+	:root.day-switch .day-region-summary {
+		view-transition-name: day-summary;
+	}
+	:root.day-switch .day-region-charts {
+		view-transition-name: day-charts;
+	}
+
+	/* Region snapshots paint in a viewport-fixed layer above the live page, at
+	   their full layout size - including the part of the table normally
+	   scrolled up behind the sticky strip and the topbar. The strip used to be
+	   captured purely to stay on top of that, but a captured strip is dead to
+	   input; instead the whole overlay is clipped at the strip bar's bottom
+	   edge (measured per switch by runDayTransition), so the snapshots stay
+	   out of the chrome and the chrome stays live. */
+	:root.day-switch::view-transition {
+		clip-path: inset(var(--day-switch-clip, 0px) 0 0 0);
+	}
+
+	/* Page swaps capture the topbar and sidebar: a region that is identical on
+	   both sides should not be animated at all, so they are pinned here and
+	   swapped outright below. */
+	:root.page-switch .topbar {
+		view-transition-name: topbar;
+	}
+	::view-transition-group(topbar) {
+		z-index: 30;
+	}
+	:root.page-switch .sidebar-region {
+		view-transition-name: sidebar;
+	}
+	::view-transition-group(sidebar) {
+		z-index: 25;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.day-region-table,
+		.day-region-summary,
+		.day-region-charts,
+		.topbar,
+		.sidebar-region {
+			view-transition-name: none;
+		}
+	}
+
+	/* The snapshot layer is a fixed overlay across the whole viewport and it
+	   hit-tests, so for the length of an animation every click would land on it
+	   and die - a day tapped while the previous switch is still fading simply
+	   went dead. Let input fall through to the live page instead: by the time
+	   the pseudo elements exist the DOM is already in its final state, and a
+	   click that starts a new transition supersedes the running one cleanly
+	   (see view-transition.ts). */
+	::view-transition {
+		pointer-events: none;
+	}
+
+	/* ── Cross-fades that do not dip ──────────────────────────────────────────
+	   The default cross-fade is NOT opacity-neutral: coverage of two stacked
+	   layers is `new + old * (1 - new)`, so at the midpoint the pair covers only
+	   ~75% of the region and the page background shows through both. That dip is
+	   the flash - over the whole viewport for a page swap, and over the table,
+	   summary and charts (between them the whole content column) for a day
+	   switch.
+
+	   Two ways out, and which one applies depends on whether the *incoming*
+	   snapshot is opaque. Holding the outgoing one at full opacity fixes the
+	   coverage arithmetic, but a translucent incoming snapshot then reads
+	   straight through it and the old content lingers as a ghost. */
+
+	/* The document background is opaque, so the whole-viewport swap can simply
+	   hold the outgoing snapshot until the pseudo elements are torn down. */
+	@keyframes vt-fade-in {
+		from {
+			opacity: 0;
+		}
+	}
+	::view-transition-old(root) {
+		animation: none;
+		opacity: 1;
+	}
+	::view-transition-new(root) {
+		animation: vt-fade-in 400ms ease;
+	}
+
+	/* The day regions are not opaque - they are cards with gaps and headings
+	   between them - so they keep a real cross-fade and fix the dip the other
+	   way: `plus-lighter` makes the two halves sum to exactly the original
+	   wherever they agree, which is most of the region (the card backgrounds are
+	   the same on both days; only the readings differ). */
+	::view-transition-old(day-table),
+	::view-transition-new(day-table),
+	::view-transition-old(day-summary),
+	::view-transition-new(day-summary),
+	::view-transition-old(day-charts),
+	::view-transition-new(day-charts) {
+		animation-duration: 420ms;
+		animation-timing-function: ease;
+		mix-blend-mode: plus-lighter;
+	}
+
+	/* Pinned chrome swaps outright: identical on both sides, so any animation
+	   would only risk a flicker. */
+	::view-transition-old(topbar),
+	::view-transition-old(sidebar) {
+		animation: none;
+		opacity: 0;
+	}
+	::view-transition-new(topbar),
+	::view-transition-new(sidebar) {
+		animation: none;
+		opacity: 1;
+	}
+
+	/* Fallback for browsers without view transitions: fade the colours only. */
+	:root.theme-transition,
+	:root.theme-transition *,
+	:root.theme-transition *::before,
+	:root.theme-transition *::after {
+		transition:
+			background-color 400ms ease,
+			border-color 400ms ease,
+			color 400ms ease,
+			fill 400ms ease,
+			stroke 400ms ease;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		::view-transition-old(root),
+		::view-transition-new(root) {
+			animation: none;
+		}
+		:root.theme-transition,
+		:root.theme-transition *,
+		:root.theme-transition *::before,
+		:root.theme-transition *::after {
+			transition: none;
+		}
+	}
+}
