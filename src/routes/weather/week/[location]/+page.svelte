@@ -8,8 +8,8 @@
 
 	import { reportPageReady } from '$lib/stores/page-transition.svelte';
 	import {
+		setActiveLocation,
 		storedChartLayout,
-		storedLocation,
 		storedModel,
 		storedUnits,
 		storedVariablePrefs
@@ -100,6 +100,14 @@
 		return () => mq.removeEventListener('change', apply);
 	});
 	let tableRowPx = $derived(compactRows ? 36 : 55);
+
+	// Height one meteogram takes: the plot plus its chrome (title row, axis
+	// labels, legend). Measured from the rendered charts, and it steps twice -
+	// the plot itself is shorter on phones, and from lg up the sidebar narrows
+	// the charts enough that their chrome takes another line.
+	let chartSlotHeight = $derived(
+		narrowViewport ? chartHeight + 53 : compactRows ? chartHeight + 57 : chartHeight + 73
+	);
 	const TABLE_TIME_ROW_PX = 48;
 	let enabledTableRows = $derived(Object.values($storedVariablePrefs.table).filter(Boolean).length);
 
@@ -122,7 +130,7 @@
 	// only mirrors it so the header and bare /weather/* redirects follow along.
 	let location = $derived(data.location);
 	$effect(() => {
-		storedLocation.set(data.location);
+		setActiveLocation(data.location);
 	});
 
 	// Lets the strip's side buttons hand over to the archive / seasonal outlook
@@ -532,13 +540,16 @@
 				{:else}
 					<!-- Same footprint as the written forecast, so it doesn't shove the
 					     meteograms down when it arrives. The heights are measured from the
-					     real card at each breakpoint: on phones the narrative is clamped to
-					     five lines with a fixed toggle row, so that side is exact; from md
-					     up the text runs free and this is the typical height. The sun/moon
-					     grid reflows at sm, md and lg, which is why all four are needed. -->
+					     real card at each breakpoint (410 / 364 / 340 / 248 px): below md
+					     the narrative is clamped to five lines with a fixed toggle row and
+					     from lg up the sun/moon column is the taller side, so those three
+					     are exact whatever the forecast says. Only md is a judgement call -
+					     the text runs free there and the card measures 291 to 364 px across
+					     a week, so this is the middle of that range. The sun/moon grid
+					     reflows at sm, md and lg, which is why all four are needed. -->
 					<section class="mt-6" in:fade={{ duration: 200 }} out:skeletonOut>
 						<div
-							class="h-96.5 animate-pulse rounded-2xl border border-border/70 bg-card sm:h-85 md:h-73 lg:h-56"
+							class="h-102.5 animate-pulse rounded-2xl border border-border/70 bg-card sm:h-91 md:h-85 lg:h-62"
 						></div>
 					</section>
 				{/if}
@@ -572,13 +583,12 @@
 								<div class="h-7 w-24 animate-pulse rounded-lg bg-muted"></div>
 							</div>
 						</div>
-						<!-- Each meteogram is its plot plus a title row and axis labels, so
-					     the reserved box needs that chrome on top of the plot height or
-					     everything below lands ~50px per chart too high. -->
+						<!-- The reserved box is the plot plus each chart's own chrome (see
+					     chartSlotHeight), or everything below it lands too high. -->
 						<ChartContainer
 							loading
 							chartCount={enabledChartCount || 1}
-							chartHeight={chartHeight + (narrowViewport ? 43 : 62)}
+							chartHeight={chartSlotHeight}
 						/>
 					</section>
 				{/if}

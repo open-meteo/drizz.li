@@ -4,7 +4,14 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	import { type GeoLocation, type Theme, storedLocation, storedTheme } from '$lib/stores/settings';
+	import {
+		type GeoLocation,
+		type Theme,
+		locationKnown,
+		setActiveLocation,
+		storedLocation,
+		storedTheme
+	} from '$lib/stores/settings';
 
 	import { buildLocationRoute } from '$lib/utils/location';
 
@@ -24,21 +31,15 @@
 
 	let { onMenuToggle }: Props = $props();
 
-	let location = $state(get(storedLocation));
-
-	storedLocation.subscribe((value) => {
-		location = value;
-	});
-
-	// Prerendered pages bake the DEFAULT location's flag into the HTML, and
-	// Svelte's hydration repairs text but not attributes — so on pages that
-	// never update the store (legal pages etc.) the stale flag would stick
-	// around next to the correct location name. Re-sync the src after mount.
-	let flagEl = $state<HTMLImageElement>();
-	$effect(() => {
-		const src = `/images/country-flags/${(location.country_code || 'united_nations').toLowerCase()}.svg`;
-		if (flagEl && !flagEl.src.endsWith(src)) flagEl.src = src;
-	});
+	// The URL's location wins where there is one: it is what the page is about,
+	// and it is already correct in prerendered HTML. Everywhere else the store
+	// answers - but only once the browser knows whose location it holds. Until
+	// then the pill is a placeholder rather than the default city, which is the
+	// one thing prerendered HTML could never get right: a German flag greeting
+	// every first-time visitor, wherever they are.
+	let location: GeoLocation | null = $derived(
+		$page.data.location ?? ($locationKnown ? $storedLocation : null)
+	);
 
 	// Built as a string rather than inline markup: the pieces are optional, and
 	// separators spelled out in the template lose their spacing to Svelte's
@@ -69,7 +70,7 @@
 	}
 
 	function navigateToLocation(newLocation: GeoLocation) {
-		storedLocation.set(newLocation);
+		setActiveLocation(newLocation);
 		const locationRoute = buildLocationRoute(newLocation);
 		const currentPath = routePath(get(page).url.pathname);
 
@@ -111,7 +112,8 @@
 		</button>
 	</div>
 
-	<!-- Current location display -->
+	<!-- Current location display. Both branches carry the same pill metrics, so
+	     the real thing lands exactly where the placeholder sat. -->
 	{#if location}
 		<!-- min-w-0 + a ceiling so a long "Sant Pere de Ribes, Catalonia, Spain"
 		     ellipses inside the pill instead of pushing the search box off centre -->
@@ -119,7 +121,6 @@
 			class="hidden min-w-0 max-w-70 items-center gap-2 rounded-full border border-border/70 bg-muted/40 py-1 ps-1 pe-3 lg:flex xl:max-w-96"
 		>
 			<img
-				bind:this={flagEl}
 				class="h-6 w-6 shrink-0 rounded-full ring-1 ring-border"
 				src="/images/country-flags/{(location.country_code || 'united_nations').toLowerCase()}.svg"
 				alt={location.country}
@@ -131,6 +132,14 @@
 					<span class="font-normal text-muted-foreground">· {locationDetail}</span>
 				{/if}
 			</span>
+		</div>
+	{:else}
+		<div
+			class="hidden min-w-0 max-w-70 items-center gap-2 rounded-full border border-border/70 bg-muted/40 py-1 ps-1 pe-3 lg:flex xl:max-w-96"
+			aria-hidden="true"
+		>
+			<div class="h-6 w-6 shrink-0 animate-pulse rounded-full bg-muted"></div>
+			<div class="h-3.5 w-44 animate-pulse rounded bg-muted"></div>
 		</div>
 	{/if}
 

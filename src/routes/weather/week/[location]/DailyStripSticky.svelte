@@ -150,7 +150,7 @@
 
 <div
 	bind:this={stripEl}
-	class="daystrip sticky -top-3 z-30 -mx-3 lg:-top-6 lg:-mx-8 mt-1"
+	class="daystrip sticky -top-3 z-30 -mx-3 lg:-top-6 lg:-mx-8 mt-0.5"
 	class:js-snap={needsSnapFallback}
 	class:compact
 	class:stuck

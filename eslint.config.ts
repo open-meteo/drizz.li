@@ -13,6 +13,8 @@ export default defineConfig([
 		'build',
 		'coverage',
 		'.svelte-kit',
+		// wrangler's bundling scratch space (generated, gitignored)
+		'.wrangler',
 		'.vscode',
 		// paraglide compiles the message runtime into the source tree
 		'src/lib/paraglide'

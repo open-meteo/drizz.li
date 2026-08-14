@@ -4,3 +4,17 @@
 /*
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
+
+# Everything under /_app/immutable/ is content-hashed by SvelteKit, so one of
+# those URLs can never change meaning. Workers otherwise serves every asset as
+# "public, max-age=0, must-revalidate", which costs a conditional request per
+# file per page load - dozens of round trips that can only ever answer 304.
+/_app/immutable/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Not fingerprinted, so a day rather than a year: long enough that a repeat
+# visit pays nothing, short enough that a replaced flag or city tile lands.
+/images/*
+  Cache-Control: public, max-age=86400
+/data/*
+  Cache-Control: public, max-age=86400

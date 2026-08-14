@@ -2,7 +2,7 @@
 	import ProsePage from '$lib/components/prose-page.svelte';
 </script>
 
-<ProsePage title="Privacy policy" subtitle="Last updated: 1 August 2026">
+<ProsePage title="Privacy policy" subtitle="Last updated: 14 August 2026">
 	<p>
 		Drizz.li is built to need as little of your data as possible: there are no user accounts, no
 		cookies, no advertising and no analytics or tracking scripts. This page explains what little
@@ -14,7 +14,7 @@
 		Vincent van der Wal<br />
 		Tschalungasse 2, CH-6442 Gersau, Switzerland <br />
 		Email:
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>
+		<a href="mailto:info@drizz.li">info@drizz.li</a>
 	</address>
 	<p>This policy covers the website drizz.li.</p>
 
@@ -35,10 +35,21 @@
 	</p>
 	<h3>Hosting</h3>
 	<p>
-		The static site is served by Cloudflare Pages (Cloudflare, Inc., USA). The hosting
-		infrastructure may keep short-lived technical server logs (IP address, requested URL, timestamp)
-		for security and operations. Legal basis: legitimate interest in a secure, reliable service
-		(Art. 6(1)(f) GDPR).
+		The site is served by Cloudflare Workers (Cloudflare, Inc., USA). The hosting infrastructure may
+		keep short-lived technical server logs (IP address, requested URL, timestamp) for security and
+		operations. Legal basis: legitimate interest in a secure, reliable service (Art. 6(1)(f) GDPR).
+	</p>
+	<h3>Approximate location on a first visit</h3>
+	<p>
+		When you open the site without a location in the URL, the page asks our own geolocation endpoint
+		for the approximate location (roughly city level) that Cloudflare derives from your IP address,
+		so that the first forecast you see is a nearby one. The answer is sent to your browser alone: it
+		is not stored, not built into a profile and not passed to anyone else. Your browser then
+		resolves that city through Open-Meteo's geocoding API as described above, and the location is
+		kept in your browser's local storage so the lookup does not happen again. Legal basis:
+		legitimate interest in showing relevant content straight away (Art. 6(1)(f) GDPR). Nothing here
+		uses your device's precise GPS position, which is only ever read when you ask for it explicitly
+		in the location search.
 	</p>
 	<h3>Settings on your device (local storage)</h3>
 	<p>
@@ -59,9 +70,9 @@
 		Under the GDPR you have the right to access, rectification, erasure, restriction of processing,
 		data portability, and to object to processing based on legitimate interest. Where processing is
 		based on consent, you may withdraw it at any time. To exercise any of these rights, email
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>. You also have the
-		right to lodge a complaint with a supervisory authority, in particular in the EU member state of
-		your residence, or with [competent supervisory authority of the controller].
+		<a href="mailto:info@drizz.li">info@drizz.li</a>. You also have the right to lodge a complaint
+		with a supervisory authority, in particular in the EU member state of your residence, or with
+		[competent supervisory authority of the controller].
 	</p>
 	<p>
 		For visitors from Switzerland: the corresponding rights under the Swiss Federal Act on Data

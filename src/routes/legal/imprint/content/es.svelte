@@ -11,9 +11,8 @@
 		Switzerland
 	</address>
 	<p>
-		Correo electrónico: <a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>
+		Correo electrónico: <a href="mailto:info@drizz.li">info@drizz.li</a>
 	</p>
-	<p>Drizz.li se gestiona como un proyecto personal e independiente.</p>
 
 	<h2>Descargo de responsabilidad</h2>
 	<p>

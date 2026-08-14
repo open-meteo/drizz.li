@@ -2,7 +2,7 @@
 	import ProsePage from '$lib/components/prose-page.svelte';
 </script>
 
-<ProsePage title="Política de privacidad" subtitle="Última actualización: 1 de agosto de 2026">
+<ProsePage title="Política de privacidad" subtitle="Última actualización: 14 de agosto de 2026">
 	<p>
 		Drizz.li está hecho para necesitar los mínimos datos posibles: sin cuentas, sin cookies, sin
 		publicidad y sin scripts de analítica ni de seguimiento. Esta página explica el poco tratamiento
@@ -14,7 +14,7 @@
 		Vincent van der Wal<br />
 		Tschalungasse 2, CH-6442 Gersau, Switzerland <br />
 		Correo electrónico:
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>
+		<a href="mailto:info@drizz.li">info@drizz.li</a>
 	</address>
 	<p>Esta política cubre el sitio drizz.li.</p>
 
@@ -33,10 +33,22 @@
 	</p>
 	<h3>Alojamiento</h3>
 	<p>
-		El sitio estático lo sirve Cloudflare Pages (Cloudflare, Inc., EE. UU.). La infraestructura
-		puede conservar registros técnicos de corta duración (dirección IP, URL solicitada, marca de
-		tiempo) por seguridad y operación. Base jurídica: interés legítimo en un servicio seguro y
-		fiable (art. 6.1.f del RGPD).
+		El sitio lo sirve Cloudflare Workers (Cloudflare, Inc., EE. UU.). La infraestructura puede
+		conservar registros técnicos de corta duración (dirección IP, URL solicitada, marca de tiempo)
+		por seguridad y operación. Base jurídica: interés legítimo en un servicio seguro y fiable (art.
+		6.1.f del RGPD).
+	</p>
+	<h3>Ubicación aproximada en la primera visita</h3>
+	<p>
+		Cuando abres el sitio sin una ubicación en la URL, la página consulta nuestro propio punto de
+		geolocalización para obtener la ubicación aproximada (más o menos a nivel de ciudad) que
+		Cloudflare deduce de tu dirección IP, de modo que la primera previsión que veas sea cercana. La
+		respuesta se envía únicamente a tu navegador: no se almacena, no se combina en ningún perfil y
+		no se comparte con nadie. Tu navegador resuelve después ese nombre de ciudad mediante la API de
+		geocodificación de Open-Meteo, tal como se describe arriba, y guarda la ubicación en el
+		almacenamiento local para no repetir la consulta. Base jurídica: interés legítimo en mostrar
+		contenido relevante de inmediato (art. 6.1.f del RGPD). Nada de esto usa la posición GPS exacta
+		de tu dispositivo, que solo se lee cuando la pides expresamente en el buscador de ubicaciones.
 	</p>
 	<h3>Ajustes en tu dispositivo (almacenamiento local)</h3>
 	<p>
@@ -58,9 +70,9 @@
 		portabilidad y oposición al tratamiento basado en el interés legítimo. Cuando el tratamiento se
 		base en el consentimiento, puedes retirarlo en cualquier momento. Para ejercer estos derechos,
 		escribe a
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>. También tienes
-		derecho a presentar una reclamación ante una autoridad de control, en particular en el Estado
-		miembro de tu residencia, o ante [autoridad de control competente].
+		<a href="mailto:info@drizz.li">info@drizz.li</a>. También tienes derecho a presentar una
+		reclamación ante una autoridad de control, en particular en el Estado miembro de tu residencia,
+		o ante [autoridad de control competente].
 	</p>
 	<p>
 		Para visitantes desde Suiza, se aplican de forma equivalente los derechos correspondientes de la

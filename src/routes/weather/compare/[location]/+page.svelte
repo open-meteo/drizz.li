@@ -6,7 +6,7 @@
 	import { page } from '$app/stores';
 
 	import { reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { storedLocation, storedModel, storedUnits } from '$lib/stores/settings';
+	import { setActiveLocation, storedModel, storedUnits } from '$lib/stores/settings';
 
 	import { formatZoned } from '$lib/utils/date';
 	import { skeletonOut } from '$lib/utils/skeleton-fade';
@@ -187,7 +187,7 @@
 	reportPageReady(() => mounted && !loading);
 	useHeroActions(heroActions);
 
-	$effect(() => storedLocation.set(data.location));
+	$effect(() => setActiveLocation(data.location));
 	$effect(() => {
 		params.temperature_unit = $storedUnits.temperature_unit;
 		params.wind_speed_unit = $storedUnits.wind_speed_unit;

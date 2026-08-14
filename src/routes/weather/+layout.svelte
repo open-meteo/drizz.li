@@ -3,10 +3,14 @@
 
 	import { page } from '$app/stores';
 
-	import { storedLocation } from '$lib/stores/settings';
+	import { type GeoLocation, locationKnown, storedLocation } from '$lib/stores/settings';
+
+	import { skeletonOut } from '$lib/utils/skeleton-fade';
 
 	import { routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
+
+	import HeroActionsPlaceholder from './hero-actions-placeholder.svelte';
 
 	import type { Snippet } from 'svelte';
 
@@ -28,9 +32,14 @@
 		}
 	});
 
-	// Page data wins; the persisted store covers the moment before the first
-	// load resolves (and any weather page that doesn't carry a location).
-	let location = $derived($page.data.location ?? $storedLocation);
+	// Page data wins; the persisted store covers any weather page that doesn't
+	// carry a location of its own. Before the browser has settled on one at all
+	// (a first visit, or a location route still resolving) there is nothing
+	// truthful to show, and the row renders a placeholder instead of the default
+	// city the prerendered HTML was built with.
+	let location: GeoLocation | null = $derived(
+		$page.data.location ?? ($locationKnown ? $storedLocation : null)
+	);
 
 	const SUBTITLES: [string, () => string][] = [
 		['/weather/week', m.page_week_subtitle],
@@ -59,26 +68,54 @@
 	);
 </script>
 
-{#if subtitle && location}
-	<div class="relative mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 md:mb-5">
-		<div class="flex min-w-0 items-center gap-3">
-			<img
-				class="h-10 w-10 shrink-0 rounded-full shadow-sm ring-2 ring-border"
-				src="/images/country-flags/{(location.country_code || 'united_nations').toLowerCase()}.svg"
-				alt={location.country ?? ''}
-			/>
-			<div class="min-w-0">
-				<h1 class="truncate text-2xl leading-tight font-bold tracking-tight md:text-3xl">
-					{location.name}
-					<span class="font-medium text-muted-foreground">· {subtitle}</span>
-				</h1>
-				{#if region}
-					<p class="truncate text-sm text-muted-foreground lg:hidden">{region}</p>
-				{/if}
+{#if subtitle}
+	<div class="relative mb-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 md:mb-2">
+		{#if !location}
+			<!-- Same metrics as the heading below, and `relative` on the row lets it
+			     dissolve over the real one rather than holding its own slot
+			     (skeletonOut). -->
+			<div class="flex min-w-0 items-center gap-3" out:skeletonOut aria-hidden="true">
+				<div
+					class="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted ring-2 ring-border"
+				></div>
+				<!-- The bars sit inside the heading and region elements themselves, at
+				     0.7em, rather than in boxes of their own: the line box is then the
+				     text's, at every breakpoint, and the row does not resize when the
+				     real heading arrives. -->
+				<div class="min-w-0">
+					<div class="text-2xl leading-tight font-bold tracking-tight md:text-3xl">
+						<span
+							class="inline-block h-[0.7em] w-56 animate-pulse rounded bg-muted align-middle md:w-72"
+						></span>
+					</div>
+					<p class="text-sm lg:hidden">
+						<span class="inline-block h-[0.7em] w-40 animate-pulse rounded bg-muted align-middle"
+						></span>
+					</p>
+				</div>
 			</div>
-		</div>
+		{:else}
+			<div class="flex min-w-0 items-center gap-3">
+				<img
+					class="h-10 w-10 shrink-0 rounded-full shadow-sm ring-2 ring-border"
+					src="/images/country-flags/{(
+						location.country_code || 'united_nations'
+					).toLowerCase()}.svg"
+					alt={location.country ?? ''}
+				/>
+				<div class="min-w-0">
+					<h1 class="truncate text-2xl leading-tight font-bold tracking-tight md:text-3xl">
+						{location.name}
+						<span class="font-medium text-muted-foreground">· {subtitle}</span>
+					</h1>
+					{#if region}
+						<p class="truncate text-sm text-muted-foreground lg:hidden">{region}</p>
+					{/if}
+				</div>
+			</div>
+		{/if}
 
-		{#if actions}{@render actions()}{/if}
+		{#if actions}{@render actions()}{:else}<HeroActionsPlaceholder />{/if}
 	</div>
 {/if}
 

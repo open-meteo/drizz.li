@@ -2,7 +2,7 @@
 	import ProsePage from '$lib/components/prose-page.svelte';
 </script>
 
-<ProsePage title="Politique de confidentialité" subtitle="Dernière mise à jour : 1er août 2026">
+<ProsePage title="Politique de confidentialité" subtitle="Dernière mise à jour : 14 août 2026">
 	<p>
 		Drizz.li est conçu pour avoir besoin du minimum de vos données : aucun compte, aucun cookie,
 		aucune publicité, aucun script d'analyse ou de suivi. Cette page explique le peu de traitement
@@ -14,7 +14,7 @@
 		Vincent van der Wal<br />
 		Tschalungasse 2, CH-6442 Gersau, Switzerland <br />
 		E-mail:
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>
+		<a href="mailto:info@drizz.li">info@drizz.li</a>
 	</address>
 	<p>Cette politique couvre le site drizz.li.</p>
 
@@ -33,10 +33,23 @@
 	</p>
 	<h3>Hébergement</h3>
 	<p>
-		Le site statique est servi par Cloudflare Pages (Cloudflare, Inc., États-Unis). L'infrastructure
+		Le site est servi par Cloudflare Workers (Cloudflare, Inc., États-Unis). L'infrastructure
 		d'hébergement peut conserver de brefs journaux techniques (adresse IP, URL demandée, horodatage)
 		à des fins de sécurité et d'exploitation. Base légale : intérêt légitime à un service sûr et
 		fiable (art. 6, par. 1, point f) du RGPD).
+	</p>
+	<h3>Localisation approximative lors d'une première visite</h3>
+	<p>
+		Lorsque vous ouvrez le site sans lieu dans l'URL, la page demande à notre propre point de
+		terminaison de géolocalisation la position approximative (à l'échelle de la ville) que
+		Cloudflare déduit de votre adresse IP, afin que la première prévision affichée soit proche de
+		vous. La réponse n'est transmise qu'à votre navigateur : elle n'est ni conservée, ni rattachée à
+		un profil, ni communiquée à des tiers. Votre navigateur résout ensuite ce nom de ville via l'API
+		de géocodage d'Open-Meteo, comme décrit ci-dessus, et conserve le lieu dans le stockage local
+		afin de ne pas refaire la requête. Base légale : intérêt légitime à afficher immédiatement un
+		contenu pertinent (art. 6, par. 1, point f) du RGPD). Rien de tout cela n'utilise la position
+		GPS précise de votre appareil, qui n'est lue que si vous la demandez explicitement dans la
+		recherche de lieu.
 	</p>
 	<h3>Réglages sur votre appareil (stockage local)</h3>
 	<p>
@@ -58,9 +71,9 @@
 		limitation du traitement, de portabilité, et d'opposition au traitement fondé sur l'intérêt
 		légitime. Lorsque le traitement repose sur le consentement, vous pouvez le retirer à tout
 		moment. Pour exercer ces droits, écrivez à
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>. Vous avez
-		également le droit d'introduire une réclamation auprès d'une autorité de contrôle, notamment
-		dans l'État membre de votre résidence, ou auprès de [autorité de contrôle compétente].
+		<a href="mailto:info@drizz.li">info@drizz.li</a>. Vous avez également le droit d'introduire une
+		réclamation auprès d'une autorité de contrôle, notamment dans l'État membre de votre résidence,
+		ou auprès de [autorité de contrôle compétente].
 	</p>
 	<p>
 		Pour les visiteurs suisses, les droits correspondants de la loi fédérale sur la protection des

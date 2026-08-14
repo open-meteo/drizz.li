@@ -1,3 +1,5 @@
+import { writable } from 'svelte/store';
+
 import { persisted } from 'svelte-persisted-store';
 
 export interface GeoLocation {
@@ -42,7 +44,37 @@ export const defaultLocation: GeoLocation = {
 	admin4: 'Berlin'
 };
 
-export const storedLocation = persisted('stored_location', defaultLocation as GeoLocation);
+const LOCATION_KEY = 'stored_location';
+
+export const storedLocation = persisted(LOCATION_KEY, defaultLocation as GeoLocation);
+
+/**
+ * Whether the browser has settled on a location to show.
+ *
+ * `storedLocation` always holds something - prerendering needs a shape to
+ * render - which makes it useless for telling "this is the visitor's place"
+ * apart from "nobody has looked yet". Everything that shows a location off the
+ * store rather than off the URL (the topbar pill, the weather hero) renders a
+ * placeholder while this is false, instead of a German flag for a visitor who
+ * has never been here.
+ */
+export const locationKnown = writable(false);
+
+/** True when this browser picked a location of its own at some point. */
+export function hasStoredLocation(): boolean {
+	try {
+		return typeof localStorage !== 'undefined' && localStorage.getItem(LOCATION_KEY) !== null;
+	} catch {
+		// storage disabled: no persisted choice to find, which is the answer
+		return false;
+	}
+}
+
+/** Records the location the visitor is currently looking at. */
+export function setActiveLocation(location: GeoLocation): void {
+	storedLocation.set(location);
+	locationKnown.set(true);
+}
 
 export type Theme = 'system' | 'light' | 'dark';
 

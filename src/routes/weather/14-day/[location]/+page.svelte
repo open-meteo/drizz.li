@@ -6,7 +6,7 @@
 	import { page } from '$app/stores';
 
 	import { reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { storedEnsembleModel, storedLocation, storedUnits } from '$lib/stores/settings';
+	import { setActiveLocation, storedEnsembleModel, storedUnits } from '$lib/stores/settings';
 
 	import { skeletonOut } from '$lib/utils/skeleton-fade';
 	import { syncSearchParams, unlessDefault } from '$lib/utils/url-state';
@@ -56,7 +56,7 @@
 	// only mirrors it so the header and bare /weather/* redirects follow along.
 	let location = $derived(data.location);
 	$effect(() => {
-		storedLocation.set(data.location);
+		setActiveLocation(data.location);
 	});
 
 	const DEFAULT_MODEL = 'ncep_gefs_seamless';

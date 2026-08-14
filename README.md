@@ -10,7 +10,9 @@ by the Open-Meteo APIs.
 
 The site ships as a fully static bundle: forecasts are fetched directly by the
 visitor's browser and rendered on their device. No accounts, no ads, no
-analytics or tracking scripts.
+analytics or tracking scripts. The one piece of server-side code is a Cloudflare
+Worker endpoint that reports back the approximate location Cloudflare already
+derived from the request, so a first visit opens on the right city.
 
 ## Pages
 
@@ -52,6 +54,7 @@ src/lib/stores/      persisted settings (location, model, units, theme, ...)
 src/lib/utils/       date/location/URL helpers, maps domain mapping
 src/routes/weather/  the forecast pages
 static/data/cities/  GeoNames city tiles for the "nearby cities" section
+worker/              the Cloudflare Worker: /api/geo, and nothing else
 ```
 
 ## Developing
@@ -132,38 +135,47 @@ committed version, the git tag and the GitHub release always agree. The package
 is `private`, so `@semantic-release/npm` only rewrites those files and never
 publishes to the registry.
 
-## Deployment (Cloudflare Pages)
+## Deployment (Cloudflare Workers)
 
-The build output in `build/` is a fully static site.
-
-Project settings:
-
-| Setting                | Value           |
-| ---------------------- | --------------- |
-| Build command          | `npm run build` |
-| Build output directory | `build`         |
-
-Two pieces of configuration have to ride along in the deployment. Both are
-plain files in `static/`, which the build copies into `build/`.
+The build output in `build/` is a fully static site, served by a Worker with a
+[static assets](https://developers.cloudflare.com/workers/static-assets/)
+binding. `wrangler.jsonc` holds the whole deployment configuration; the build
+command is `npm run build`.
 
 ### 1. SPA fallback
 
 Pages that are not prerendered (unlisted cities, GPS coordinate routes like
 `/weather/week/52.09N5.12E/`) are served by `404.html`, which boots the app and
-resolves the location client-side.
+resolves the location client-side. That is what `not_found_handling:
+"404-page"` in `wrangler.jsonc` does.
 
-Cloudflare Pages serves `404.html` for unknown paths on its own, but with a 404
-status: the page works, yet every hard reload of an unprerendered URL logs a 404
-in the network panel and tells crawlers the page does not exist. A `_redirects`
-file turns that into a 200 rewrite. Static assets still win over the rule, so
-prerendered pages are unaffected:
+### 2. `/api/geo` (the only dynamic route)
 
-```
-# static/_redirects
-/*  /404.html  200
-```
+`worker/index.ts` answers `/api/geo` with the approximate location Cloudflare
+derives from the request, so a first-time visitor lands on their own city
+instead of the default one baked into the prerendered HTML. Everything else is
+served from the asset store without invoking the Worker at all, which is what
+`assets.run_worker_first: ["/api/*"]` pins down.
 
-### 2. Cross-origin isolation (SharedArrayBuffer for the embedded map)
+The endpoint reads `request.cf`, which needs no configuration. It also accepts
+the `CF-IPCity` / `CF-IPLatitude` / … request headers, so enabling the "Add
+visitor location headers" managed transform in the dashboard is optional rather
+than required. The response is per-visitor and marked `no-store`.
+
+Locally there is no Cloudflare, so the dev and preview servers answer `/api/geo`
+themselves (see `vite.config.ts`). `DEV_GEO="Lisbon,PT,38.72,-9.14,Europe/Lisbon"`
+moves the stub, `DEV_GEO=off` turns it off to get the behaviour of a plain
+static host.
+
+### 3. Caching
+
+`static/_headers` gives the content-hashed bundle under `/_app/immutable/` a
+one-year immutable `Cache-Control`. Without it Workers serves every asset as
+`public, max-age=0, must-revalidate`, so each page load spends a conditional
+request per file to be told nothing changed. HTML deliberately keeps the
+revalidating default.
+
+### 4. Cross-origin isolation (SharedArrayBuffer for the embedded map)
 
 The `/weather/maps/` page embeds `maps.open-meteo.com`, which uses
 `SharedArrayBuffer` for its decoding worker pool. A cross-origin iframe only
