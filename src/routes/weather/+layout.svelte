@@ -10,6 +10,8 @@
 	import { routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 
+	import HeroActionsPlaceholder from './hero-actions-placeholder.svelte';
+
 	import type { Snippet } from 'svelte';
 
 	interface Props {
@@ -67,7 +69,7 @@
 </script>
 
 {#if subtitle}
-	<div class="relative mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 md:mb-5">
+	<div class="relative mb-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 md:mb-2">
 		{#if !location}
 			<!-- Same metrics as the heading below, and `relative` on the row lets it
 			     dissolve over the real one rather than holding its own slot
@@ -76,9 +78,20 @@
 				<div
 					class="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted ring-2 ring-border"
 				></div>
-				<div class="min-w-0 space-y-2">
-					<div class="h-6 w-64 animate-pulse rounded bg-muted md:h-7 md:w-80"></div>
-					<div class="h-3.5 w-40 animate-pulse rounded bg-muted lg:hidden"></div>
+				<!-- The bars sit inside the heading and region elements themselves, at
+				     0.7em, rather than in boxes of their own: the line box is then the
+				     text's, at every breakpoint, and the row does not resize when the
+				     real heading arrives. -->
+				<div class="min-w-0">
+					<div class="text-2xl leading-tight font-bold tracking-tight md:text-3xl">
+						<span
+							class="inline-block h-[0.7em] w-56 animate-pulse rounded bg-muted align-middle md:w-72"
+						></span>
+					</div>
+					<p class="text-sm lg:hidden">
+						<span class="inline-block h-[0.7em] w-40 animate-pulse rounded bg-muted align-middle"
+						></span>
+					</p>
 				</div>
 			</div>
 		{:else}
@@ -102,7 +115,7 @@
 			</div>
 		{/if}
 
-		{#if actions}{@render actions()}{/if}
+		{#if actions}{@render actions()}{:else}<HeroActionsPlaceholder />{/if}
 	</div>
 {/if}
 
