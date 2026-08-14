@@ -14,18 +14,54 @@ const addHeaders = (res: ServerResponse) => {
 	res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
 };
 
+// `/api/geo` is answered by the Worker in production (worker/index.ts), off
+// data only Cloudflare has. Locally there is no Cloudflare, so a first visit
+// would always take the "no geolocation" path and the redirect it feeds would
+// never be exercised. This stands in for it: set DEV_GEO to another
+// "city,country,lat,lon,timezone" to move, or to `off` for the path a plain
+// static host takes.
+const DEV_GEO = process.env.DEV_GEO ?? 'Zurich,CH,47.3744,8.5410,Europe/Zurich';
+
+const devGeoBody = (): string | null => {
+	if (!DEV_GEO || DEV_GEO === 'off') return null;
+	const [city, country, latitude, longitude, timezone] = DEV_GEO.split(',');
+	return JSON.stringify({
+		city,
+		country,
+		timezone,
+		latitude: Number(latitude),
+		longitude: Number(longitude)
+	});
+};
+
+const handleDevGeo = (req: IncomingMessage, res: ServerResponse): boolean => {
+	if (req.url?.split('?')[0] !== '/api/geo') return false;
+
+	const body = devGeoBody();
+	res.setHeader('cache-control', 'no-store');
+	if (!body) {
+		// same "nothing to go on" answer the Worker gives
+		res.statusCode = 204;
+		res.end();
+		return true;
+	}
+	res.setHeader('content-type', 'application/json; charset=utf-8');
+	res.end(body);
+	return true;
+};
+
 const viteServerConfig = (): Plugin => ({
 	name: 'add-headers',
 	configureServer: (server: ViteDevServer) => {
-		server.middlewares.use((_req: IncomingMessage, res: ServerResponse, next: () => void) => {
+		server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
 			addHeaders(res);
-			next();
+			if (!handleDevGeo(req, res)) next();
 		});
 	},
 	configurePreviewServer: (server: PreviewServer) => {
-		server.middlewares.use((_req: IncomingMessage, res: ServerResponse, next: () => void) => {
+		server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
 			addHeaders(res);
-			next();
+			if (!handleDevGeo(req, res)) next();
 		});
 	}
 });

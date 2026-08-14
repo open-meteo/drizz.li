@@ -26,6 +26,6 @@
 	<h2>Contacto</h2>
 	<p>
 		Dudas, comentarios o informes de errores:
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>
+		<a href="mailto:info@drizz.li">info@drizz.li</a>
 	</p>
 </ProsePage>

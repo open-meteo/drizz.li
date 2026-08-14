@@ -8,8 +8,8 @@
 
 	import { reportPageReady } from '$lib/stores/page-transition.svelte';
 	import {
+		setActiveLocation,
 		storedChartLayout,
-		storedLocation,
 		storedModel,
 		storedUnits,
 		storedVariablePrefs
@@ -122,7 +122,7 @@
 	// only mirrors it so the header and bare /weather/* redirects follow along.
 	let location = $derived(data.location);
 	$effect(() => {
-		storedLocation.set(data.location);
+		setActiveLocation(data.location);
 	});
 
 	// Lets the strip's side buttons hand over to the archive / seasonal outlook

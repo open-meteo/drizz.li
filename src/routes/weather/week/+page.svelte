@@ -1,21 +1,22 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { get } from 'svelte/store';
 
 	import { goto } from '$app/navigation';
-
-	import { storedLocation } from '$lib/stores/settings';
 
 	import { buildLocationRoute } from '$lib/utils/location';
 
 	import { href } from '$lib/i18n';
+	import { initialLocation } from '$lib/services/geolocation';
 
 	// at build time this page knows nothing about the visitor, so the redirect
-	// target (the persisted location) is resolved in the browser instead of
-	// being baked to the default city during prerender
+	// target is resolved in the browser rather than baked to the default city
+	// during prerender: the location this browser last looked at, or - on a first
+	// visit - the one Cloudflare derives from the request (see initialLocation)
 	onMount(() => {
-		goto(href('/weather/week/[location]', { location: buildLocationRoute(get(storedLocation)) }), {
-			replaceState: true
+		void initialLocation().then((location) => {
+			goto(href('/weather/week/[location]', { location: buildLocationRoute(location) }), {
+				replaceState: true
+			});
 		});
 	});
 </script>

@@ -2,7 +2,7 @@
 	import ProsePage from '$lib/components/prose-page.svelte';
 </script>
 
-<ProsePage title="Informativa sulla privacy" subtitle="Ultimo aggiornamento: 1 agosto 2026">
+<ProsePage title="Informativa sulla privacy" subtitle="Ultimo aggiornamento: 14 agosto 2026">
 	<p>
 		Drizz.li è costruito per aver bisogno del minimo dei tuoi dati: nessun account, nessun cookie,
 		nessuna pubblicità, nessuno script di analisi o tracciamento. Questa pagina spiega il poco
@@ -14,7 +14,7 @@
 		Vincent van der Wal<br />
 		Tschalungasse 2, CH-6442 Gersau, Switzerland <br />
 		E-mail:
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>
+		<a href="mailto:info@drizz.li">info@drizz.li</a>
 	</address>
 	<p>Questa informativa copre il sito drizz.li.</p>
 
@@ -33,10 +33,23 @@
 	</p>
 	<h3>Hosting</h3>
 	<p>
-		Il sito statico è servito da Cloudflare Pages (Cloudflare, Inc., USA). L'infrastruttura può
-		conservare brevi log tecnici del server (indirizzo IP, URL richiesto, data e ora) per sicurezza
-		e gestione. Base giuridica: legittimo interesse a un servizio sicuro e affidabile (art. 6, par.
-		1, lett. f del GDPR).
+		Il sito è servito da Cloudflare Workers (Cloudflare, Inc., USA). L'infrastruttura può conservare
+		brevi log tecnici del server (indirizzo IP, URL richiesto, data e ora) per sicurezza e gestione.
+		Base giuridica: legittimo interesse a un servizio sicuro e affidabile (art. 6, par. 1, lett. f
+		del GDPR).
+	</p>
+	<h3>Posizione approssimativa alla prima visita</h3>
+	<p>
+		Quando apri il sito senza un luogo nell'URL, la pagina chiede al nostro endpoint di
+		geolocalizzazione la posizione approssimativa (all'incirca a livello di città) che Cloudflare
+		ricava dal tuo indirizzo IP, così che la prima previsione mostrata sia vicina a te. La risposta
+		viene inviata solo al tuo browser: non viene conservata, non confluisce in alcun profilo e non
+		viene condivisa con nessuno. Il browser risolve poi quel nome di città tramite l'API di
+		geocodifica di Open-Meteo, come descritto sopra, e conserva il luogo nell'archiviazione locale
+		per non ripetere la richiesta. Base giuridica: legittimo interesse a mostrare subito contenuti
+		pertinenti (art. 6, par. 1, lett. f del GDPR). Nulla di tutto questo usa la posizione GPS
+		precisa del dispositivo, che viene letta solo quando la richiedi esplicitamente nella ricerca
+		del luogo.
 	</p>
 	<h3>Impostazioni sul tuo dispositivo (archiviazione locale)</h3>
 	<p>
@@ -58,9 +71,9 @@
 		portabilità dei dati e opposizione al trattamento fondato sul legittimo interesse. Se il
 		trattamento si basa sul consenso, puoi revocarlo in qualsiasi momento. Per esercitare questi
 		diritti scrivi a
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>. Hai inoltre il
-		diritto di proporre reclamo a un'autorità di controllo, in particolare nello Stato membro di
-		residenza, o a [autorità di controllo competente].
+		<a href="mailto:info@drizz.li">info@drizz.li</a>. Hai inoltre il diritto di proporre reclamo a
+		un'autorità di controllo, in particolare nello Stato membro di residenza, o a [autorità di
+		controllo competente].
 	</p>
 	<p>
 		Per i visitatori dalla Svizzera valgono in modo equivalente i corrispondenti diritti previsti

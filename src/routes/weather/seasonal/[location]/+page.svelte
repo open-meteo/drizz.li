@@ -4,7 +4,7 @@
 	import { fade } from 'svelte/transition';
 
 	import { reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { storedLocation, storedSeasonalModel, storedUnits } from '$lib/stores/settings';
+	import { setActiveLocation, storedSeasonalModel, storedUnits } from '$lib/stores/settings';
 
 	import { skeletonOut } from '$lib/utils/skeleton-fade';
 
@@ -45,7 +45,7 @@
 	// only mirrors it so the header and bare /weather/* redirects follow along.
 	let location = $derived(data.location);
 	$effect(() => {
-		storedLocation.set(data.location);
+		setActiveLocation(data.location);
 	});
 
 	let params = $state({ ...defaultParameters });

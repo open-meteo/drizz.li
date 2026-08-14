@@ -1,13 +1,30 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	// Must match the Worker name in the Cloudflare dashboard
-	"name": "drizzli",
+	"name": "drizz-li",
 	"compatibility_date": "2026-08-10",
-	// Static site: no worker script, just serve the SvelteKit build output.
+	// The site itself is static: the Worker below only answers /api/*, and
+	// "run_worker_first" keeps it off the path of every other request, which is
+	// served from the asset store directly (no Worker invocation, no cold start).
 	// 404.html is the SPA fallback (see svelte.config.js) — "404-page" serves
 	// it for unknown paths, which is exactly the behavior the fallback expects.
+	"main": "./worker/index.ts",
 	"assets": {
 		"directory": "./build",
-		"not_found_handling": "404-page"
+		"not_found_handling": "404-page",
+		"binding": "ASSETS",
+		"run_worker_first": ["/api/*"]
+	},
+	// Workers Logs: persists an invocation log (URL, status, console output) per
+	// request for a few days. It defaults to ON for every new Worker, so turning
+	// it off has to be said out loud. Leaving the key out is not the same thing.
+	"observability": {
+		"enabled": false
+	},
+	// Wrangler's own telemetry: usage data about this project, and the names and
+	// versions of the npm packages a deploy bundles.
+	"send_metrics": false,
+	"dependencies_instrumentation": {
+		"enabled": false
 	}
 }

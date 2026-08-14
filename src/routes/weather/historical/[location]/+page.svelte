@@ -6,9 +6,9 @@
 
 	import { reportPageReady } from '$lib/stores/page-transition.svelte';
 	import {
+		setActiveLocation,
 		storedArchiveModel,
 		storedChartLayout,
-		storedLocation,
 		storedUnits,
 		storedVariablePrefs
 	} from '$lib/stores/settings';
@@ -47,7 +47,7 @@
 
 	let location = $derived(data.location);
 	$effect(() => {
-		storedLocation.set(data.location);
+		setActiveLocation(data.location);
 	});
 
 	let params = $state({ ...defaultParameters });

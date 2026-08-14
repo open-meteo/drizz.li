@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { fade, fly } from 'svelte/transition';
 
@@ -12,7 +12,7 @@
 		markPageReady,
 		pageContentReady
 	} from '$lib/stores/page-transition.svelte';
-	import { storedTheme } from '$lib/stores/settings';
+	import { hasStoredLocation, storedTheme } from '$lib/stores/settings';
 
 	import {
 		canStartViewTransition,
@@ -26,10 +26,20 @@
 
 	import { routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
+	import { initialLocation } from '$lib/services/geolocation';
 
 	import './layout.css';
 
 	let { children } = $props();
+
+	// Pages that name a location settle the topbar themselves, and the redirect
+	// stubs do it before they redirect. What is left is a first visit landing
+	// straight on a page that names none - the map, the legal pages - where the
+	// topbar would otherwise sit on its placeholder for the whole visit. Ask
+	// once here; the answer is shared with whatever asks next.
+	onMount(() => {
+		if (!get(page).data.location && !hasStoredLocation()) void initialLocation();
+	});
 
 	// keep the .dark class in sync with the persisted theme; in 'system' mode
 	// follow the OS preference live

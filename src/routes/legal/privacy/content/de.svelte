@@ -2,7 +2,7 @@
 	import ProsePage from '$lib/components/prose-page.svelte';
 </script>
 
-<ProsePage title="Datenschutzerklärung" subtitle="Zuletzt aktualisiert: 1. August 2026">
+<ProsePage title="Datenschutzerklärung" subtitle="Zuletzt aktualisiert: 14. August 2026">
 	<p>
 		Drizz.li ist so gebaut, dass möglichst wenige Ihrer Daten nötig sind: keine Benutzerkonten,
 		keine Cookies, keine Werbung, keine Analyse- oder Tracking-Skripte. Diese Seite erklärt, welche
@@ -14,7 +14,7 @@
 		Vincent van der Wal<br />
 		Tschalungasse 2, CH-6442 Gersau, Switzerland <br />
 		E-Mail:
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>
+		<a href="mailto:info@drizz.li">info@drizz.li</a>
 	</address>
 	<p>Diese Erklärung gilt für die Website drizz.li.</p>
 
@@ -33,10 +33,22 @@
 	</p>
 	<h3>Hosting</h3>
 	<p>
-		Die statische Seite wird über Cloudflare Pages (Cloudflare, Inc., USA) ausgeliefert. Die
+		Die Seite wird über Cloudflare Workers (Cloudflare, Inc., USA) ausgeliefert. Die
 		Hosting-Infrastruktur kann kurzlebige technische Server-Logs (IP-Adresse, angefragte URL,
 		Zeitstempel) zu Sicherheits- und Betriebszwecken speichern. Rechtsgrundlage: berechtigtes
 		Interesse an einem sicheren, zuverlässigen Dienst (Art. 6 Abs. 1 lit. f DSGVO).
+	</p>
+	<h3>Ungefährer Standort beim ersten Besuch</h3>
+	<p>
+		Wenn Sie die Seite ohne Ort in der URL öffnen, fragt sie bei unserem eigenen Geo-Endpunkt den
+		ungefähren Standort (etwa auf Stadtebene) ab, den Cloudflare aus Ihrer IP-Adresse ableitet,
+		damit die erste Vorhersage eine Vorhersage in Ihrer Nähe ist. Die Antwort geht ausschliesslich
+		an Ihren Browser: Sie wird nicht gespeichert, nicht zu einem Profil verknüpft und nicht
+		weitergegeben. Ihr Browser löst den Ortsnamen anschliessend wie oben beschrieben über die
+		Geocoding-API von Open-Meteo auf und legt den Ort im Local Storage ab, damit die Abfrage nicht
+		erneut nötig ist. Rechtsgrundlage: berechtigtes Interesse daran, sofort relevante Inhalte zu
+		zeigen (Art. 6 Abs. 1 lit. f DSGVO). Der genaue GPS-Standort Ihres Geräts wird dabei nicht
+		verwendet; er wird nur ausgelesen, wenn Sie ihn in der Ortssuche ausdrücklich anfordern.
 	</p>
 	<h3>Einstellungen auf Ihrem Gerät (Local Storage)</h3>
 	<p>
@@ -58,9 +70,9 @@
 		Verarbeitung, Datenübertragbarkeit sowie das Recht, einer auf berechtigtem Interesse beruhenden
 		Verarbeitung zu widersprechen. Beruht eine Verarbeitung auf Einwilligung, können Sie diese
 		jederzeit widerrufen. Zur Ausübung schreiben Sie an
-		<a href="mailto:drizzli@vincentvanderwal.nl">drizzli@vincentvanderwal.nl</a>. Ausserdem haben
-		Sie das Recht, sich bei einer Aufsichtsbehörde zu beschweren, insbesondere im EU-Mitgliedstaat
-		Ihres Wohnsitzes, oder bei [zuständige Aufsichtsbehörde des Verantwortlichen].
+		<a href="mailto:info@drizz.li">info@drizz.li</a>. Ausserdem haben Sie das Recht, sich bei einer
+		Aufsichtsbehörde zu beschweren, insbesondere im EU-Mitgliedstaat Ihres Wohnsitzes, oder bei
+		[zuständige Aufsichtsbehörde des Verantwortlichen].
 	</p>
 	<p>
 		Für Besucherinnen und Besucher aus der Schweiz gelten die entsprechenden Rechte nach dem
