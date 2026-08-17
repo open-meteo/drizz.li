@@ -185,8 +185,31 @@
 		return out;
 	});
 
-	// True while the shared group is zoomed in (not the full range).
-	let zoomActive = $derived(groupRange(CHART_GROUP) != null);
+	// The range the default preference resolves to right now (null = full
+	// range), mirroring CanvasChart.applyRange's clamping so it matches what
+	// setRangeDays actually stored in the group.
+	let defaultRange = $derived.by((): { start: number; end: number } | null => {
+		const days = rangeDaysFor($storedChartRange);
+		if (days == null || timestampsSec.length === 0) return null;
+		const start = dayStartSec(new Date());
+		if (start == null) return null;
+		const tMin = timestampsSec[0];
+		const tMax = timestampsSec[timestampsSec.length - 1];
+		const span = Math.min(days * SECONDS_PER_DAY, tMax - tMin);
+		if (span >= tMax - tMin) return null;
+		const s = Math.max(tMin, Math.min(start, tMax - span));
+		return { start: s, end: s + span };
+	});
+
+	// True while the shared group shows anything OTHER than the configured
+	// default range - so "Reset zoom" only appears when pressing it would
+	// change something, and follows the preference when it is edited.
+	let zoomActive = $derived.by((): boolean => {
+		const range = groupRange(CHART_GROUP);
+		const def = defaultRange;
+		if (range == null || def == null) return range != null || def != null;
+		return Math.abs(range.start - def.start) > 1 || Math.abs(range.end - def.end) > 1;
+	});
 
 	// ─── Panel definitions ──────────────────────────────────────────────────────
 
@@ -252,6 +275,9 @@
 					</button>
 				{/each}
 			</div>
+			<!-- On phones the customise/PNG pair always starts its own row instead of
+			     wrapping unpredictably next to the range presets. -->
+			<div class="basis-full md:hidden"></div>
 			<button
 				type="button"
 				class="flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"

@@ -25,6 +25,9 @@ import {
 /** Guards the shared cleanup below against a switch superseding a switch. */
 let dayTransitionToken = 0;
 
+/** The regions that cross-fade; layout.css clips their snapshot groups. */
+const DAY_REGIONS = ['table', 'summary', 'charts'] as const;
+
 export async function runDayTransition(update: () => void): Promise<void> {
 	if (!canStartViewTransition()) {
 		update();
@@ -35,13 +38,23 @@ export async function runDayTransition(update: () => void): Promise<void> {
 	const root = document.documentElement;
 
 	// The region snapshots include the part of the table normally scrolled up
-	// behind the sticky strip; the transition overlay is clipped at the bar's
+	// behind the sticky strip; each snapshot group is clipped at the bar's
 	// bottom edge so they cannot paint over the (live, clickable) strip.
-	// Measured per switch because the bar's height follows the scroll collapse.
+	// The clip is measured per switch (the bar's height follows the scroll
+	// collapse) and per REGION, as a distance from the region's own top edge:
+	// a group-local clip-path stays correct even when the snapshot layer's
+	// containing block is offset from the layout viewport, which it is on
+	// mobile while the browser UI is (partially) shown - a viewport-anchored
+	// clip on the whole overlay let the table paint over the strip there.
 	const bar = document.querySelector('.daystrip .strip-row');
 	if (bar) {
-		const clip = Math.max(0, bar.getBoundingClientRect().bottom);
-		root.style.setProperty('--day-switch-clip', `${clip}px`);
+		const barBottom = bar.getBoundingClientRect().bottom;
+		for (const region of DAY_REGIONS) {
+			const el = document.querySelector(`.day-region-${region}`);
+			if (!el) continue;
+			const clip = Math.max(0, barBottom - el.getBoundingClientRect().top);
+			root.style.setProperty(`--day-switch-clip-${region}`, `${clip}px`);
+		}
 	}
 
 	// The page stays scrollable during the fade, but the snapshots and the clip
@@ -66,8 +79,9 @@ export async function runDayTransition(update: () => void): Promise<void> {
 	} finally {
 		window.removeEventListener('wheel', skip);
 		window.removeEventListener('touchmove', skip);
-		// a newer switch owns the clip var now; only the last one may clear it
-		if (token === dayTransitionToken) root.style.removeProperty('--day-switch-clip');
+		// a newer switch owns the clip vars now; only the last one may clear them
+		if (token === dayTransitionToken)
+			for (const region of DAY_REGIONS) root.style.removeProperty(`--day-switch-clip-${region}`);
 	}
 }
 

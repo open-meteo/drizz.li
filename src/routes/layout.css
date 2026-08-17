@@ -157,15 +157,25 @@
 		view-transition-name: day-charts;
 	}
 
-	/* Region snapshots paint in a viewport-fixed layer above the live page, at
-	   their full layout size - including the part of the table normally
-	   scrolled up behind the sticky strip and the topbar. The strip used to be
-	   captured purely to stay on top of that, but a captured strip is dead to
-	   input; instead the whole overlay is clipped at the strip bar's bottom
-	   edge (measured per switch by runDayTransition), so the snapshots stay
-	   out of the chrome and the chrome stays live. */
-	:root.day-switch::view-transition {
-		clip-path: inset(var(--day-switch-clip, 0px) 0 0 0);
+	/* Region snapshots paint in a layer above the live page, at their full
+	   layout size - including the part of the table normally scrolled up
+	   behind the sticky strip and the topbar. The strip used to be captured
+	   purely to stay on top of that, but a captured strip is dead to input;
+	   instead each snapshot group is clipped at the strip bar's bottom edge
+	   (measured per switch by runDayTransition), so the snapshots stay out of
+	   the chrome and the chrome stays live. The clips are group-LOCAL insets
+	   (bar bottom relative to each region's top) rather than one inset on the
+	   whole overlay: the overlay's containing block can sit above the layout
+	   viewport on mobile (retractable browser UI), which shifted a
+	   viewport-anchored clip line up and let the table paint over the strip. */
+	:root.day-switch::view-transition-group(day-table) {
+		clip-path: inset(var(--day-switch-clip-table, 0px) 0 0 0);
+	}
+	:root.day-switch::view-transition-group(day-summary) {
+		clip-path: inset(var(--day-switch-clip-summary, 0px) 0 0 0);
+	}
+	:root.day-switch::view-transition-group(day-charts) {
+		clip-path: inset(var(--day-switch-clip-charts, 0px) 0 0 0);
 	}
 
 	/* Page swaps capture the topbar and sidebar: a region that is identical on

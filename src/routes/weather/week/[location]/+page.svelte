@@ -573,9 +573,11 @@
 						<!-- The real header wraps to two rows until the controls fit beside
 					     the title, which happens at different widths than you would
 					     expect because the sidebar takes its share from md up. These
-					     min-heights follow the measured wrap points. -->
+					     min-heights follow the measured wrap points; below md the
+					     customise/PNG pair always sits on its own row (a forced break
+					     in MeteogramCharts), so the header is three rows there. -->
 						<div
-							class="mb-3 flex min-h-27 flex-wrap items-center justify-between gap-2 sm:min-h-16.5 md:min-h-27 lg:min-h-16.5 xl:min-h-7.5"
+							class="mb-3 flex min-h-27 flex-wrap items-center justify-between gap-2 lg:min-h-16.5 xl:min-h-7.5"
 						>
 							<div class="h-7 w-52 animate-pulse rounded bg-muted"></div>
 							<div class="flex items-center gap-3">

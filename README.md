@@ -46,23 +46,25 @@ path either as a city slug or as a coordinate pair (`52.09N5.12E`).
 ```
 messages/            translated strings, one JSON file per locale (inlang)
 project.inlang/      inlang project settings
-scripts/             build-cities.mjs, regenerates static/data/cities
+scripts/             assets.mjs (R2 asset sync), build-cities.mjs
 src/lib/charts/      canvas chart engine (CanvasChart.svelte + helpers)
 src/lib/components/  shared UI, navigation, shadcn-svelte primitives
 src/lib/services/    weather.ts - every Open-Meteo request goes through here
 src/lib/stores/      persisted settings (location, model, units, theme, ...)
 src/lib/utils/       date/location/URL helpers, maps domain mapping
 src/routes/weather/  the forecast pages
-static/data/cities/  GeoNames city tiles for the "nearby cities" section
+static/data/cities/  GeoNames city tiles (pulled from R2, gitignored)
+static/images/       country flags and weather icons (pulled from R2, gitignored)
 worker/              the Cloudflare Worker: /api/geo, and nothing else
 ```
 
 ## Developing
 
-Install dependencies and start the dev server:
+Install dependencies, pull the static assets and start the dev server:
 
 ```sh
 npm install
+npm run assets:pull
 npm run dev
 
 # or start the server and open the app in a new browser tab
@@ -93,6 +95,24 @@ then exposes it as `m.your_key()`.
 Long-form pages (about, imprint, privacy) are not message keys but one Svelte
 file per locale under `src/routes/**/content/`.
 
+### Static assets
+
+The large static assets - the city tiles, country flags and weather icons -
+live in a public R2 bucket rather than git (`scripts/assets.config.json` maps
+each bucket prefix to its `static/` directory, all of them gitignored).
+
+```sh
+npm run assets:pull   # download everything listed in the manifests
+npm run assets:push   # upload local changes + regenerate manifests (maintainers)
+```
+
+`assets:pull` needs no credentials, verifies checksums, prunes files that left
+the manifest and is a fast no-op when everything already matches - it also runs
+automatically before every build (`prebuild`) and in CI. `assets:push` needs
+`rclone` and the `R2_*` credentials from `.env`; prefixes marked `readonly` in
+the config (the weather icons) have their canonical copy in another repo and
+are never pushed from here.
+
 ### City data
 
 `static/data/cities/` holds GeoNames towns cut into 10x10 degree tiles, which
@@ -100,6 +120,7 @@ is what the "nearby cities" section reads. Regenerate with:
 
 ```sh
 node scripts/build-cities.mjs
+npm run assets:push cities
 ```
 
 ## Building
