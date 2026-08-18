@@ -32,6 +32,71 @@ export function getSunshineColor(sunshineSeconds: number | null, daylightSeconds
 	return '#d1d5db';
 }
 
+// ─── Daily warning level (orange / red triangle on the day cards) ───────────
+// Meteoalarm-flavoured thresholds, expressed per display unit. A day gets an
+// orange triangle at 'warn' and a red one at 'severe' as soon as ANY of
+// gusts / precipitation / heat / cold crosses its bar.
+
+export type DayWarnLevel = 'none' | 'warn' | 'severe';
+export type DayWarnCause = 'gust' | 'precip' | 'heat' | 'cold';
+
+export interface DayWarning {
+	level: DayWarnLevel;
+	/** Which variables crossed their bar, in display order. */
+	causes: DayWarnCause[];
+}
+
+export function getDayWarning(opts: {
+	tempMax: number | null;
+	tempMin: number | null;
+	precipSum: number | null;
+	gust: number | null;
+	temperatureUnit: string;
+	precipitationUnit: string;
+	windUnit: string;
+}): DayWarning {
+	const celsius = opts.temperatureUnit === 'celsius';
+	const mm = opts.precipitationUnit === 'mm';
+	const w = opts.windUnit;
+
+	// gusts: ~80 km/h shakes branches loose, ~110 km/h fells trees
+	const gustWarn = w === 'ms' ? 22 : w === 'mph' ? 50 : w === 'kn' ? 43 : 80;
+	const gustSevere = w === 'ms' ? 31 : w === 'mph' ? 68 : w === 'kn' ? 59 : 110;
+	// daily precipitation: ~30 mm soaks, ~60 mm floods
+	const precipWarn = mm ? 30 : 1.2;
+	const precipSevere = mm ? 60 : 2.4;
+	// heat / cold extremes on the day's max / min
+	const heatWarn = celsius ? 40 : 104;
+	const heatSevere = celsius ? 45 : 113;
+	const coldWarn = celsius ? -20 : -4;
+	const coldSevere = celsius ? -30 : -22;
+
+	const g = opts.gust != null && !isNaN(opts.gust) ? opts.gust : -Infinity;
+	const p = opts.precipSum != null && !isNaN(opts.precipSum) ? opts.precipSum : -Infinity;
+	const tx = opts.tempMax != null && !isNaN(opts.tempMax) ? opts.tempMax : -Infinity;
+	const tn = opts.tempMin != null && !isNaN(opts.tempMin) ? opts.tempMin : Infinity;
+
+	const causes: DayWarnCause[] = [];
+	let severe = false;
+	if (g >= gustWarn) {
+		causes.push('gust');
+		severe ||= g >= gustSevere;
+	}
+	if (p >= precipWarn) {
+		causes.push('precip');
+		severe ||= p >= precipSevere;
+	}
+	if (tx >= heatWarn) {
+		causes.push('heat');
+		severe ||= tx >= heatSevere;
+	}
+	if (tn <= coldWarn) {
+		causes.push('cold');
+		severe ||= tn <= coldSevere;
+	}
+	return { level: causes.length === 0 ? 'none' : severe ? 'severe' : 'warn', causes };
+}
+
 export function windIsSignificant(
 	speed: number | null,
 	gust: number | null,

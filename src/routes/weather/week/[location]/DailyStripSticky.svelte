@@ -3,19 +3,28 @@
 
 	import { formatZoned, getRelativeDayLabel, isSameDayInZone } from '$lib/utils/date';
 
+	import * as Popover from '$lib/components/ui/popover';
+
 	import { href } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 
 	import { getTempStyle } from '../../utils/colors';
 	import { getWeatherDescription, getWeatherIconName } from '../../utils/weather-codes';
 	import {
+		getDayWarning,
 		getSunshineColor,
 		getSunshinePercent,
 		precipIsSignificant,
 		sunIsSignificant,
 		windIsSignificant
 	} from './significance';
-	import { type FetchedDaily, type WeatherUnits, getWindArrowRotation } from './types';
+	import {
+		type FetchedDaily,
+		type WeatherUnits,
+		getPrecipUnit,
+		getWindArrowRotation,
+		getWindUnit
+	} from './types';
 
 	interface Props {
 		daily: FetchedDaily | null;
@@ -233,142 +242,226 @@
 					{@const lowWind = !windIsSignificant(windMax, gustMax, String(units.wind_speed_unit))}
 					{@const relLabel = getRelativeDayLabel(time, daily.timezone)}
 					{@const isToday = relLabel === 'Today'}
+					{@const warning = getDayWarning({
+						tempMax,
+						tempMin,
+						precipSum,
+						gust: gustMax,
+						temperatureUnit: String(units.temperature_unit),
+						precipitationUnit: String(units.precipitation_unit),
+						windUnit: String(units.wind_speed_unit)
+					})}
 					{#if tempMax != null && !isNaN(tempMax) && !(tempMax === 0 && tempMin === 0)}
-						<button
-							type="button"
-							class="strip-cell flex shrink-0 cursor-pointer flex-col items-center justify-start gap-0.5 rounded-xl border px-1 {selected
-								? 'border-primary bg-primary/10 ring-1 ring-primary/50'
-								: isToday
-									? 'today-cell border-primary/35 bg-primary/4'
-									: 'border-border/60 bg-card'}"
-							aria-pressed={selected}
-							aria-current={isToday ? 'date' : undefined}
-							onclick={() => onSelectDay(time, index)}
-						>
-							<!-- weekday drifts to the left edge and the date fades in at the
+						<!-- the wrapper (not the button) carries the lift, so the warning
+						     badge — a sibling, since a popover trigger can't nest inside a
+						     button — rides along with the card -->
+						<div class="strip-cellwrap">
+							<button
+								type="button"
+								class="strip-cell relative flex shrink-0 cursor-pointer flex-col items-center justify-start gap-0.5 rounded-xl border px-1 {selected
+									? 'border-primary bg-primary/10 ring-1 ring-primary/50'
+									: isToday
+										? 'today-cell border-primary/35 bg-primary/4'
+										: 'border-border/60 bg-card'}"
+								aria-pressed={selected}
+								aria-current={isToday ? 'date' : undefined}
+								onclick={() => onSelectDay(time, index)}
+							>
+								<!-- weekday drifts to the left edge and the date fades in at the
 							     right edge as the cards collapse (flex spacers driven by --rel) -->
-							<span
-								class="dow-row flex w-full items-baseline px-0.5 font-semibold tracking-wide whitespace-nowrap {selected
-									? 'text-primary'
-									: ''}"
-							>
-								<span class="dow-spacer"></span>
-								<span>{formatZoned(time, daily.timezone, 'EEE').toUpperCase()}</span>
-								<span class="dow-mid"></span>
-								<span class="date-inline text-right font-medium tabular-nums text-muted-foreground"
-									>{formatZoned(time, daily.timezone, 'd')}</span
+								<span
+									class="dow-row flex w-full items-baseline px-0.5 font-semibold tracking-wide whitespace-nowrap {selected
+										? 'text-primary'
+										: ''}"
 								>
-								<span class="dow-spacer"></span>
-							</span>
+									<span class="dow-spacer"></span>
+									<span>{formatZoned(time, daily.timezone, 'EEE').toUpperCase()}</span>
+									<span class="dow-mid"></span>
+									<span
+										class="date-inline text-right font-medium tabular-nums text-muted-foreground"
+										>{formatZoned(time, daily.timezone, 'd')}</span
+									>
+									<span class="dow-spacer"></span>
+								</span>
 
-							<span
-								class="rel-label leading-[1.25] whitespace-nowrap {isToday
-									? 'font-semibold text-primary/80'
-									: 'text-muted-foreground'}"
-							>
-								{relLabel}
-							</span>
+								<span
+									class="rel-label leading-[1.25] whitespace-nowrap {isToday
+										? 'font-semibold text-primary/80'
+										: 'text-muted-foreground'}"
+								>
+									{relLabel}
+								</span>
 
-							<!-- Two centered rows: day + night icons, then day + night temps.
+								<!-- Two centered rows: day + night icons, then day + night temps.
 							     Both stay perfectly centered when compact (the night icon melts
 							     away and the day icon re-centers on its own); when full, small
 							     k-driven nudges line each temp up under its icon. -->
-							<div class="icon-row flex w-full items-center justify-center">
-								<div class="icon-wrap">
-									<svg class="day-icon fill-foreground">
-										<title>{getWeatherDescription(dayCode)}</title>
+								<div class="icon-row flex w-full items-center justify-center">
+									<div class="icon-wrap">
+										<svg class="day-icon fill-foreground">
+											<title>{getWeatherDescription(dayCode)}</title>
+											<use
+												xlink:href="/images/weather-icons/{getWeatherIconName(
+													dayCode,
+													true
+												)}.svg#Layer_1"
+											></use>
+										</svg>
+									</div>
+									<svg class="night-icon self-end fill-foreground/60">
+										<title>{getWeatherDescription(nightCode)}</title>
 										<use
 											xlink:href="/images/weather-icons/{getWeatherIconName(
-												dayCode,
-												true
+												nightCode,
+												false
 											)}.svg#Layer_1"
 										></use>
 									</svg>
 								</div>
-								<svg class="night-icon self-end fill-foreground/60">
-									<title>{getWeatherDescription(nightCode)}</title>
-									<use
-										xlink:href="/images/weather-icons/{getWeatherIconName(
-											nightCode,
-											false
-										)}.svg#Layer_1"
-									></use>
-								</svg>
-							</div>
 
-							<div class="flex w-full items-baseline justify-center gap-0.5 leading-none">
-								<span
-									class="temp-max rounded-md font-extrabold tabular-nums"
-									style="background-color:{maxStyle.bg};color:{maxStyle.fg}"
-								>
-									{tempMax.toFixed(0)}°
-								</span>
-								<span class="temp-min font-semibold tabular-nums text-muted-foreground">
-									{tempMin.toFixed(0)}°
-								</span>
-							</div>
-
-							<div
-								class="detail-row flex w-full flex-col items-center gap-0.5 overflow-hidden text-[10px] tabular-nums text-muted-foreground"
-							>
-								<!-- sunshine bar (desktop full cards only, like the old day cards) -->
-								<div
-									class="hidden w-full items-center gap-1 px-0.5 md:my-1 md:flex {lowSun
-										? 'opacity-45'
-										: ''}"
-								>
-									<svg class="shrink-0" width="14" height="14" style="fill:{sunColor}">
-										<use xlink:href="/images/weather-icons/wi-day-sunny.svg#Layer_1"></use>
-									</svg>
-									<div class="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
-										<div
-											class="h-full rounded-full"
-											style="width:{sunPct}%;background-color:{sunColor}"
-										></div>
-									</div>
-									<span class="font-medium">
-										{Number((sunDuration ?? 0) / 3600).toFixed(0)}h
+								<div class="flex w-full items-baseline justify-center gap-0.5 leading-none">
+									<span
+										class="temp-max rounded-md font-extrabold tabular-nums"
+										style="background-color:{maxStyle.bg};color:{maxStyle.fg}"
+									>
+										{tempMax.toFixed(0)}°
+									</span>
+									<span class="temp-min font-semibold tabular-nums text-muted-foreground">
+										{tempMin.toFixed(0)}°
 									</span>
 								</div>
 
-								<!-- precip + wind: stacked on mobile, one row on md+ (old card style) -->
 								<div
-									class="flex w-full flex-col items-center gap-0.5 md:flex-row md:justify-center md:gap-2"
+									class="detail-row flex w-full flex-col items-center gap-0.5 overflow-hidden text-[10px] tabular-nums text-muted-foreground md:text-[11px]"
 								>
-									<span class="inline-flex items-center gap-1 {lowPrecip ? 'opacity-40' : ''}">
-										<svg class="fill-sky-500" width="16" height="16">
-											<use xlink:href="/images/weather-icons/wi-raindrop.svg#Layer_1"></use>
+									<!-- sunshine bar (desktop full cards only, like the old day cards) -->
+									<div
+										class="hidden w-full items-center gap-1 px-0.5 md:my-0.5 md:flex {lowSun
+											? 'opacity-45'
+											: ''}"
+									>
+										<svg class="shrink-0" width="14" height="14" style="fill:{sunColor}">
+											<use xlink:href="/images/weather-icons/wi-day-sunny.svg#Layer_1"></use>
 										</svg>
-										{Number(precipSum ?? 0).toFixed(precipSum >= 10 ? 0 : 1)}
-									</span>
-									<span class="inline-flex items-center gap-1 {lowWind ? 'opacity-40' : ''}">
-										{#if windDir != null && !isNaN(windDir)}
-											<span
-												class="hidden shrink-0 md:inline-flex md:-mr-1"
-												style="transform: {getWindArrowRotation(windDir)}"
+										<div class="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
+											<div
+												class="h-full rounded-full"
+												style="width:{sunPct}%;background-color:{sunColor}"
+											></div>
+										</div>
+										<span class="font-medium">
+											{Number((sunDuration ?? 0) / 3600).toFixed(0)}h
+										</span>
+									</div>
+
+									<!-- precip + wind: stacked on mobile, one row on md+ (old card style) -->
+									<div class="flex w-full flex-col items-center gap-px md:gap-0.5">
+										<span class="inline-flex items-center gap-1 {lowPrecip ? 'opacity-40' : ''}">
+											<svg class="fill-sky-500" width="16" height="16">
+												<use xlink:href="/images/weather-icons/wi-raindrop.svg#Layer_1"></use>
+											</svg>
+											<span class="whitespace-nowrap"
+												>{Number(precipSum ?? 0).toFixed(precipSum >= 10 ? 0 : 1)}<span
+													class="detail-unit">{getPrecipUnit(units)}</span
+												></span
 											>
-												<svg class="fill-muted-foreground" width="25" height="25">
-													<use xlink:href="/images/weather-icons/wi-direction-down.svg#Layer_1"
-													></use>
+										</span>
+										<span class="inline-flex items-center gap-1 {lowWind ? 'opacity-40' : ''}">
+											{#if windDir != null && !isNaN(windDir)}
+												<span
+													class="hidden shrink-0 md:inline-flex md:-mr-1"
+													style="transform: {getWindArrowRotation(windDir)}"
+												>
+													<svg class="fill-muted-foreground" width="25" height="25">
+														<use xlink:href="/images/weather-icons/wi-direction-down.svg#Layer_1"
+														></use>
+													</svg>
+												</span>
+												<svg class="fill-muted-foreground md:hidden" width="16" height="16">
+													<use xlink:href="/images/weather-icons/wi-strong-wind.svg#Layer_1"></use>
 												</svg>
-											</span>
-											<svg class="fill-muted-foreground md:hidden" width="16" height="16">
-												<use xlink:href="/images/weather-icons/wi-strong-wind.svg#Layer_1"></use>
-											</svg>
-										{:else}
-											<svg class="fill-muted-foreground" width="16" height="16">
-												<use xlink:href="/images/weather-icons/wi-strong-wind.svg#Layer_1"></use>
-											</svg>
-										{/if}
-										<span class="whitespace-nowrap"
-											>{windMax?.toFixed(0) ?? '-'}<span class="hidden opacity-70 md:inline"
-												>-{gustMax?.toFixed(0) ?? '-'}</span
-											></span
-										>
-									</span>
+											{:else}
+												<svg class="fill-muted-foreground" width="16" height="16">
+													<use xlink:href="/images/weather-icons/wi-strong-wind.svg#Layer_1"></use>
+												</svg>
+											{/if}
+											<!-- "21 (44)": parenthesised gusts, the yr.no / METAR convention —
+										     a hyphen here read as a range instead -->
+											<span class="whitespace-nowrap"
+												>{windMax?.toFixed(0) ?? '-'}<span class="hidden opacity-70 md:inline"
+													>&nbsp;({gustMax?.toFixed(0) ?? '-'})</span
+												><span class="detail-unit">{getWindUnit(units)}</span></span
+											>
+										</span>
+									</div>
 								</div>
-							</div>
-						</button>
+							</button>
+
+							{#if warning.level !== 'none'}
+								<!-- corner triangle: orange for notable, red for severe conditions;
+							     opens a popover naming the offending variables -->
+								<Popover.Root>
+									<Popover.Trigger
+										class="warn-badge absolute -top-1.75 -right-1.75 z-20 box-content h-3.75 w-3.75 cursor-pointer p-1 drop-shadow-sm {warning.level ===
+										'severe'
+											? 'text-red-600'
+											: 'text-amber-500'}"
+										aria-label={warning.level === 'severe'
+											? m.strip_severe_title()
+											: m.strip_warn_title()}
+										openOnHover
+										openDelay={150}
+										closeDelay={150}
+									>
+										<svg
+											class="h-full w-full"
+											viewBox="0 0 24 24"
+											fill="currentColor"
+											aria-hidden="true"
+										>
+											<path
+												fill-rule="evenodd"
+												d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"
+												clip-rule="evenodd"
+											/>
+										</svg>
+									</Popover.Trigger>
+									<Popover.Content
+										side="bottom"
+										align="center"
+										class="w-auto min-w-44 border-border p-3 text-sm {warning.level === 'severe'
+											? 'dark:border-red-500/60'
+											: 'dark:border-amber-400/60'}"
+										onOpenAutoFocus={(e) => e.preventDefault()}
+									>
+										<p
+											class="font-semibold {warning.level === 'severe'
+												? 'text-red-600'
+												: 'text-amber-600'}"
+										>
+											{warning.level === 'severe' ? m.strip_severe_title() : m.strip_warn_title()}
+										</p>
+										<ul class="mt-1 space-y-0.5 text-muted-foreground">
+											{#each warning.causes as cause (cause)}
+												<li>
+													{cause === 'gust'
+														? m.strip_warn_gusts({
+																value: `${gustMax?.toFixed(0)} ${getWindUnit(units)}`
+															})
+														: cause === 'precip'
+															? m.strip_warn_precip({
+																	value: `${Number(precipSum ?? 0).toFixed(precipSum >= 10 ? 0 : 1)} ${getPrecipUnit(units)}`
+																})
+															: cause === 'heat'
+																? m.strip_warn_heat({ value: `${tempMax.toFixed(0)}°` })
+																: m.strip_warn_cold({ value: `${tempMin?.toFixed(0)}°` })}
+												</li>
+											{/each}
+										</ul>
+									</Popover.Content>
+								</Popover.Root>
+							{/if}
+						</div>
 					{/if}
 				{/each}
 
@@ -458,12 +551,12 @@
 	.sentinel,
 	.daystrip {
 		--cell-w-full: 76px;
-		--cell-h-full: 140px;
+		--cell-h-full: 142px;
 		--cell-h-min: 64px;
 		/* collapsed cells are square: the width follows the compact height, so the
 		   docked bar reads as a row of tiles instead of narrow slivers */
 		--cell-w-min: var(--cell-h-min);
-		--icon-full: 44px;
+		--icon-full: 40px;
 		/* the compact icon carries the square tile: sized so the content fills it
 		   and the leftover slack under the temps stays small */
 		--icon-min: 31px;
@@ -471,8 +564,10 @@
 		--pt-min: 2px;
 		--gap-full: 8px;
 		--gap-min: 4px;
-		/* bar (strip-row) vertical padding */
-		--pad-full: 8px;
+		/* bar (strip-row) vertical padding: enough headroom for the selected
+		   card's lift + scale PLUS the warning badge overhanging its corner,
+		   so neither ever clips against the row's scroll box */
+		--pad-full: 12px;
 		--pad-min: 5px;
 		/* fonts */
 		--dow-font-full: 11px;
@@ -500,7 +595,7 @@
 		   temps when compact so they don't sit on the tile edge). The compact
 		   tile is taller than its content here, so the leftover slack already
 		   supplies that gap and the padding stays at zero. */
-		--pb-full: 6px;
+		--pb-full: 3px;
 		--pb-min: 0px;
 		/* extra scrub distance beyond the height difference — slows the collapse
 		   down; the surplus just slides content under the (opaque) bar */
@@ -519,11 +614,11 @@
 		.sentinel,
 		.daystrip {
 			--cell-w-full: 120px;
-			--cell-h-full: 208px;
+			--cell-h-full: 224px;
 			--cell-h-min: 56px;
 			--icon-full: 80px;
 			--icon-min: 24px;
-			--pt-full: 10px;
+			--pt-full: 8px;
 			--gap-full: 10px;
 			--gap-min: 6px;
 			--pad-min: 3px;
@@ -535,17 +630,17 @@
 			--tmax-padx-full: 12px;
 			--tmax-nudge: 0px;
 			--tmin-nudge: 8px;
-			--icon-gap-full: 6px;
+			--icon-gap-full: 4px;
 			--day-icon-nudge: 4px;
 			--night-icon-nudge: 6px;
-			--pb-full: 10px;
+			--pb-full: 6px;
 			--pb-min: 3px;
 			--icon-lift: 0px;
 			--collapse-extra: 0px;
 		}
 		.daystrip {
 			/* breathing room between the full cards and the table */
-			margin-bottom: 14px;
+			margin-bottom: 8px;
 		}
 	}
 
@@ -708,24 +803,35 @@
 		transition:
 			border-color 0.15s,
 			background-color 0.15s,
-			translate 0.2s ease-out,
-			scale 0.2s ease-out,
 			box-shadow 0.2s ease-out;
 	}
 	/* The old day-card lift: hover raises the card slightly, the selected day a
 	   touch more. Scaled by --k so the effect melts away as the strip compacts
-	   (and never disturbs the slim bar); hover only where hover exists. */
-	.strip-cell[aria-pressed='true'] {
+	   (and never disturbs the slim bar); hover only where hover exists. The
+	   lift lives on the WRAPPER so the warning badge rides along; the shadow
+	   stays on the (rounded) card itself. */
+	.strip-cellwrap {
+		position: relative;
+		flex-shrink: 0;
+		transition:
+			translate 0.2s ease-out,
+			scale 0.2s ease-out;
+	}
+	.strip-cellwrap:has(> .strip-cell[aria-pressed='true']) {
 		z-index: 10;
 		translate: 0 calc(-4px * var(--k));
 		scale: calc(1 + 0.04 * var(--k));
+	}
+	.strip-cell[aria-pressed='true'] {
 		box-shadow: 0 5px 14px -4px rgba(0, 0, 0, calc(0.4 * var(--k)));
 	}
 	@media (hover: hover) {
-		.strip-cell:hover:not([aria-pressed='true']) {
+		.strip-cellwrap:has(> .strip-cell:hover:not([aria-pressed='true'])) {
 			z-index: 10;
 			translate: 0 calc(-3px * var(--k));
 			scale: calc(1 + 0.02 * var(--k));
+		}
+		.strip-cell:hover:not([aria-pressed='true']) {
 			box-shadow: 0 4px 10px -4px rgba(0, 0, 0, calc(0.3 * var(--k)));
 		}
 	}
@@ -803,7 +909,26 @@
 	}
 	.detail-row {
 		opacity: var(--detail);
-		max-height: calc(52px * var(--detail));
+		max-height: calc(76px * var(--detail));
+		/* mobile: air between the temps and the rain / wind rows; scaled by
+		   --detail so it melts away with the rows during the collapse */
+		margin-top: calc(4px * var(--detail));
+	}
+	@media (min-width: 768px) {
+		.detail-row {
+			margin-top: 0;
+		}
+	}
+	/* units ride along at a smaller size so the values stay the focal point */
+	.detail-unit {
+		margin-left: 1px;
+		font-size: 8px;
+		opacity: 0.7;
+	}
+	@media (min-width: 768px) {
+		.detail-unit {
+			font-size: 9px;
+		}
 	}
 	.temp-max {
 		font-size: calc(
