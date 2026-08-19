@@ -1,95 +1,51 @@
 import * as m from '$lib/paraglide/messages';
 
+// Icon family per code, restricted to the codes open-meteo actually emits: the
+// WMO 4677 subset in the WeatherCode enum of
+// open-meteo/Sources/App/Helper/WeatherCode.swift. The map used to carry the
+// full 4677 table, which is where the original wrong-glyph bugs came from (fog
+// showing hail, a hail thunderstorm showing a tornado). 82 (violent rain
+// showers) deliberately uses the heavier 'rain' glyph instead of 'showers' so
+// it reads as more intense than 80/81.
 const weatherCodes: Record<number, string> = {
 	0: 'clear',
 	1: 'clear',
 	2: 'cloudy',
 	3: 'overcast',
-	4: 'fog',
-	5: 'fog',
-	10: 'fog',
-	11: 'fog',
-	12: 'lightning',
-	18: 'strong-wind',
-	20: 'fog',
-	21: 'rain-mix',
-	22: 'rain-mix',
-	23: 'rain',
-	24: 'snow',
-	25: 'hail',
-	26: 'thunderstorm',
-	27: 'dust',
-	28: 'dust',
-	29: 'dust',
-	30: 'fog',
-	31: 'fog',
-	32: 'fog',
-	33: 'fog',
-	34: 'fog',
-	35: 'fog',
-	40: 'rain-mix',
-	41: 'sprinkle',
-	42: 'rain',
-	43: 'sprinkle',
-	44: 'rain',
 	45: 'fog',
-	46: 'hail',
-	47: 'snow',
 	48: 'fog',
-	50: 'sprinkle',
 	51: 'sprinkle',
-	52: 'rain',
 	53: 'sprinkle',
-	54: 'sprinkle',
 	55: 'rain',
 	56: 'rain-mix',
 	57: 'rain-mix',
-	58: 'rain',
-	60: 'sprinkle',
 	61: 'sprinkle',
-	62: 'rain',
 	63: 'rain',
-	64: 'hail',
 	65: 'rain',
 	66: 'rain-mix',
 	67: 'rain-mix',
-	68: 'rain-mix',
-	70: 'snow',
 	71: 'snow',
-	72: 'snow',
 	73: 'snow',
-	74: 'snow',
 	75: 'snow',
-	76: 'snow',
 	77: 'snow',
-	78: 'snow',
 	80: 'showers',
 	81: 'showers',
 	82: 'rain',
-	83: 'rain',
-	84: 'storm-showers',
 	85: 'snow',
 	86: 'snow',
-	87: 'rain-mix',
-	89: 'hail',
-	90: 'lightning',
-	91: 'storm-showers',
-	92: 'thunderstorm',
-	93: 'thunderstorm',
-	94: 'lightning',
 	95: 'thunderstorm',
 	96: 'thunderstorm',
+	97: 'thunderstorm',
 	99: 'storm-showers'
 };
+
+/** All codes with an icon mapping; the spec pins this to the set open-meteo emits. */
+export const iconWeatherCodes: number[] = Object.keys(weatherCodes).map(Number);
 
 // Conditions that ship as a single neutral glyph (no day/night variant). The
 // file is not always wi-<name>: 'overcast' uses the flat cloud, which keeps it
 // distinct from 'cloudy' (code 2), whose glyph carries a sun or moon.
 const NEUTRAL_ICONS: Record<string, string> = {
-	'snowflake-cold': 'wi-snowflake-cold',
-	'strong-wind': 'wi-strong-wind',
-	dust: 'wi-dust',
-	tornado: 'wi-tornado',
 	overcast: 'wi-cloudy'
 };
 
@@ -108,10 +64,13 @@ export function getWeatherIconName(code: number, daytime: boolean): string {
 	return `wi-${daytime ? 'day' : 'night'}-${name}`;
 }
 
-// Plain-language name for each code open-meteo actually emits (WMO 4677 subset),
-// used as the hover title on the pictograms. A glyph alone is ambiguous - the
-// hail-thunderstorm swirl in particular reads as something far more dramatic
-// than "thunderstorm with heavy hail".
+// Plain-language name for each code open-meteo actually emits (the WeatherCode
+// enum in open-meteo/Sources/App/Helper/WeatherCode.swift), used as the hover
+// title on the pictograms. A glyph alone is ambiguous - the hail-thunderstorm
+// swirl in particular reads as something far more dramatic than "thunderstorm
+// with heavy hail". 96/99 (hail) only come from models with an explicit hail
+// forecast such as DWD ICON or UKMO; other models derive 95/97 from
+// instability parameters.
 const WMO_DESCRIPTIONS: Record<number, () => string> = {
 	0: m.wmo_0,
 	1: m.wmo_1,
@@ -140,8 +99,12 @@ const WMO_DESCRIPTIONS: Record<number, () => string> = {
 	86: m.wmo_86,
 	95: m.wmo_95,
 	96: m.wmo_96,
+	97: m.wmo_97,
 	99: m.wmo_99
 };
+
+/** All codes with a localized description; the spec pins this to the set open-meteo emits. */
+export const describedWeatherCodes: number[] = Object.keys(WMO_DESCRIPTIONS).map(Number);
 
 /** Localized condition text for a weather code; '' for codes we have no name for. */
 export function getWeatherDescription(code: number | null | undefined): string {
@@ -161,8 +124,9 @@ export function getWeatherDescription(code: number | null | undefined): string {
 // intensity within the winning group, with a persistence rule for fog and a
 // mean (not max) for plain sky states.
 
-// Only the code subset open-meteo actually emits (WeatherCode.swift) matters here.
-const THUNDER = new Set([95, 96, 99]);
+// Only the code subset open-meteo actually emits matters here (the WeatherCode
+// enum in open-meteo/Sources/App/Helper/WeatherCode.swift).
+const THUNDER = new Set([95, 96, 97, 99]);
 const FREEZING = new Set([56, 57, 66, 67]);
 const SNOW = new Set([71, 73, 75, 77, 85, 86]);
 const RAIN = new Set([61, 63, 65, 80, 81, 82]);
@@ -270,5 +234,3 @@ export function computeDayNightWeatherCodes(
 	}
 	return { day, night };
 }
-
-export default weatherCodes;

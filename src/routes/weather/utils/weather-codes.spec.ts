@@ -4,8 +4,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	computeDayNightWeatherCodes,
+	describedWeatherCodes,
 	getWeatherDescription,
-	getWeatherIconName
+	getWeatherIconName,
+	iconWeatherCodes
 } from './weather-codes';
 
 const ICON_DIR = join(process.cwd(), 'static/images/weather-icons');
@@ -42,10 +44,24 @@ const OPEN_METEO_CODES: Record<number, { meaning: string; family: RegExp }> = {
 	86: { meaning: 'Heavy snow showers', family: /snow/ },
 	95: { meaning: 'Thunderstorm', family: /thunderstorm|storm-showers|lightning/ },
 	96: { meaning: 'Thunderstorm with slight hail', family: /thunderstorm|storm-showers|hail/ },
+	97: { meaning: 'Heavy thunderstorm', family: /thunderstorm|storm-showers|lightning/ },
 	99: { meaning: 'Thunderstorm with heavy hail', family: /thunderstorm|storm-showers|hail/ }
 };
 
 const codes = Object.keys(OPEN_METEO_CODES).map(Number);
+
+// Pin both maps to exactly the emitted set, in both directions: a code the API
+// gains but we miss fails here, and so does a stale entry for a code it never
+// emits (the full-4677 leftovers that caused the original glyph bugs).
+describe('code coverage', () => {
+	it('maps icons for exactly the codes open-meteo emits', () => {
+		expect([...iconWeatherCodes].sort((a, b) => a - b)).toEqual(codes);
+	});
+
+	it('describes exactly the codes open-meteo emits', () => {
+		expect([...describedWeatherCodes].sort((a, b) => a - b)).toEqual(codes);
+	});
+});
 
 describe('getWeatherIconName', () => {
 	it.each(codes)('code %i resolves to icon files that exist', (code) => {
