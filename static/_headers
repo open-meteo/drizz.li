@@ -18,3 +18,7 @@
   Cache-Control: public, max-age=86400
 /data/*
   Cache-Control: public, max-age=86400
+
+/app.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=86400

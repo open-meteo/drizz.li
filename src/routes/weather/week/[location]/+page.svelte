@@ -68,6 +68,8 @@
 	});
 
 	let variableSidebarOpen = $state(false);
+	let hourlyDetailsOpen = $state(false);
+	let chartsOpen = $state(false);
 
 	// Meteogram canvases are shorter on phones, where a 300px plot eats most of
 	// the viewport. The placeholder below uses the same number, so the reserved
@@ -482,56 +484,9 @@
 				{locationRoute}
 			/>
 
-			<!-- `relative` is what lets the placeholder fade out on top of the table
-			     instead of holding a second slot in the layout (see skeletonOut). -->
-			<div class="relative">
-				{#if fetchedHourly && fetchedDaily}
-					<div class="day-region-table" use:daySwap={selectedDayKey}>
-						<HourlyTable
-							data={fetchedHourly}
-							daily={fetchedDaily}
-							{selectedDay}
-							units={params}
-							locationName={location.name ?? ''}
-							onCustomize={() => (variableSidebarOpen = true)}
-						/>
-					</div>
-				{:else}
-					<!-- Mirrors the real table: same header bar and the same body height,
-					     so the heading doesn't pop in and nothing below moves. -->
-					<div
-						in:fade={{ duration: 200 }}
-						out:skeletonOut
-						class="-mx-3 overflow-hidden border-y border-border/70 bg-card shadow-sm md:mx-0 md:rounded-2xl md:border"
-					>
-						<div
-							class="flex items-center justify-between gap-2 border-b border-border/70 bg-muted/40 px-4 py-2.5"
-						>
-							<div class="h-6 w-44 animate-pulse rounded bg-muted"></div>
-							<div class="flex items-center gap-2">
-								<div class="h-8 w-24 animate-pulse rounded-lg bg-muted"></div>
-								<div class="h-8 w-20 animate-pulse rounded-lg bg-muted"></div>
-							</div>
-						</div>
-						<!-- one placeholder per row the real table will render, so the body
-					     reads as a loading table rather than a blank panel -->
-						<div class="divide-y divide-border/50">
-							<!-- the time + daylight row, which is taller than the variable rows -->
-							<div class="flex items-center gap-4 px-4" style="height: {TABLE_TIME_ROW_PX}px">
-								<div class="h-3.5 w-14 shrink-0 animate-pulse rounded bg-muted"></div>
-								<div class="h-5 flex-1 animate-pulse rounded bg-muted/70"></div>
-							</div>
-							{#each { length: enabledTableRows } as _, i (i)}
-								<div class="flex items-center gap-4 px-4" style="height: {tableRowPx}px">
-									<div class="h-3.5 w-14 shrink-0 animate-pulse rounded bg-muted"></div>
-									<div class="h-3.5 flex-1 animate-pulse rounded bg-muted/70"></div>
-								</div>
-							{/each}
-						</div>
-					</div>
-				{/if}
-			</div>
-
+			<!-- On a phone the useful answer comes before the expert data table: the
+			     selected day's written summary and warnings are immediately glanceable.
+			     Desktop keeps the same order for a consistent reading flow. -->
 			<div class="relative">
 				{#if fetchedHourly && fetchedDaily}
 					<div class="day-region-summary" use:daySwap={selectedDayKey}>
@@ -539,15 +494,8 @@
 					</div>
 				{:else}
 					<!-- Same footprint as the written forecast, so it doesn't shove the
-					     meteograms down when it arrives. The heights are measured from the
-					     real card at each breakpoint (410 / 364 / 340 / 248 px): below md
-					     the narrative is clamped to five lines with a fixed toggle row and
-					     from lg up the sun/moon column is the taller side, so those three
-					     are exact whatever the forecast says. Only md is a judgement call -
-					     the text runs free there and the card measures 291 to 364 px across
-					     a week, so this is the middle of that range. The sun/moon grid
-					     reflows at sm, md and lg, which is why all four are needed. -->
-					<section class="mt-6" in:fade={{ duration: 200 }} out:skeletonOut>
+				     hourly table down when it arrives. -->
+					<section class="mt-3 md:mt-6" in:fade={{ duration: 200 }} out:skeletonOut>
 						<div
 							class="h-102.5 animate-pulse rounded-2xl border border-border/70 bg-card sm:h-91 md:h-85 lg:h-62"
 						></div>
@@ -555,45 +503,168 @@
 				{/if}
 			</div>
 
-			<div class="relative">
-				{#if fetchedHourly}
-					<div class="day-region-charts" use:daySwap={selectedDayKey}>
-						<MeteogramCharts
-							data={fetchedHourly}
-							{selectedDay}
-							units={params}
-							{loading}
-							{chartHeight}
-						/>
-					</div>
-				{:else}
-					<!-- reserve the exact chart area height before the first fetch resolves,
+			<button
+				type="button"
+				class="mt-4 flex min-h-12 w-full cursor-pointer items-center justify-between rounded-xl border border-border bg-card px-4 text-left text-sm font-bold shadow-sm active:bg-muted md:hidden"
+				onclick={() => (hourlyDetailsOpen = !hourlyDetailsOpen)}
+				aria-expanded={hourlyDetailsOpen}
+			>
+				<span class="flex items-center gap-2.5">
+					<svg
+						class="h-5 w-5 text-primary"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="1.75"
+						aria-hidden="true"
+					>
+						<circle cx="12" cy="12" r="9" />
+						<path stroke-linecap="round" d="M12 7v5l3 2" />
+					</svg>
+					{m.mobile_hourly_details()}
+				</span>
+				<svg
+					class="h-4 w-4 text-muted-foreground transition-transform {hourlyDetailsOpen
+						? 'rotate-180'
+						: ''}"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					aria-hidden="true"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+				</svg>
+			</button>
+
+			<!-- The analytical table is available on demand on phones and remains
+			     permanently visible from md upwards. -->
+			<div class={hourlyDetailsOpen ? 'block' : 'hidden md:block'}>
+				<!-- `relative` lets the placeholder fade out on top of the table instead
+				     of holding a second slot in the layout (see skeletonOut). -->
+				<div class="relative">
+					{#if fetchedHourly && fetchedDaily}
+						<div class="day-region-table" use:daySwap={selectedDayKey}>
+							<HourlyTable
+								data={fetchedHourly}
+								daily={fetchedDaily}
+								{selectedDay}
+								units={params}
+								locationName={location.name ?? ''}
+								onCustomize={() => (variableSidebarOpen = true)}
+							/>
+						</div>
+					{:else}
+						<!-- Mirrors the real table: same header bar and the same body height,
+					     so the heading doesn't pop in and nothing below moves. -->
+						<div
+							in:fade={{ duration: 200 }}
+							out:skeletonOut
+							class="-mx-3 overflow-hidden border-y border-border/70 bg-card shadow-sm md:mx-0 md:rounded-2xl md:border"
+						>
+							<div
+								class="flex items-center justify-between gap-2 border-b border-border/70 bg-muted/40 px-4 py-2.5"
+							>
+								<div class="h-6 w-44 animate-pulse rounded bg-muted"></div>
+								<div class="flex items-center gap-2">
+									<div class="h-8 w-24 animate-pulse rounded-lg bg-muted"></div>
+									<div class="h-8 w-20 animate-pulse rounded-lg bg-muted"></div>
+								</div>
+							</div>
+							<!-- one placeholder per row the real table will render, so the body
+					     reads as a loading table rather than a blank panel -->
+							<div class="divide-y divide-border/50">
+								<!-- the time + daylight row, which is taller than the variable rows -->
+								<div class="flex items-center gap-4 px-4" style="height: {TABLE_TIME_ROW_PX}px">
+									<div class="h-3.5 w-14 shrink-0 animate-pulse rounded bg-muted"></div>
+									<div class="h-5 flex-1 animate-pulse rounded bg-muted/70"></div>
+								</div>
+								{#each { length: enabledTableRows } as _, i (i)}
+									<div class="flex items-center gap-4 px-4" style="height: {tableRowPx}px">
+										<div class="h-3.5 w-14 shrink-0 animate-pulse rounded bg-muted"></div>
+										<div class="h-3.5 flex-1 animate-pulse rounded bg-muted/70"></div>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<button
+				type="button"
+				class="mt-3 flex min-h-12 w-full cursor-pointer items-center justify-between rounded-xl border border-border bg-card px-4 text-left text-sm font-bold shadow-sm active:bg-muted md:hidden"
+				onclick={() => (chartsOpen = !chartsOpen)}
+				aria-expanded={chartsOpen}
+			>
+				<span class="flex items-center gap-2.5">
+					<svg
+						class="h-5 w-5 text-primary"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="1.75"
+						aria-hidden="true"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M4 19V9m5 10V5m5 14v-7m5 7V3" />
+					</svg>
+					{m.meteograms_heading()}
+				</span>
+				<svg
+					class="h-4 w-4 text-muted-foreground transition-transform {chartsOpen
+						? 'rotate-180'
+						: ''}"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					aria-hidden="true"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+				</svg>
+			</button>
+
+			<div class={chartsOpen ? 'block' : 'hidden md:block'}>
+				<div class="relative">
+					{#if fetchedHourly}
+						<div class="day-region-charts" use:daySwap={selectedDayKey}>
+							<MeteogramCharts
+								data={fetchedHourly}
+								{selectedDay}
+								units={params}
+								{loading}
+								{chartHeight}
+							/>
+						</div>
+					{:else}
+						<!-- reserve the exact chart area height before the first fetch resolves,
 					     header row included -->
-					<section class="mt-8" in:fade={{ duration: 200 }} out:skeletonOut>
-						<!-- The real header wraps to two rows until the controls fit beside
+						<section class="mt-8" in:fade={{ duration: 200 }} out:skeletonOut>
+							<!-- The real header wraps to two rows until the controls fit beside
 					     the title, which happens at different widths than you would
 					     expect because the sidebar takes its share from md up. These
 					     min-heights follow the measured wrap points; below md the
 					     customise/PNG pair always sits on its own row (a forced break
 					     in MeteogramCharts), so the header is three rows there. -->
-						<div
-							class="mb-3 flex min-h-27 flex-wrap items-center justify-between gap-2 lg:min-h-16.5 xl:min-h-7.5"
-						>
-							<div class="h-7 w-52 animate-pulse rounded bg-muted"></div>
-							<div class="flex items-center gap-3">
-								<div class="h-7 w-56 animate-pulse rounded-lg bg-muted"></div>
-								<div class="h-7 w-24 animate-pulse rounded-lg bg-muted"></div>
+							<div
+								class="mb-3 flex min-h-27 flex-wrap items-center justify-between gap-2 lg:min-h-16.5 xl:min-h-7.5"
+							>
+								<div class="h-7 w-52 animate-pulse rounded bg-muted"></div>
+								<div class="flex items-center gap-3">
+									<div class="h-7 w-56 animate-pulse rounded-lg bg-muted"></div>
+									<div class="h-7 w-24 animate-pulse rounded-lg bg-muted"></div>
+								</div>
 							</div>
-						</div>
-						<!-- The reserved box is the plot plus each chart's own chrome (see
+							<!-- The reserved box is the plot plus each chart's own chrome (see
 					     chartSlotHeight), or everything below it lands too high. -->
-						<ChartContainer
-							loading
-							chartCount={enabledChartCount || 1}
-							chartHeight={chartSlotHeight}
-						/>
-					</section>
-				{/if}
+							<ChartContainer
+								loading
+								chartCount={enabledChartCount || 1}
+								chartHeight={chartSlotHeight}
+							/>
+						</section>
+					{/if}
+				</div>
 			</div>
 
 			{#if selectedDayKey}
