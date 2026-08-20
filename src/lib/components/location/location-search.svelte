@@ -10,12 +10,14 @@
 
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
 	import * as Popover from '$lib/components/ui/popover';
 
 	import * as m from '$lib/paraglide/messages';
 
 	export let label: string = 'Search location...';
+	export let mobileLabel: string = label;
 	export let placeholder: string = 'Enter city name...';
 
 	interface ResultSet {
@@ -25,21 +27,24 @@
 	const dispatch = createEventDispatcher();
 	let debounceTimeout: ReturnType<typeof setTimeout> | undefined;
 	let searchQuery = '';
-	let popoverOpen = false;
+	let mobileOpen = false;
+	let desktopOpen = false;
 	let searchInputEl: HTMLInputElement | null = null;
+	$: pickerOpen = mobileOpen || desktopOpen;
 
 	onDestroy(() => {
 		clearTimeout(debounceTimeout);
 	});
 
-	const closePopover = () => {
-		popoverOpen = false;
+	const closePicker = () => {
+		mobileOpen = false;
+		desktopOpen = false;
 	};
 
 	const selectLocation = (location: GeoLocation) => {
 		addRecent(location);
 		searchQuery = '';
-		closePopover();
+		closePicker();
 		dispatch('location', location);
 	};
 
@@ -73,7 +78,7 @@
 		searchInputEl?.focus();
 	}
 
-	$: if (popoverOpen) {
+	$: if (pickerOpen) {
 		focusInput();
 	}
 
@@ -140,7 +145,7 @@
 		class="group flex items-center rounded-md border border-transparent transition-[background,border-color] duration-150 hover:border-border hover:bg-accent"
 	>
 		<button
-			class="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-left"
+			class="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-left md:min-h-0"
 			onclick={() => selectLocation(location)}
 		>
 			<img
@@ -159,7 +164,7 @@
 			</div>
 		</button>
 		<button
-			class="mr-1 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md hover:bg-background hover:text-amber-500 {fav
+			class="mr-1 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md hover:bg-background hover:text-amber-500 md:h-7 md:w-7 {fav
 				? 'text-amber-500'
 				: 'text-muted-foreground/50'}"
 			onclick={() => toggleFavorite(location)}
@@ -182,7 +187,7 @@
 		</button>
 		{#if removable}
 			<button
-				class="mr-1 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground/50 hover:bg-background hover:text-destructive"
+				class="mr-1 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground/50 hover:bg-background hover:text-destructive md:h-7 md:w-7"
 				onclick={() => removeRecent(location)}
 				aria-label={m.search_remove_recent({ location: location.name })}
 				title={m.search_remove_recent_short()}
@@ -195,21 +200,210 @@
 	</div>
 {/snippet}
 
-<Popover.Root bind:open={popoverOpen}>
-	<Popover.Trigger
-		class="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-full border-2 border-primary/30 bg-background px-4 text-[0.8125rem] font-medium text-muted-foreground shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-primary/70 hover:shadow-md"
+{#snippet searchIcon()}
+	<svg
+		class="h-4 w-4 shrink-0 text-primary"
+		xmlns="http://www.w3.org/2000/svg"
+		fill="none"
+		viewBox="0 0 24 24"
+		stroke="currentColor"
+		stroke-width="2"
+		aria-hidden="true"
 	>
-		<svg
-			class="h-4 w-4 shrink-0 text-primary"
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-			stroke-width="2"
+		<circle cx="11" cy="11" r="8" />
+		<path d="m21 21-4.3-4.3" />
+	</svg>
+{/snippet}
+
+{#snippet pickerBody()}
+	<div class="location-picker-body flex flex-col">
+		<div
+			class="mobile-sheet-handle hidden h-5 shrink-0 items-center justify-center"
+			aria-hidden="true"
 		>
-			<circle cx="11" cy="11" r="8" />
-			<path d="m21 21-4.3-4.3" />
+			<div class="h-1 w-10 rounded-full bg-muted-foreground/30"></div>
+		</div>
+		<div
+			class="mobile-picker-heading hidden items-center justify-between border-b border-border px-4 pt-1 pb-3"
+		>
+			<div>
+				<div class="text-base font-bold">{m.search_placeholder()}</div>
+				<div class="text-xs text-muted-foreground">{mobileLabel}</div>
+			</div>
+			<button
+				type="button"
+				class="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-muted text-muted-foreground active:bg-accent"
+				onclick={closePicker}
+				aria-label={m.action_close()}
+			>
+				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path stroke-linecap="round" d="M6 6l12 12M18 6 6 18" />
+				</svg>
+			</button>
+		</div>
+		<div class="p-3">
+			<div class="flex gap-2">
+				<div class="flex-1">
+					<Input
+						type="search"
+						{placeholder}
+						class="h-11 md:h-9"
+						autocomplete="off"
+						spellcheck="false"
+						aria-label={m.search_aria()}
+						bind:value={searchQuery}
+						bind:ref={searchInputEl}
+					/>
+				</div>
+				<Button
+					variant="outline"
+					size="default"
+					class="h-11 px-3 md:h-9 md:px-2.5"
+					title={m.search_gps()}
+					onclick={() => (searchQuery = 'GPS')}
+				>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+						/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+						/>
+					</svg>
+				</Button>
+			</div>
+		</div>
+
+		<div class="location-picker-results max-h-[min(400px,50vh)] overflow-y-auto px-3 pb-3">
+			{#await results}
+				<div class="flex h-20 items-center justify-center">
+					<div class="flex items-center space-x-2">
+						<div class="h-4 w-4 animate-spin rounded-full border-b-2 border-primary"></div>
+						<span class="text-sm text-muted-foreground">{m.search_searching()}</span>
+					</div>
+				</div>
+			{:then results}
+				{#if searchQuery.length < 2}
+					{#if $storedFavoriteLocations.length > 0 || recentToShow.length > 0}
+						{#if $storedFavoriteLocations.length > 0}
+							<div
+								class="mb-1 px-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase"
+							>
+								{m.search_favorites()}
+							</div>
+							<div class="space-y-0.5">
+								{#each $storedFavoriteLocations as loc (locationKey(loc))}
+									{@render locationRow(loc, false)}
+								{/each}
+							</div>
+						{/if}
+						{#if recentToShow.length > 0}
+							<div
+								class="mb-1 px-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase {$storedFavoriteLocations.length
+									? 'mt-3'
+									: ''}"
+							>
+								{m.search_recent()}
+							</div>
+							<div class="space-y-0.5">
+								{#each recentToShow as loc (locationKey(loc))}
+									{@render locationRow(loc, true)}
+								{/each}
+							</div>
+						{/if}
+					{:else}
+						<div class="flex items-start gap-2 rounded-md bg-primary/8 p-2.5 text-muted-foreground">
+							<svg
+								class="mt-0.5 h-3.5 w-3.5 shrink-0"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								stroke-width="2"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+							<span class="text-xs">
+								{m.search_hint()}
+							</span>
+						</div>
+					{/if}
+				{:else if results.results && results.results.length > 0}
+					<div class="space-y-0.5">
+						{#each results.results as location, i (i)}
+							{@render locationRow(location, false)}
+						{/each}
+					</div>
+				{:else if results.results}
+					<Alert.Root
+						class="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"
+					>
+						<Alert.Description class="text-orange-700 dark:text-orange-300">
+							No locations found for "{searchQuery}". Try a different term.
+						</Alert.Description>
+					</Alert.Root>
+				{:else}
+					<Alert.Root variant="destructive">
+						<Alert.Description>{m.search_no_results()}</Alert.Description>
+					</Alert.Root>
+				{/if}
+			{:catch error}
+				<Alert.Root variant="destructive">
+					<Alert.Description>Error: {error.message}</Alert.Description>
+				</Alert.Root>
+			{/await}
+		</div>
+	</div>
+{/snippet}
+
+<!-- Phones use a real modal dialog. This keeps focus, keyboard input, outside
+     interaction and scroll locking inside one primitive instead of forcing a
+     desktop floating popover into a fixed mobile sheet. -->
+<Dialog.Root bind:open={mobileOpen}>
+	<Dialog.Trigger
+		class="flex h-11 w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-transparent bg-transparent px-2 text-sm font-bold text-foreground transition-colors active:bg-muted md:hidden"
+	>
+		{@render searchIcon()}
+		<span class="max-w-full overflow-hidden text-ellipsis whitespace-nowrap">{mobileLabel}</span>
+		<svg
+			class="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+			fill="none"
+			stroke="currentColor"
+			viewBox="0 0 24 24"
+			stroke-width="2"
+			aria-hidden="true"
+		>
+			<path stroke-linecap="round" stroke-linejoin="round" d="m7 10 5 5 5-5" />
 		</svg>
+	</Dialog.Trigger>
+
+	<Dialog.Content
+		class="location-picker-dialog top-auto! right-0! bottom-0! left-0! h-[min(82dvh,44rem)] w-full! max-w-none! translate-x-0! translate-y-0! gap-0 overflow-hidden rounded-t-3xl rounded-b-none border-x-0 border-b-0 bg-popover p-0 shadow-2xl sm:max-w-none!"
+		showCloseButton={false}
+		onOpenAutoFocus={(event) => {
+			event.preventDefault();
+			focusInput();
+		}}
+	>
+		{@render pickerBody()}
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Wider layouts retain the compact anchored search popover. -->
+<Popover.Root bind:open={desktopOpen}>
+	<Popover.Trigger
+		class="hidden h-10 w-full cursor-pointer items-center gap-2.5 rounded-full border-2 border-primary/30 bg-background px-4 text-[0.8125rem] font-medium text-muted-foreground shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-primary/70 hover:shadow-md md:flex"
+	>
+		{@render searchIcon()}
 		<span class="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
 	</Popover.Trigger>
 
@@ -218,135 +412,31 @@
 		side="bottom"
 		align="start"
 		sideOffset={4}
-		onOpenAutoFocus={(e) => {
-			e.preventDefault();
+		onOpenAutoFocus={(event) => {
+			event.preventDefault();
 			focusInput();
 		}}
 	>
-		<div class="flex flex-col">
-			<div class="p-3">
-				<div class="flex gap-2">
-					<div class="flex-1">
-						<Input
-							type="search"
-							{placeholder}
-							class="h-9"
-							autocomplete="off"
-							spellcheck="false"
-							aria-label={m.search_aria()}
-							bind:value={searchQuery}
-							bind:ref={searchInputEl}
-						/>
-					</div>
-					<Button
-						variant="outline"
-						size="default"
-						class="h-9 px-2.5"
-						title={m.search_gps()}
-						onclick={() => (searchQuery = 'GPS')}
-					>
-						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-							/>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-							/>
-						</svg>
-					</Button>
-				</div>
-			</div>
-
-			<div class="max-h-[min(400px,50vh)] overflow-y-auto px-3 pb-3">
-				{#await results}
-					<div class="flex h-20 items-center justify-center">
-						<div class="flex items-center space-x-2">
-							<div class="h-4 w-4 animate-spin rounded-full border-b-2 border-primary"></div>
-							<span class="text-sm text-muted-foreground">{m.search_searching()}</span>
-						</div>
-					</div>
-				{:then results}
-					{#if searchQuery.length < 2}
-						{#if $storedFavoriteLocations.length > 0 || recentToShow.length > 0}
-							{#if $storedFavoriteLocations.length > 0}
-								<div
-									class="mb-1 px-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase"
-								>
-									{m.search_favorites()}
-								</div>
-								<div class="space-y-0.5">
-									{#each $storedFavoriteLocations as loc (locationKey(loc))}
-										{@render locationRow(loc, false)}
-									{/each}
-								</div>
-							{/if}
-							{#if recentToShow.length > 0}
-								<div
-									class="mb-1 px-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase {$storedFavoriteLocations.length
-										? 'mt-3'
-										: ''}"
-								>
-									{m.search_recent()}
-								</div>
-								<div class="space-y-0.5">
-									{#each recentToShow as loc (locationKey(loc))}
-										{@render locationRow(loc, true)}
-									{/each}
-								</div>
-							{/if}
-						{:else}
-							<div
-								class="flex items-start gap-2 rounded-md bg-primary/8 p-2.5 text-muted-foreground"
-							>
-								<svg
-									class="mt-0.5 h-3.5 w-3.5 shrink-0"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-									stroke-width="2"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-								<span class="text-xs">
-									{m.search_hint()}
-								</span>
-							</div>
-						{/if}
-					{:else if results.results && results.results.length > 0}
-						<div class="space-y-0.5">
-							{#each results.results as location, i (i)}
-								{@render locationRow(location, false)}
-							{/each}
-						</div>
-					{:else if results.results}
-						<Alert.Root
-							class="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20"
-						>
-							<Alert.Description class="text-orange-700 dark:text-orange-300">
-								No locations found for "{searchQuery}". Try a different term.
-							</Alert.Description>
-						</Alert.Root>
-					{:else}
-						<Alert.Root variant="destructive">
-							<Alert.Description>{m.search_no_results()}</Alert.Description>
-						</Alert.Root>
-					{/if}
-				{:catch error}
-					<Alert.Root variant="destructive">
-						<Alert.Description>Error: {error.message}</Alert.Description>
-					</Alert.Root>
-				{/await}
-			</div>
-		</div>
+		{@render pickerBody()}
 	</Popover.Content>
 </Popover.Root>
+
+<style>
+	@media (max-width: 767px) {
+		:global(.location-picker-dialog .location-picker-body) {
+			height: 100%;
+			background: var(--popover);
+			padding-bottom: env(safe-area-inset-bottom, 0px);
+		}
+
+		:global(.location-picker-dialog .mobile-sheet-handle),
+		:global(.location-picker-dialog .mobile-picker-heading) {
+			display: flex;
+		}
+
+		:global(.location-picker-dialog .location-picker-results) {
+			max-height: none;
+			flex: 1;
+		}
+	}
+</style>

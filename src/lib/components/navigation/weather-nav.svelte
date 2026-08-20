@@ -79,10 +79,18 @@
 </script>
 
 <aside
-	class="flex h-full flex-col border-r border-sidebar-border bg-sidebar transition-all duration-200"
-	class:w-55={!collapsed}
+	class="flex h-full flex-col bg-sidebar transition-all duration-200 {onMobileClose
+		? 'overflow-hidden rounded-t-3xl border-t border-sidebar-border'
+		: 'border-r border-sidebar-border'}"
+	class:w-full={Boolean(onMobileClose)}
+	class:w-55={!collapsed && !onMobileClose}
 	class:w-14={collapsed}
 >
+	{#if onMobileClose}
+		<div class="flex h-5 shrink-0 items-center justify-center" aria-hidden="true">
+			<div class="h-1 w-10 rounded-full bg-sidebar-foreground/20"></div>
+		</div>
+	{/if}
 	<!-- Sidebar header: same height as the topbar so the borders align; the
 	     home link fills the entire row, padding included -->
 	<div class="flex h-14 shrink-0 items-stretch border-b border-sidebar-border">

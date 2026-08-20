@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	import { type Theme, storedTheme } from '$lib/stores/settings';
 
 	import * as Popover from '$lib/components/ui/popover';
@@ -19,11 +21,22 @@
 	];
 
 	let open = $state(false);
+	let canShare = $state(false);
+
+	onMount(() => {
+		canShare = typeof navigator.share === 'function';
+	});
+
+	async function shareForecast(): Promise<void> {
+		if (!canShare) return;
+		await navigator.share({ title: document.title, url: window.location.href }).catch(() => {});
+		open = false;
+	}
 </script>
 
 <Popover.Root bind:open>
 	<Popover.Trigger
-		class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border/70 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground"
+		class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border/70 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground md:h-9 md:w-9"
 		aria-label={m.settings_title()}
 		title={m.settings_title()}
 	>
@@ -46,6 +59,28 @@
 
 	<Popover.Content align="end" class="w-72 border-border">
 		<div class="flex flex-col gap-4">
+			{#if canShare}
+				<button
+					type="button"
+					class="flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-lg border border-border bg-background px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+					onclick={shareForecast}
+				>
+					<svg
+						class="h-4.5 w-4.5 text-primary"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="1.75"
+					>
+						<circle cx="18" cy="5" r="3" />
+						<circle cx="6" cy="12" r="3" />
+						<circle cx="18" cy="19" r="3" />
+						<path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4" />
+					</svg>
+					{m.share_forecast()}
+				</button>
+			{/if}
+
 			<UnitOptions />
 
 			<div>
