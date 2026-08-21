@@ -116,9 +116,11 @@
 	     the real thing lands exactly where the placeholder sat. -->
 	{#if location}
 		<!-- min-w-0 + a ceiling so a long "Sant Pere de Ribes, Catalonia, Spain"
-		     ellipses inside the pill instead of pushing the search box off centre -->
+		     ellipses inside the pill instead of pushing the search box off centre.
+		     The ceiling rises on a wide screen: the row's spacer still has hundreds
+		     of pixels to give there, so a name that fits should not be cut. -->
 		<div
-			class="hidden min-w-0 max-w-70 items-center gap-2 rounded-full border border-border/70 bg-muted/40 py-1 ps-1 pe-3 lg:flex xl:max-w-96"
+			class="hidden min-w-0 max-w-70 items-center gap-2 rounded-full border border-border/70 bg-muted/40 py-1 ps-1 pe-3 lg:flex xl:max-w-96 2xl:max-w-136"
 		>
 			<img
 				class="h-6 w-6 shrink-0 rounded-full ring-1 ring-border"
@@ -135,7 +137,7 @@
 		</div>
 	{:else}
 		<div
-			class="hidden min-w-0 max-w-70 items-center gap-2 rounded-full border border-border/70 bg-muted/40 py-1 ps-1 pe-3 lg:flex xl:max-w-96"
+			class="hidden min-w-0 max-w-70 items-center gap-2 rounded-full border border-border/70 bg-muted/40 py-1 ps-1 pe-3 lg:flex xl:max-w-96 2xl:max-w-136"
 			aria-hidden="true"
 		>
 			<div class="h-6 w-6 shrink-0 animate-pulse rounded-full bg-muted"></div>
