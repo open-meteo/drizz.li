@@ -157,6 +157,22 @@
 		view-transition-name: day-charts;
 	}
 
+	/* A snapshot is clipped to the border box of the element that was captured,
+	   and each of these three holds a card that deliberately bleeds into the
+	   page gutter below md/lg (`-mx-3`). Those 12px on each side were therefore
+	   missing for the length of a switch - on a phone the meteogram axis labels
+	   and the table's outer edge disappeared under the gutter and came back when
+	   the pseudo elements went, which reads as the padding sliding over the
+	   content. Widening the captured box by the gutter and padding it straight
+	   back leaves the layout untouched (the two cancel) and brings the bleed
+	   inside the box that gets captured. */
+	.day-region-table,
+	.day-region-summary,
+	.day-region-charts {
+		margin-inline: calc(var(--spacing) * -3);
+		padding-inline: calc(var(--spacing) * 3);
+	}
+
 	/* Region snapshots paint in a layer above the live page, at their full
 	   layout size - including the part of the table normally scrolled up
 	   behind the sticky strip and the topbar. The strip used to be captured

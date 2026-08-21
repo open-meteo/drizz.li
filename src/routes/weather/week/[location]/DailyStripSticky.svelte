@@ -659,6 +659,10 @@
 			--pt-min: 5px;
 			--pb-min: 6px;
 			--icon-lift: 1px;
+			/* the docked tiles are 1.75x here, so the 3px the bar keeps at md reads
+			   as a tight seam around them - give the row a little more air (the
+			   collapse distance follows from this, see --collapse) */
+			--pad-min: 7px;
 		}
 	}
 
@@ -822,8 +826,17 @@
 		translate: 0 calc(-4px * var(--k));
 		scale: calc(1 + 0.04 * var(--k));
 	}
+	/* A horizontal scroller cannot let its content overflow vertically: CSS
+	   computes `overflow-y: visible` to `auto` as soon as the other axis
+	   scrolls, so the row clips at its padding box no matter what. Everything
+	   that leaves the card therefore has to fit inside the bar's own padding -
+	   which shrinks as the strip collapses. Scaling the shadow's geometry by
+	   --k (not just its alpha, as before) keeps it inside that shrinking
+	   allowance the whole way down, instead of holding a fixed 14px blur that
+	   the bar's bottom border sliced through. */
 	.strip-cell[aria-pressed='true'] {
-		box-shadow: 0 5px 14px -4px rgba(0, 0, 0, calc(0.4 * var(--k)));
+		box-shadow: 0 calc(4px * var(--k)) calc(10px * var(--k)) calc(-4px * var(--k))
+			rgba(0, 0, 0, calc(0.4 * var(--k)));
 	}
 	@media (hover: hover) {
 		.strip-cellwrap:has(> .strip-cell:hover:not([aria-pressed='true'])) {
@@ -832,7 +845,8 @@
 			scale: calc(1 + 0.02 * var(--k));
 		}
 		.strip-cell:hover:not([aria-pressed='true']) {
-			box-shadow: 0 4px 10px -4px rgba(0, 0, 0, calc(0.3 * var(--k)));
+			box-shadow: 0 calc(3px * var(--k)) calc(8px * var(--k)) calc(-3px * var(--k))
+				rgba(0, 0, 0, calc(0.3 * var(--k)));
 		}
 	}
 	.strip-cell {

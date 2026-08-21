@@ -212,6 +212,8 @@
 	"model_seasonal": "Saisonmodell",
 	"nearby_cities_title": "Städte in der Nähe",
 	"nearby_cities_subtitle": "Höchst- und Tiefstwerte für den gewählten Tag",
+	"nearby_cities_collapsed": "Nicht geladen - eingeklappt werden keine Daten abgerufen",
+	"nearby_cities_toggle": "Städte in der Nähe ein- oder ausblenden",
 	"action_close": "Schliessen",
 	"action_done": "Fertig",
 	"action_try_again": "Erneut versuchen",

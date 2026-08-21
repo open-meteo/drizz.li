@@ -252,7 +252,10 @@
 					: ''}
 			</span>
 		</h3>
-		<div class="flex flex-wrap items-center gap-3">
+		<!-- the controls sit in one row when they fit; once they wrap, the space
+		     between the rows only needs to separate them, not to match the gap
+		     that keeps the groups apart along the row -->
+		<div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
 			<span class="hidden text-xs text-muted-foreground md:inline">
 				{m.meteograms_zoom_hint()}
 				<kbd class="rounded border border-border bg-muted px-1 py-0.5 font-sans text-[10px]"

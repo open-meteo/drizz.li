@@ -186,6 +186,35 @@
 	]);
 
 	/**
+	 * The subset of those that render nothing at all: `/` and every bare
+	 * `/weather/<view>/` page, which bounce to a located URL from `onMount`.
+	 *
+	 * Leaving one of these must not open a transition. There is nothing to
+	 * cross-fade *from* - the outgoing snapshot is a blank content column - and
+	 * holding a blank page over the incoming one is exactly what hid the
+	 * placeholders on a first visit: the week page mounts inside the capture,
+	 * its skeletons are in the DOM, but nothing painted after the snapshot can
+	 * appear until the animation is over. Their fade-in is captured at opacity 0
+	 * on top of that, so even the snapshot holds no placeholders. A visitor
+	 * landing on `/` got a blank column for the length of the chain and then the
+	 * finished forecast - the same page, force-reloaded, shows its skeletons
+	 * immediately because a reload has no transition to hide them.
+	 *
+	 * Arriving *at* a stub is a different case and still transitions: there the
+	 * outgoing page is real content, and the capture is deliberately held open
+	 * across the redirect that follows (see startViewTransition) so the old page
+	 * stays up until the located page has its data.
+	 */
+	const STUB_ROUTES = new Set([
+		'/',
+		'/weather/week',
+		'/weather/14-day',
+		'/weather/compare',
+		'/weather/seasonal',
+		'/weather/historical'
+	]);
+
+	/**
 	 * Resolves once the freshly mounted page has its data, or once the grace
 	 * period is up - in which case the overlay goes up first, so it is part of
 	 * the state the transition is about to snapshot.
@@ -232,7 +261,10 @@
 		// `startViewTransition` decides whether a transition is possible at all
 		// (support, reduced motion, one already capturing) and runs the update
 		// inline when it is not - so there is exactly one path from here down.
-		const underTransition = canStartViewTransition();
+		// The one case it cannot know about is a departure from a redirect stub,
+		// which has no pixels worth animating (see STUB_ROUTES).
+		const underTransition =
+			canStartViewTransition() && !STUB_ROUTES.has(navigation.from?.route?.id ?? '');
 
 		// Leaving the maps page: cover the iframe before the outgoing state is
 		// captured, so the snapshot holds a clean panel instead of a hole where

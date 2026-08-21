@@ -212,6 +212,8 @@
 	"model_seasonal": "Seasonal model",
 	"nearby_cities_title": "Nearby cities",
 	"nearby_cities_subtitle": "Highs and lows for the selected day",
+	"nearby_cities_collapsed": "Not loaded - no data is requested while this is closed",
+	"nearby_cities_toggle": "Show or hide nearby cities",
 	"action_close": "Close",
 	"action_done": "Done",
 	"action_try_again": "Try again",

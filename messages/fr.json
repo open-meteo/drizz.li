@@ -212,6 +212,8 @@
 	"model_seasonal": "Modèle saisonnier",
 	"nearby_cities_title": "Villes à proximité",
 	"nearby_cities_subtitle": "Maximales et minimales du jour sélectionné",
+	"nearby_cities_collapsed": "Non chargées - aucune donnée n'est demandée tant que la section est repliée",
+	"nearby_cities_toggle": "Afficher ou masquer les villes à proximité",
 	"action_close": "Fermer",
 	"action_done": "Terminé",
 	"action_try_again": "Réessayer",

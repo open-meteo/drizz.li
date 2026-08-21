@@ -212,6 +212,8 @@
 	"model_seasonal": "Modello stagionale",
 	"nearby_cities_title": "Città nelle vicinanze",
 	"nearby_cities_subtitle": "Massime e minime del giorno selezionato",
+	"nearby_cities_collapsed": "Non caricate - nessun dato viene richiesto mentre è chiusa",
+	"nearby_cities_toggle": "Mostra o nascondi le città nelle vicinanze",
 	"action_close": "Chiudi",
 	"action_done": "Fatto",
 	"action_try_again": "Riprova",

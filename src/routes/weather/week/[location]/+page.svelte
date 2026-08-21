@@ -287,13 +287,97 @@
 		});
 	});
 
-	$effect(() => {
+	/**
+	 * Everything the forecast request is made of, as one comparable string.
+	 *
+	 * The effect below depends on this key and on nothing else, which is what
+	 * makes the request predictable: it changes when the range buttons, the
+	 * model, the units, the variables or the location change, and at no other
+	 * time. Depending on the values directly meant depending on their identity -
+	 * `hourlyVars` is rebuilt whenever any preference is touched - so turning a
+	 * table row off used to re-request the exact same ten variables it already
+	 * had. The variable list is sorted for the same reason: reordering the chart
+	 * panels changes the array without changing the request.
+	 */
+	let requestKey = $derived.by(() => {
 		const loc = location;
-		const modelList = params.models;
-		const requestVars = hourlyVars;
-		void retryNonce; // re-run on "Try again"
+		const model = params.models?.[0];
+		if (!mounted || !loc || !model) return '';
 
-		if (!mounted || !loc || !modelList?.length) return;
+		return JSON.stringify({
+			latitude: loc.latitude!,
+			longitude: loc.longitude!,
+			timezone: loc.timezone,
+			model,
+			hourly: [...hourlyVars].sort(),
+			temperature_unit: params.temperature_unit,
+			wind_speed_unit: params.wind_speed_unit,
+			precipitation_unit: params.precipitation_unit,
+			forecast_days: forecastDays,
+			past_days: pastDays,
+			// part of the key, so "Try again" always counts as a different request
+			retry: retryNonce
+		});
+	});
+
+	type WeekRequest = ReturnType<typeof parseRequest>;
+	const parseRequest = (key: string) =>
+		JSON.parse(key) as {
+			latitude: number;
+			longitude: number;
+			timezone: string | undefined;
+			model: string;
+			hourly: string[];
+			temperature_unit: string;
+			wind_speed_unit: string;
+			precipitation_unit: string;
+			forecast_days: number;
+			past_days: number;
+			retry: number;
+		};
+
+	/**
+	 * What the last response covers. Plain fields, not state: only the effect
+	 * reads them, and they must not feed back into it.
+	 */
+	let held: { scope: string; hourly: string[]; forecastDays: number; pastDays: number } | null =
+		null;
+
+	/** The parts of a request that invalidate everything held when they change. */
+	const scopeOf = (req: WeekRequest) =>
+		JSON.stringify([
+			req.latitude,
+			req.longitude,
+			req.timezone,
+			req.model,
+			req.temperature_unit,
+			req.wind_speed_unit,
+			req.precipitation_unit,
+			req.retry
+		]);
+
+	/**
+	 * Whether the data on screen already answers this request. This is where
+	 * "only fetch what is missing" lives: not in stitching partial responses
+	 * together, but in not asking when nothing is missing. A narrower range or a
+	 * variable that was in the last response - toggled off and back on, say - is
+	 * served from what is in hand; only a wider range or a variable that was
+	 * never fetched costs a round trip.
+	 */
+	const alreadyHeld = (req: WeekRequest): boolean =>
+		held !== null &&
+		held.scope === scopeOf(req) &&
+		req.forecast_days <= held.forecastDays &&
+		req.past_days <= held.pastDays &&
+		req.hourly.every((name) => held!.hourly.includes(name));
+
+	$effect(() => {
+		const key = requestKey;
+		if (!key) return;
+		// read back out of the key, so the effect tracks the key and nothing else
+		const req = parseRequest(key);
+
+		if (alreadyHeld(req)) return;
 
 		// versioned so a slow stale response can never overwrite a newer one
 		const version = ++requestVersion;
@@ -301,19 +385,26 @@
 		loadError = null;
 
 		fetchWeekForecast({
-			latitude: loc.latitude!,
-			longitude: loc.longitude!,
-			model: modelList[0],
-			hourlyVariables: requestVars,
-			temperature_unit: params.temperature_unit as 'celsius' | 'fahrenheit',
-			wind_speed_unit: params.wind_speed_unit as 'kmh' | 'ms' | 'mph' | 'kn',
-			precipitation_unit: params.precipitation_unit as 'mm' | 'inch',
-			forecast_days: forecastDays,
-			past_days: pastDays,
-			timezone: loc.timezone
+			latitude: req.latitude,
+			longitude: req.longitude,
+			model: req.model,
+			hourlyVariables: req.hourly,
+			temperature_unit: req.temperature_unit as 'celsius' | 'fahrenheit',
+			wind_speed_unit: req.wind_speed_unit as 'kmh' | 'ms' | 'mph' | 'kn',
+			precipitation_unit: req.precipitation_unit as 'mm' | 'inch',
+			forecast_days: req.forecast_days,
+			past_days: req.past_days,
+			timezone: req.timezone
 		})
 			.then((result: WeekForecastResult) => {
 				if (version !== requestVersion) return;
+
+				held = {
+					scope: scopeOf(req),
+					hourly: req.hourly,
+					forecastDays: req.forecast_days,
+					pastDays: req.past_days
+				};
 
 				fetchedHourly = {
 					hourly: result.hourly,
@@ -577,7 +668,7 @@
 					     customise/PNG pair always sits on its own row (a forced break
 					     in MeteogramCharts), so the header is three rows there. -->
 						<div
-							class="mb-3 flex min-h-27 flex-wrap items-center justify-between gap-2 lg:min-h-16.5 xl:min-h-7.5"
+							class="mb-3 flex min-h-25.5 flex-wrap items-center justify-between gap-2 lg:min-h-16.5 xl:min-h-7.5"
 						>
 							<div class="h-7 w-52 animate-pulse rounded bg-muted"></div>
 							<div class="flex items-center gap-3">
@@ -604,6 +695,8 @@
 					countryCode={location.country_code}
 					{selectedDayKey}
 					units={$storedUnits}
+					{forecastDays}
+					{pastDays}
 				/>
 			{/if}
 		</div>

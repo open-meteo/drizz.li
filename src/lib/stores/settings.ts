@@ -201,6 +201,15 @@ export const defaultUnits: UnitPrefs = {
 
 export const storedUnits = persisted<UnitPrefs>('units_v1', defaultUnits);
 
+/**
+ * Whether the "nearby cities" panel on the week page is open.
+ *
+ * Persisted because it decides whether the panel's data is fetched at all: it
+ * costs a city-tile download plus a ten-location request, and someone who has
+ * closed it should not pay for that again on the next page they open.
+ */
+export const storedNearbyOpen = persisted<boolean>('nearby_open_v1', true);
+
 /** Recently visited and starred locations, shown in the search dropdown. */
 export const storedRecentLocations = persisted<GeoLocation[]>('recent_locations_v1', []);
 export const storedFavoriteLocations = persisted<GeoLocation[]>('favorite_locations_v1', []);
