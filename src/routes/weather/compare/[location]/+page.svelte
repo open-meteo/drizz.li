@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount, tick, untrack } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 
@@ -267,8 +267,11 @@
 			return;
 		}
 
-		const hasFetchedData = untrack(() => fetchedData !== null);
-		loading = !hasFetchedData;
+		// Keep the previous comparison rendered while refreshing, but still mark the
+		// request as loading. Location navigations clear the layout's page-ready flag;
+		// if `loading` stayed false because old data exists, reportPageReady would not
+		// re-run when this request finishes and the page-wide loading veil would remain.
+		loading = true;
 		loadError = null;
 		const timer = window.setTimeout(() => {
 			const controller = new AbortController();
