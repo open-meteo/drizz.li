@@ -22,6 +22,7 @@
 	import { href, routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 
+	import LogoMark from './logo-mark.svelte';
 	import SettingsMenu from './settings-menu.svelte';
 	import ThemeIcon from './theme-icon.svelte';
 
@@ -34,6 +35,7 @@
 	let location: GeoLocation | null = $derived(
 		$page.data.location ?? ($locationKnown ? $storedLocation : null)
 	);
+	let homeLocationRoute = $derived(buildLocationRoute(location ?? $storedLocation));
 
 	// Built as a string rather than inline markup: the pieces are optional, and
 	// separators spelled out in the template lose their spacing to Svelte's
@@ -85,9 +87,18 @@
 <header
 	class="topbar flex h-14 shrink-0 items-center gap-2 border-b border-topbar-border bg-topbar px-3 md:gap-3 md:px-4"
 >
-	<!-- A balanced spacer keeps the tappable location title centred on phones;
-	     primary navigation now lives in the persistent bottom bar. -->
-	<div class="w-11 shrink-0 md:hidden" aria-hidden="true"></div>
+	<a
+		href={href('/weather/week/[location]', { location: homeLocationRoute })}
+		class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted active:bg-muted md:hidden"
+		aria-label={m.nav_home()}
+		title={m.nav_home()}
+	>
+		<div
+			class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+		>
+			<LogoMark />
+		</div>
+	</a>
 
 	<!-- Current location display. Both branches carry the same pill metrics, so
 	     the real thing lands exactly where the placeholder sat. -->
