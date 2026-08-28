@@ -17,6 +17,8 @@
 
 	export let label: string = 'Search location...';
 	export let placeholder: string = 'Enter city name...';
+	export let location: GeoLocation | null = null;
+	export let locationDetail: string = '';
 
 	interface ResultSet {
 		results: GeoLocation[] | undefined;
@@ -197,8 +199,28 @@
 
 <Popover.Root bind:open={popoverOpen}>
 	<Popover.Trigger
-		class="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-full border-2 border-primary/30 bg-background px-4 text-[0.8125rem] font-medium text-muted-foreground shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-primary/70 hover:shadow-md"
+		class="flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-full border border-border/80 bg-background py-1 ps-1 pe-3 text-[0.8125rem] font-medium text-muted-foreground shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-primary/70 hover:shadow-md md:h-10"
+		aria-label={m.search_aria()}
+		title={location ? [location.name, locationDetail].filter(Boolean).join(' · ') : label}
 	>
+		{#if location}
+			<img
+				class="h-8 w-8 shrink-0 rounded-full ring-1 ring-border md:h-7 md:w-7"
+				src="/images/country-flags/{(location.country_code || 'united_nations').toLowerCase()}.svg"
+				alt={location.country}
+			/>
+			<span class="min-w-0 flex-1 text-left leading-tight">
+				<span class="block truncate text-sm font-semibold text-foreground">{location.name}</span>
+				{#if locationDetail}
+					<span class="block truncate text-[11px] font-normal text-muted-foreground sm:text-xs">
+						{locationDetail}
+					</span>
+				{/if}
+			</span>
+		{:else}
+			<span class="h-8 w-8 shrink-0 animate-pulse rounded-full bg-muted" aria-hidden="true"></span>
+			<span class="min-w-0 flex-1 truncate text-left">{label}</span>
+		{/if}
 		<svg
 			class="h-4 w-4 shrink-0 text-primary"
 			xmlns="http://www.w3.org/2000/svg"
@@ -206,15 +228,15 @@
 			viewBox="0 0 24 24"
 			stroke="currentColor"
 			stroke-width="2"
+			aria-hidden="true"
 		>
 			<circle cx="11" cy="11" r="8" />
 			<path d="m21 21-4.3-4.3" />
 		</svg>
-		<span class="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
 	</Popover.Trigger>
 
 	<Popover.Content
-		class="popover-dropdown w-(--bits-popover-anchor-width) min-w-[320px] p-0"
+		class="popover-dropdown w-(--bits-popover-anchor-width) min-w-[min(320px,calc(100vw-1rem))] p-0"
 		side="bottom"
 		align="start"
 		sideOffset={4}
