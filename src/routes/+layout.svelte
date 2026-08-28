@@ -22,6 +22,7 @@
 
 	import Footer from '$lib/components/navigation/footer.svelte';
 	import Header from '$lib/components/navigation/header.svelte';
+	import MobileBottomNav from '$lib/components/navigation/mobile-bottom-nav.svelte';
 	import WeatherNav from '$lib/components/navigation/weather-nav.svelte';
 
 	import { routePath } from '$lib/i18n';
@@ -331,7 +332,7 @@
 <svelte:head>
 	<!-- the icon itself lives in app.html, so the SPA fallback carries it too -->
 	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 </svelte:head>
 
 <!-- Page-wide loading veil. Deliberately `pointer-events-none`: it is a status
@@ -386,7 +387,7 @@
 	</div>
 {/if}
 
-<div class="flex h-screen overflow-hidden bg-background text-foreground">
+<div class="app-frame flex h-screen overflow-hidden bg-background text-foreground">
 	<!-- Desktop sidebar -->
 	<div class="sidebar-region hidden h-full shrink-0 md:block">
 		<WeatherNav collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
@@ -403,8 +404,8 @@
 				onkeydown={closeMobileMenu}
 			></div>
 			<div
-				class="relative z-1 h-full w-55 shadow-lg"
-				transition:fly={{ x: -220, duration: 200, opacity: 1 }}
+				class="mobile-more-sheet absolute right-0 bottom-0 left-0 z-1 shadow-2xl"
+				transition:fly={{ y: 240, duration: 220, opacity: 1 }}
 			>
 				<WeatherNav collapsed={false} onMobileClose={closeMobileMenu} />
 			</div>
@@ -413,7 +414,7 @@
 
 	<!-- Main area: topbar + content -->
 	<div class="flex min-w-0 flex-1 flex-col h-full">
-		<Header onMenuToggle={toggleMobileMenu} />
+		<Header />
 
 		<!-- The padding stays on <main> itself: the day strip sticks with a
 		     negative offset that exactly cancels it, so moving it to an inner
@@ -423,8 +424,8 @@
 		<main
 			bind:this={mainEl}
 			class={fullBleed
-				? 'flex-1 overflow-hidden'
-				: 'flex flex-1 flex-col overflow-y-auto p-3 lg:px-8 lg:py-6'}
+				? 'mobile-nav-clearance flex-1 overflow-hidden'
+				: 'mobile-nav-clearance flex flex-1 flex-col overflow-y-auto p-3 lg:px-8 lg:py-6'}
 		>
 			{#if fullBleed}
 				{@render children()}
@@ -436,10 +437,28 @@
 				</div>
 				<!-- full-bleed footer inside the scroll area (its own inner max-w),
 				     cancelling main's padding so it sits flush with the edges -->
-				<div class="-mx-3 -mb-3 lg:-mx-8 lg:-mb-6">
+				<div class="-mx-3 -mb-3 hidden md:block lg:-mx-8 lg:-mb-6">
 					<Footer />
 				</div>
 			{/if}
 		</main>
+		<MobileBottomNav onMoreToggle={toggleMobileMenu} moreOpen={mobileMenuOpen} />
 	</div>
 </div>
+
+<style>
+	@media (max-width: 767px) {
+		.app-frame {
+			height: 100dvh;
+		}
+
+		.mobile-nav-clearance {
+			padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+		}
+
+		.mobile-more-sheet {
+			height: min(78dvh, 42rem);
+			padding-bottom: env(safe-area-inset-bottom, 0px);
+		}
+	}
+</style>

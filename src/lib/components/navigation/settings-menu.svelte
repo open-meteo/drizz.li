@@ -23,7 +23,7 @@
 
 <Popover.Root bind:open>
 	<Popover.Trigger
-		class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border/70 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground"
+		class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border/70 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground md:h-9 md:w-9"
 		aria-label={m.settings_title()}
 		title={m.settings_title()}
 	>
