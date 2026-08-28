@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount, tick, untrack } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 
@@ -95,7 +95,6 @@
 	let loading = $state(true);
 	let loadError = $state<FriendlyWeatherError | null>(null);
 	let retryNonce = $state(0);
-	let settledLocationKey = $state<string | null>(null);
 	let requestVersion = 0;
 	let activeController: AbortController | null = null;
 	let chartComponents: CanvasChart[] = $state([]);
@@ -184,14 +183,8 @@
 	let comparisonMuted = $derived(
 		comparisonSelectionDirty || displayedVariablesStale || displayedModelsStale
 	);
-	let currentLocationKey = $derived(
-		`${location.latitude},${location.longitude},${location.timezone}`
-	);
 
-	// The component survives a location navigation and deliberately keeps its old
-	// charts visible while the replacement request runs. `loading` can therefore
-	// remain false across the navigation, so track which location has settled.
-	reportPageReady(() => mounted && settledLocationKey === currentLocationKey);
+	reportPageReady(() => mounted && !loading);
 	useHeroActions(heroActions);
 
 	$effect(() => setActiveLocation(data.location));
@@ -255,7 +248,6 @@
 		const modelList = [...appliedModels];
 		const hourlyVars = [...appliedHourly];
 		const loc = location;
-		const locationKey = currentLocationKey;
 		const units = {
 			temperature_unit: params.temperature_unit as 'celsius' | 'fahrenheit',
 			wind_speed_unit: params.wind_speed_unit as 'kmh' | 'ms' | 'mph' | 'kn',
@@ -272,12 +264,14 @@
 			fetchedData = null;
 			loading = false;
 			loadError = null;
-			settledLocationKey = locationKey;
 			return;
 		}
 
-		const hasFetchedData = untrack(() => fetchedData !== null);
-		loading = !hasFetchedData;
+		// Keep the previous comparison rendered while refreshing, but still mark the
+		// request as loading. Location navigations clear the layout's page-ready flag;
+		// if `loading` stayed false because old data exists, reportPageReady would not
+		// re-run when this request finishes and the page-wide loading veil would remain.
+		loading = true;
 		loadError = null;
 		const timer = window.setTimeout(() => {
 			const controller = new AbortController();
@@ -304,7 +298,6 @@
 					initialRangeInitialized = true;
 					fetchedData = { result, selection: { models: modelList, hourly: hourlyVars } };
 					loading = false;
-					settledLocationKey = locationKey;
 					if (applyInitialMobileRange) {
 						void tick().then(() => {
 							if (version === requestVersion && groupRange(CHART_GROUP) === null) setRangeDays(3);
@@ -315,7 +308,6 @@
 					if (version !== requestVersion || controller.signal.aborted) return;
 					loadError = humanizeWeatherError(error);
 					loading = false;
-					settledLocationKey = locationKey;
 				});
 		}, FETCH_DEBOUNCE_MS);
 
