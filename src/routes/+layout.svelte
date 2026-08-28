@@ -414,7 +414,11 @@
 
 	<!-- Main area: topbar + content -->
 	<div class="flex min-w-0 flex-1 flex-col h-full">
-		<Header />
+		<!-- Maps needs every available pixel for the map. Settings stay available
+		     from the main navigation on both desktop and mobile. -->
+		{#if !fullBleed}
+			<Header />
+		{/if}
 
 		<!-- The padding stays on <main> itself: the day strip sticks with a
 		     negative offset that exactly cancels it, so moving it to an inner
