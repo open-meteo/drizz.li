@@ -5,7 +5,7 @@
 
 	import { page } from '$app/stores';
 
-	import { reportPageReady } from '$lib/stores/page-transition.svelte';
+	import { markPageReady, reportPageReady } from '$lib/stores/page-transition.svelte';
 	import { setActiveLocation, storedModel, storedUnits } from '$lib/stores/settings';
 
 	import { formatZoned } from '$lib/utils/date';
@@ -264,6 +264,7 @@
 			fetchedData = null;
 			loading = false;
 			loadError = null;
+			markPageReady();
 			return;
 		}
 
