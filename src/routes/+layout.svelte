@@ -20,6 +20,7 @@
 		supportsViewTransitions
 	} from '$lib/utils/view-transition';
 
+	import AppStatus from '$lib/components/app-status.svelte';
 	import Footer from '$lib/components/navigation/footer.svelte';
 	import Header from '$lib/components/navigation/header.svelte';
 	import WeatherNav from '$lib/components/navigation/weather-nav.svelte';
@@ -386,7 +387,9 @@
 	</div>
 {/if}
 
-<div class="flex h-screen overflow-hidden bg-background text-foreground">
+<AppStatus />
+
+<div class="app-frame flex h-screen overflow-hidden bg-background text-foreground">
 	<!-- Desktop sidebar -->
 	<div class="sidebar-region hidden h-full shrink-0 md:block">
 		<WeatherNav collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
