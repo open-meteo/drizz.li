@@ -25,12 +25,6 @@
 	import SettingsMenu from './settings-menu.svelte';
 	import ThemeIcon from './theme-icon.svelte';
 
-	interface Props {
-		onMenuToggle?: () => void;
-	}
-
-	let { onMenuToggle }: Props = $props();
-
 	// The URL's location wins where there is one: it is what the page is about,
 	// and it is already correct in prerendered HTML. Everywhere else the store
 	// answers - but only once the browser knows whose location it holds. Until
@@ -89,28 +83,11 @@
 </script>
 
 <header
-	class="topbar flex h-14 shrink-0 items-center gap-3 border-b border-topbar-border bg-topbar px-3 md:px-4"
+	class="topbar flex h-14 shrink-0 items-center gap-2 border-b border-topbar-border bg-topbar px-3 md:gap-3 md:px-4"
 >
-	<!-- Mobile menu toggle. On phones this side and the settings side both take
-	     an equal share of the leftover width, which lands the search box dead
-	     centre; on md+ they collapse and the spacer below does the work. -->
-	<div class="flex flex-1 items-center md:flex-none">
-		<button
-			class="-ms-1 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-			onclick={onMenuToggle}
-			aria-label={m.nav_toggle_menu()}
-		>
-			<svg
-				class="h-5 w-5"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
-				stroke-width="1.75"
-			>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-			</svg>
-		</button>
-	</div>
+	<!-- A balanced spacer keeps the tappable location title centred on phones;
+	     primary navigation now lives in the persistent bottom bar. -->
+	<div class="w-11 shrink-0 md:hidden" aria-hidden="true"></div>
 
 	<!-- Current location display. Both branches carry the same pill metrics, so
 	     the real thing lands exactly where the placeholder sat. -->
@@ -149,7 +126,7 @@
 	<div class="hidden flex-1 md:block"></div>
 
 	<!-- Location search: primary way to switch places, so keep it loud -->
-	<div class="w-full max-w-sm md:max-w-md">
+	<div class="min-w-0 flex-1 md:w-full md:max-w-md md:flex-none">
 		<LocationSearch
 			label={m.search_placeholder()}
 			on:location={(event) => {
@@ -161,7 +138,7 @@
 	<!-- Phones only have room for one control, so units, theme and language
 	     collapse into a single settings menu below md. This side mirrors
 	     the menu-button column so the search lands dead centre. -->
-	<div class="flex flex-1 justify-end md:hidden">
+	<div class="flex w-11 shrink-0 justify-end md:hidden">
 		<SettingsMenu />
 	</div>
 
@@ -188,5 +165,12 @@
 <style>
 	.topbar {
 		z-index: 40;
+	}
+
+	@media (max-width: 767px) {
+		.topbar {
+			height: calc(3.5rem + env(safe-area-inset-top, 0px));
+			padding-top: env(safe-area-inset-top, 0px);
+		}
 	}
 </style>

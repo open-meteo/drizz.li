@@ -131,6 +131,16 @@
 	}
 	body {
 		@apply bg-background text-foreground;
+		overscroll-behavior-y: none;
+	}
+
+	button,
+	a,
+	input,
+	select,
+	textarea {
+		touch-action: manipulation;
+		-webkit-tap-highlight-color: transparent;
 	}
 
 	/* ── Day switching ────────────────────────────────────────────────────────
