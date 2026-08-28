@@ -95,6 +95,7 @@
 	let loading = $state(true);
 	let loadError = $state<FriendlyWeatherError | null>(null);
 	let retryNonce = $state(0);
+	let settledLocationKey = $state<string | null>(null);
 	let requestVersion = 0;
 	let activeController: AbortController | null = null;
 	let chartComponents: CanvasChart[] = $state([]);
@@ -183,8 +184,14 @@
 	let comparisonMuted = $derived(
 		comparisonSelectionDirty || displayedVariablesStale || displayedModelsStale
 	);
+	let currentLocationKey = $derived(
+		`${location.latitude},${location.longitude},${location.timezone}`
+	);
 
-	reportPageReady(() => mounted && !loading);
+	// The component survives a location navigation and deliberately keeps its old
+	// charts visible while the replacement request runs. `loading` can therefore
+	// remain false across the navigation, so track which location has settled.
+	reportPageReady(() => mounted && settledLocationKey === currentLocationKey);
 	useHeroActions(heroActions);
 
 	$effect(() => setActiveLocation(data.location));
@@ -248,6 +255,7 @@
 		const modelList = [...appliedModels];
 		const hourlyVars = [...appliedHourly];
 		const loc = location;
+		const locationKey = currentLocationKey;
 		const units = {
 			temperature_unit: params.temperature_unit as 'celsius' | 'fahrenheit',
 			wind_speed_unit: params.wind_speed_unit as 'kmh' | 'ms' | 'mph' | 'kn',
@@ -264,6 +272,7 @@
 			fetchedData = null;
 			loading = false;
 			loadError = null;
+			settledLocationKey = locationKey;
 			return;
 		}
 
@@ -295,6 +304,7 @@
 					initialRangeInitialized = true;
 					fetchedData = { result, selection: { models: modelList, hourly: hourlyVars } };
 					loading = false;
+					settledLocationKey = locationKey;
 					if (applyInitialMobileRange) {
 						void tick().then(() => {
 							if (version === requestVersion && groupRange(CHART_GROUP) === null) setRangeDays(3);
@@ -305,6 +315,7 @@
 					if (version !== requestVersion || controller.signal.aborted) return;
 					loadError = humanizeWeatherError(error);
 					loading = false;
+					settledLocationKey = locationKey;
 				});
 		}, FETCH_DEBOUNCE_MS);
 
