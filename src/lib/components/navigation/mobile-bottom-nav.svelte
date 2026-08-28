@@ -5,15 +5,16 @@
 
 	import { buildLocationRoute } from '$lib/utils/location';
 
+	import * as Dialog from '$lib/components/ui/dialog';
+
 	import { href, routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 
 	interface Props {
-		onMoreToggle: () => void;
 		moreOpen?: boolean;
 	}
 
-	let { onMoreToggle, moreOpen = false }: Props = $props();
+	let { moreOpen = false }: Props = $props();
 
 	const tabs = [
 		{
@@ -81,12 +82,11 @@
 		</a>
 	{/each}
 
-	<button
+	<Dialog.Trigger
 		type="button"
 		class="relative flex min-w-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-semibold transition-colors active:bg-muted {moreActive
 			? 'text-primary'
 			: 'text-muted-foreground'}"
-		onclick={onMoreToggle}
 		aria-expanded={moreOpen}
 	>
 		{#if moreActive}<span class="absolute top-1 h-0.5 w-5 rounded-full bg-primary"></span>{/if}
@@ -103,7 +103,7 @@
 			<circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
 		</svg>
 		<span>{m.nav_more()}</span>
-	</button>
+	</Dialog.Trigger>
 </nav>
 
 <style>
