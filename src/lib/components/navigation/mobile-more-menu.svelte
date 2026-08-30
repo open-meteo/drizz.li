@@ -12,8 +12,6 @@
 	import { href, routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 
-	import MobileSettingsSection from './mobile-settings-section.svelte';
-
 	interface Props {
 		onClose: () => void;
 	}
@@ -64,10 +62,6 @@
 			</a>
 		{/each}
 	</nav>
-
-	<div class="border-t border-sidebar-border px-2 py-3">
-		<MobileSettingsSection />
-	</div>
 
 	<nav
 		aria-label={m.legal_nav()}

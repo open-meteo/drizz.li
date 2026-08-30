@@ -390,8 +390,8 @@
 
 	<!-- Main area: topbar + content -->
 	<div class="flex min-w-0 flex-1 flex-col h-full">
-		<!-- Maps needs every available pixel for the map. Settings stay available
-		     from the main navigation on both desktop and mobile. -->
+		<!-- Maps needs every available pixel for the map, so it deliberately omits
+		     the location header and the settings control that belongs to it. -->
 		{#if !fullBleed}
 			<Header />
 		{/if}

@@ -19,6 +19,7 @@
 	import * as m from '$lib/paraglide/messages';
 
 	import LogoMark from './logo-mark.svelte';
+	import SettingsMenu from './settings-menu.svelte';
 
 	// The URL's location wins where there is one: it is what the page is about,
 	// and it is already correct in prerendered HTML. Everywhere else the store
@@ -74,19 +75,22 @@
 			<LogoMark />
 		</div>
 	</a>
-
 	<!-- One control carries both the current-place context and the action to
-	     change it. This leaves more room on phones and removes the duplicate
-	     location/search pills on desktop. -->
-	<div class="mx-auto min-w-0 flex-1 md:max-w-2xl">
-		<LocationSearch
-			label={m.search_placeholder()}
-			{location}
-			{locationDetail}
-			on:location={(event) => {
-				navigateToLocation(event.detail);
-			}}
-		/>
+	     change it. Settings sit directly beside that primary control instead of
+	     drifting to the outer corner of a wide desktop header. -->
+	<div class="mx-auto flex min-w-0 flex-1 items-center gap-2 md:max-w-[44.75rem]">
+		<div class="min-w-0 flex-1">
+			<LocationSearch
+				label={m.search_placeholder()}
+				{location}
+				{locationDetail}
+				on:location={(event) => {
+					navigateToLocation(event.detail);
+				}}
+			/>
+		</div>
+
+		<SettingsMenu />
 	</div>
 </header>
 
