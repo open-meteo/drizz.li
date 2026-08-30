@@ -9,7 +9,6 @@
 	import * as m from '$lib/paraglide/messages';
 
 	import LogoMark from './logo-mark.svelte';
-	import SettingsMenu from './settings-menu.svelte';
 
 	interface Props {
 		collapsed?: boolean;
@@ -136,12 +135,6 @@
 			</a>
 		{/each}
 	</nav>
-
-	<!-- Settings live with the main navigation so they remain reachable when a
-	     full-bleed page (notably Maps) omits the location header. -->
-	<div class="border-t border-sidebar-border px-2 py-3">
-		<SettingsMenu {collapsed} />
-	</div>
 
 	<!-- Collapse toggle (desktop sidebar only; the mobile drawer omits onToggle) -->
 	{#if onToggle}
