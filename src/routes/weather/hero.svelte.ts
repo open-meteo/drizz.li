@@ -7,7 +7,7 @@ interface HeroContext {
 }
 
 /**
- * Renders a page's own controls into the shared location row that lives in
+ * Renders a page's own controls into the shared page-heading row that lives in
  * `weather/+layout.svelte`. The row itself stays mounted across navigation;
  * only the controls swap, and they are cleared when the page unmounts.
  */

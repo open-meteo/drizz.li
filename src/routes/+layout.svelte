@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
-	import { fade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 
 	import { afterNavigate, onNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -20,9 +20,12 @@
 		supportsViewTransitions
 	} from '$lib/utils/view-transition';
 
+	import * as Dialog from '$lib/components/ui/dialog';
+
 	import Footer from '$lib/components/navigation/footer.svelte';
 	import Header from '$lib/components/navigation/header.svelte';
 	import MobileBottomNav from '$lib/components/navigation/mobile-bottom-nav.svelte';
+	import MobileMoreSheet from '$lib/components/navigation/mobile-more-sheet.svelte';
 	import WeatherNav from '$lib/components/navigation/weather-nav.svelte';
 
 	import { routePath } from '$lib/i18n';
@@ -319,14 +322,6 @@
 	const toggleSidebar = () => {
 		sidebarCollapsed = !sidebarCollapsed;
 	};
-
-	const toggleMobileMenu = () => {
-		mobileMenuOpen = !mobileMenuOpen;
-	};
-
-	const closeMobileMenu = () => {
-		mobileMenuOpen = false;
-	};
 </script>
 
 <svelte:head>
@@ -393,28 +388,13 @@
 		<WeatherNav collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
 	</div>
 
-	<!-- Mobile overlay -->
-	{#if mobileMenuOpen}
-		<div class="fixed inset-0 z-50 md:hidden" role="presentation">
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div
-				class="absolute inset-0 bg-black/30"
-				transition:fade={{ duration: 150 }}
-				onclick={closeMobileMenu}
-				onkeydown={closeMobileMenu}
-			></div>
-			<div
-				class="mobile-more-sheet absolute right-0 bottom-0 left-0 z-1 shadow-2xl"
-				transition:fly={{ y: 240, duration: 220, opacity: 1 }}
-			>
-				<WeatherNav collapsed={false} onMobileClose={closeMobileMenu} />
-			</div>
-		</div>
-	{/if}
-
 	<!-- Main area: topbar + content -->
 	<div class="flex min-w-0 flex-1 flex-col h-full">
-		<Header />
+		<!-- Maps needs every available pixel for the map, so it deliberately omits
+		     the location header and the settings control that belongs to it. -->
+		{#if !fullBleed}
+			<Header />
+		{/if}
 
 		<!-- The padding stays on <main> itself: the day strip sticks with a
 		     negative offset that exactly cancels it, so moving it to an inner
@@ -442,7 +422,10 @@
 				</div>
 			{/if}
 		</main>
-		<MobileBottomNav onMoreToggle={toggleMobileMenu} moreOpen={mobileMenuOpen} />
+		<Dialog.Root bind:open={mobileMenuOpen}>
+			<MobileMoreSheet onClose={() => (mobileMenuOpen = false)} />
+			<MobileBottomNav moreOpen={mobileMenuOpen} />
+		</Dialog.Root>
 	</div>
 </div>
 
@@ -454,11 +437,6 @@
 
 		.mobile-nav-clearance {
 			padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
-		}
-
-		.mobile-more-sheet {
-			height: min(78dvh, 42rem);
-			padding-bottom: env(safe-area-inset-bottom, 0px);
 		}
 	}
 </style>
