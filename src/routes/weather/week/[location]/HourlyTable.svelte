@@ -158,6 +158,22 @@
 		return Math.min(100, (val / precipAbsMax) * 100);
 	}
 
+	// Precipitation is an amount per hour, so a 3h cell is the sum of its three
+	// 1h values (finite ones only; an all-NaN block past the horizon stays empty).
+	function getCellPrecip(idx: number): number | null {
+		const arr = data.hourly.precipitation;
+		if (!is3h) return arr[idx];
+		let sum = 0;
+		let any = false;
+		for (let i = idx; i < idx + 3 && i < arr.length; i++) {
+			if (finite(arr[i])) {
+				sum += arr[i];
+				any = true;
+			}
+		}
+		return any ? sum : null;
+	}
+
 	function getPrecipProbBg(prob: number): string {
 		if (!prob || prob <= 0) return 'transparent';
 		return `rgba(30, 100, 220, ${(Math.round(prob / 10) / 100) * 10 * 0.45})`;
@@ -873,7 +889,7 @@
 								<tr class="row" class:row-empty={rowHasData[rowKey] === false}>
 									{@render rowHeader('wi-raindrop', precipUnit, m.var_precipitation_short())}
 									{#each cellData as cell (cell.idx)}
-										{@const precip = hourly.precipitation[cell.idx]}
+										{@const precip = getCellPrecip(cell.idx)}
 										{@const prob = hourly.precipitation_probability[cell.idx]}
 										<td
 											class:col-empty={!cell.hasData}
@@ -882,7 +898,7 @@
 											style="background:{getPrecipProbBg(prob ?? 0)}"
 											title={formatPrecipTooltip(precip, prob)}
 										>
-											{#if precip > 0}
+											{#if precip != null && precip > 0}
 												<div class="precip-bar" style="height:{getPrecipBarHeight(precip)}%"></div>
 												<span class="precip-label {is3h ? 'text-[13px]' : 'text-[10px]'}">
 													{precip.toFixed(1)}
