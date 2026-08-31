@@ -402,5 +402,9 @@
 	"wmo_97": "Tormenta fuerte",
 	"wmo_99": "Tormenta con granizo fuerte",
 	"summary_read_more": "Leer más",
-	"summary_read_less": "Mostrar menos"
+	"summary_read_less": "Mostrar menos",
+	"update_title": "Drizzli se ha actualizado",
+	"update_message": "Hay una versión más reciente disponible.",
+	"update_reload": "Recargar página",
+	"update_dismiss": "Descartar notificación"
 }

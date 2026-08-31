@@ -402,5 +402,9 @@
 	"wmo_97": "Schweres Gewitter",
 	"wmo_99": "Gewitter mit starkem Hagel",
 	"summary_read_more": "Mehr anzeigen",
-	"summary_read_less": "Weniger anzeigen"
+	"summary_read_less": "Weniger anzeigen",
+	"update_title": "Drizzli wurde aktualisiert",
+	"update_message": "Eine neuere Version ist verfügbar.",
+	"update_reload": "Seite neu laden",
+	"update_dismiss": "Benachrichtigung schließen"
 }

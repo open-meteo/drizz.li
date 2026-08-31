@@ -24,6 +24,7 @@
 	import Header from '$lib/components/navigation/header.svelte';
 	import MobileBottomNav from '$lib/components/navigation/mobile-bottom-nav.svelte';
 	import WeatherNav from '$lib/components/navigation/weather-nav.svelte';
+	import UpdateNotification from '$lib/components/update-notification.svelte';
 
 	import { routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
@@ -445,6 +446,8 @@
 		<MobileBottomNav onMoreToggle={toggleMobileMenu} moreOpen={mobileMenuOpen} />
 	</div>
 </div>
+
+<UpdateNotification />
 
 <style>
 	@media (max-width: 767px) {

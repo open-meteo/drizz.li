@@ -402,5 +402,9 @@
 	"wmo_97": "Orage violent",
 	"wmo_99": "Orage avec forte grêle",
 	"summary_read_more": "Lire la suite",
-	"summary_read_less": "Afficher moins"
+	"summary_read_less": "Afficher moins",
+	"update_title": "Drizzli a été mis à jour",
+	"update_message": "Une version plus récente est disponible.",
+	"update_reload": "Recharger la page",
+	"update_dismiss": "Fermer la notification"
 }

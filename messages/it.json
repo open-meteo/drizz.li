@@ -402,5 +402,9 @@
 	"wmo_97": "Temporale forte",
 	"wmo_99": "Temporale con grandine forte",
 	"summary_read_more": "Leggi tutto",
-	"summary_read_less": "Mostra meno"
+	"summary_read_less": "Mostra meno",
+	"update_title": "Drizzli è stato aggiornato",
+	"update_message": "È disponibile una versione più recente.",
+	"update_reload": "Ricarica la pagina",
+	"update_dismiss": "Chiudi la notifica"
 }

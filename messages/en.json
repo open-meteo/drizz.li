@@ -402,5 +402,9 @@
 	"wmo_97": "Heavy thunderstorm",
 	"wmo_99": "Thunderstorm with heavy hail",
 	"summary_read_more": "Read more",
-	"summary_read_less": "Show less"
+	"summary_read_less": "Show less",
+	"update_title": "Drizzli has been updated",
+	"update_message": "A newer version is available.",
+	"update_reload": "Reload page",
+	"update_dismiss": "Dismiss notification"
 }
