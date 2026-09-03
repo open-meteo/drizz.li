@@ -153,7 +153,7 @@
 	// ─── Chart Building (runs when fetchedData or the variable list changes) ────
 
 	// Ensemble members stop at the model's horizon; past it the service collapses
-	// every value to 0 (min = max = mean = 0). Trim the axis to the last hour that
+	// every value to 0 (all percentiles = 0). Trim the axis to the last hour that
 	// actually has data so the charts cut off instead of flat-lining to zero.
 	let validLength = $derived.by((): number => {
 		if (!fetchedData) return 0;
@@ -162,7 +162,7 @@
 		if (!temp) return n;
 		let last = 0;
 		for (let i = 0; i < n; i++) {
-			if (!(temp.max[i] === 0 && temp.min[i] === 0 && temp.average[i] === 0)) last = i + 1;
+			if (!(temp.p90[i] === 0 && temp.p10[i] === 0 && temp.p50[i] === 0)) last = i + 1;
 		}
 		return last || n;
 	});
@@ -237,38 +237,60 @@
 
 			// Trim to the valid horizon so the axis scale ignores the trailing
 			// zeros the service pads past the model's range.
-			const vMax = varData.max.slice(0, validLength);
-			const vMin = varData.min.slice(0, validLength);
-			const vAvg = varData.average.slice(0, validLength);
+			const vP10 = varData.p10.slice(0, validLength);
+			const vP25 = varData.p25.slice(0, validLength);
+			const vP50 = varData.p50.slice(0, validLength);
+			const vP75 = varData.p75.slice(0, validLength);
+			const vP90 = varData.p90.slice(0, validLength);
 
-			// Min/max spread band + mean, instead of every individual member
+			// Percentile bands (p10-p90 outer, p25-p75 inner) + median, instead of
+			// every individual member
 			const series: ChartSeries[] = [
 				{
-					name: 'Max',
+					name: 'p90',
 					type: 'line',
 					color: BAND_COLOR,
-					data: vMax,
+					data: vP90,
 					width: 1,
 					fill: true,
-					fillOpacity: 0.25,
-					bandTo: vMin,
+					fillOpacity: 0.18,
+					bandTo: vP10,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				},
 				{
-					name: 'Mean',
+					name: 'p75',
+					type: 'line',
+					color: BAND_COLOR,
+					data: vP75,
+					width: 1,
+					fill: true,
+					fillOpacity: 0.35,
+					bandTo: vP25,
+					format: (v) => `${v.toFixed(1)} ${unit}`
+				},
+				{
+					name: 'Median',
 					type: isColumn ? 'bar' : 'line',
 					color: CHART_COLORS.average,
-					data: vAvg,
+					data: vP50,
 					width: 3.5,
 					dashed: !isColumn,
 					outline: !isColumn,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				},
 				{
-					name: 'Min',
+					name: 'p25',
 					type: 'line',
 					color: BAND_COLOR,
-					data: vMin,
+					data: vP25,
+					width: 1,
+					format: (v) => `${v.toFixed(1)} ${unit}`
+				},
+				{
+					name: 'p10',
+					type: 'line',
+					color: BAND_COLOR,
+					data: vP10,
 					width: 1,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				}
@@ -282,8 +304,8 @@
 				// each chart is labelled so the variable is obvious at a glance
 				title: `${varLabel(variable)}${isColumn ? '' : ' spread'}`,
 				subtitle: isFirst
-					? `min · mean · max across ${memberCount} ensemble members`
-					: `min · mean · max (${unit})`,
+					? `p10 – p90 and p25 – p75 bands · median, across ${memberCount} ensemble members`
+					: `p10 · p25 · median · p75 · p90 (${unit})`,
 				unit,
 				showCredit: isLast,
 				series,
