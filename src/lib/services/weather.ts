@@ -26,6 +26,7 @@ const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const ENSEMBLE_URL = 'https://ensemble-api.open-meteo.com/v1/ensemble';
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive';
 const SEASONAL_URL = 'https://seasonal-api.open-meteo.com/v1/seasonal';
+const MARINE_URL = 'https://marine-api.open-meteo.com/v1/marine';
 
 // ─── Core Helpers ───────────────────────────────────────────────────────────────
 
@@ -808,6 +809,112 @@ export async function fetchEnsembleForecast(
 		daylightBands,
 		hourlyFlat,
 		hourlyUnitsFlat
+	};
+}
+
+// ─── Marine (Wave) Forecast Types ───────────────────────────────────────────────
+
+export interface MarineForecastParams extends WeatherLocation {
+	hourlyVariables: string[];
+	model?: string;
+	forecast_days?: number;
+	past_days?: number;
+	/** Sea surface temperature honours this; wave heights stay metric. */
+	temperature_unit?: 'celsius' | 'fahrenheit';
+	/** Ocean current velocity honours this. */
+	wind_speed_unit?: 'kmh' | 'ms' | 'mph' | 'kn';
+}
+
+export interface MarineSeries {
+	values: number[];
+	unit: string;
+}
+
+export interface MarineForecastResult {
+	variables: Record<string, MarineSeries>;
+	timestamps: number[];
+	utcOffsetSeconds: number;
+	timezone: string;
+	daylightBands: DaylightBand[];
+}
+
+// ─── Marine (Wave) Forecast Fetch ───────────────────────────────────────────────
+
+/**
+ * Fetches hourly wave and sea state data from Open-Meteo's marine API. Inland
+ * grid cells answer with NaN for every hour rather than an error, so callers
+ * detect "no sea here" off the data. Daily sunrise/sunset for the daylight
+ * bands comes from the standard forecast API in parallel (the marine API
+ * carries none).
+ */
+export async function fetchMarineForecast(
+	params: MarineForecastParams
+): Promise<MarineForecastResult> {
+	const forecastDays = params.forecast_days ?? 7;
+	const pastDays = params.past_days ?? 1;
+
+	const apiParams: Record<string, string | number | undefined> = {
+		latitude: params.latitude,
+		longitude: params.longitude,
+		hourly: params.hourlyVariables.join(','),
+		forecast_days: forecastDays,
+		past_days: pastDays,
+		temperature_unit: params.temperature_unit ?? 'celsius',
+		wind_speed_unit: params.wind_speed_unit ?? 'kmh',
+		models: params.model && params.model !== 'best_match' ? params.model : undefined,
+		timezone: params.timezone
+	};
+
+	const cleanParams: Record<string, string> = {};
+	for (const [key, value] of Object.entries(apiParams)) {
+		if (value !== undefined) cleanParams[key] = String(value);
+	}
+
+	const dailyParams: Record<string, string> = {
+		latitude: String(params.latitude),
+		longitude: String(params.longitude),
+		daily: 'sunrise,sunset',
+		forecast_days: String(forecastDays),
+		past_days: String(pastDays),
+		timezone: params.timezone ?? 'auto'
+	};
+
+	const [marineResponses, dailyResponses] = await Promise.all([
+		fetchWeatherApi(MARINE_URL, cleanParams),
+		fetchWeatherApi(FORECAST_URL, dailyParams)
+	]);
+
+	const response = marineResponses[0];
+	const utcOffsetSeconds = response.utcOffsetSeconds();
+	const timezone = response.timezone() ?? params.timezone ?? 'UTC';
+
+	const hourlyBlock = response.hourly()!;
+	const timestamps = getTimestamps(hourlyBlock);
+
+	let daylightBands: DaylightBand[] = [];
+	const dailyBlock = dailyResponses[0]?.daily();
+	if (dailyBlock) {
+		const sunrise = getInt64Values(dailyBlock.variables(0)!);
+		const sunset = getInt64Values(dailyBlock.variables(1)!);
+		daylightBands = buildDaylightBands(sunrise, sunset);
+	}
+
+	// Values come back in the requested order.
+	const variables: Record<string, MarineSeries> = {};
+	params.hourlyVariables.forEach((name, i) => {
+		const variable = hourlyBlock.variables(i);
+		variables[name] = {
+			values: variable ? getValues(variable) : [],
+			unit: variable ? unitToDisplayString(variable.unit()) : ''
+		};
+	});
+
+	return {
+		variables,
+		timestamps,
+		utcOffsetSeconds,
+		timezone,
+		daylightBands
 	};
 }
 

@@ -47,8 +47,8 @@
 	const isActive = (url: string) => currentPath === url || currentPath.startsWith(`${url}/`);
 	let moreActive = $derived(
 		moreOpen ||
-			['/weather/seasonal', '/weather/historical', '/about', '/legal'].some((path) =>
-				currentPath.startsWith(path)
+			['/weather/marine', '/weather/seasonal', '/weather/historical', '/about', '/legal'].some(
+				(path) => currentPath.startsWith(path)
 			)
 	);
 </script>
