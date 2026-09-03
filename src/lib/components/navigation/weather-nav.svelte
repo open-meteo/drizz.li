@@ -169,6 +169,15 @@
 				href={href('/legal/privacy')}
 				onclick={onMobileClose}>{m.legal_privacy()}</a
 			>
+			<!-- the header's GitHub button only exists from md up, so the drawer
+			     carries the open-source link on phones -->
+			<a
+				class="hover:text-sidebar-foreground hover:underline"
+				href="https://github.com/open-meteo/drizz.li"
+				target="_blank"
+				rel="noopener noreferrer"
+				onclick={onMobileClose}>GitHub</a
+			>
 		</nav>
 	{/if}
 
