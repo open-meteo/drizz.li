@@ -531,6 +531,23 @@ export const archiveModelGroups: WeatherModelGroup[] = [
 	}
 ];
 
+/** CAMS domains the air quality API accepts. */
+export const airQualityDomainGroups: WeatherModelGroup[] = [
+	{
+		value: 'auto',
+		label: 'Automatic',
+		models: [{ value: 'auto', label: 'Best match', resolution: 'varies', update: 'varies' }]
+	},
+	{
+		value: 'cams',
+		label: 'Copernicus CAMS',
+		models: [
+			{ value: 'cams_europe', label: 'CAMS Europe', resolution: '11 km', update: 'daily' },
+			{ value: 'cams_global', label: 'CAMS Global', resolution: '40 km', update: 'every 12 h' }
+		]
+	}
+];
+
 /** Seasonal models the seasonal API accepts. */
 export const seasonalModelGroups: WeatherModelGroup[] = [
 	{

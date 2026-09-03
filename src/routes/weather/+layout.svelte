@@ -45,6 +45,7 @@
 		['/weather/week', m.page_week_subtitle],
 		['/weather/compare', m.page_compare_subtitle],
 		['/weather/14-day', m.page_14day_subtitle],
+		['/weather/air-quality', m.page_air_quality_subtitle],
 		['/weather/seasonal', m.page_seasonal_subtitle],
 		['/weather/historical', m.page_historical_subtitle]
 	];
