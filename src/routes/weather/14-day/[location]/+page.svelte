@@ -258,7 +258,7 @@
 					data: vP100,
 					width: 0,
 					fill: true,
-					fillOpacity: 0.08,
+					fillOpacity: 0.12,
 					bandTo: vP0,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				},
@@ -269,7 +269,7 @@
 					data: vP90,
 					width: 0,
 					fill: true,
-					fillOpacity: 0.18,
+					fillOpacity: 0.28,
 					bandTo: vP10,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				},
@@ -280,7 +280,7 @@
 					data: vP75,
 					width: 0,
 					fill: true,
-					fillOpacity: 0.35,
+					fillOpacity: 0.45,
 					bandTo: vP25,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				},
@@ -420,6 +420,7 @@
 							{showLegend}
 							height={300}
 							group={CHART_GROUP}
+							sharedLegend
 						/>
 					</ChartContainer>
 				</div>
