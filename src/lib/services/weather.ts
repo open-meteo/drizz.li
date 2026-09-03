@@ -273,12 +273,15 @@ export interface EnsembleForecastParams extends WeatherLocation, WeatherUnitPara
 
 export interface EnsembleVariableData {
 	members: number[][];
-	/** Percentiles across members per timestep (p50 is the median). */
+	/** Percentiles across members per timestep (p50 is the median; p0/p100 are
+	 *  the member extremes). */
+	p0: number[];
 	p10: number[];
 	p25: number[];
 	p50: number[];
 	p75: number[];
 	p90: number[];
+	p100: number[];
 	unit: string;
 }
 
@@ -669,7 +672,7 @@ export async function fetchModelComparison(
  * Separately fetches daily sunrise/sunset from the standard forecast API.
  *
  * Returns typed ensemble data with per-variable member arrays and percentile
- * spreads (p10/p25/p50/p75/p90 - the API offers no server-side aggregation, so
+ * spreads (p0-p100 - the API offers no server-side aggregation, so
  * they are computed here from the members), plus a flat record structure for
  * compatibility with existing chart utilities.
  */
@@ -775,11 +778,13 @@ export async function fetchEnsembleForecast(
 			// Calculate percentiles across members. Timesteps without any member
 			// value stay 0, matching the padding past a model's horizon (the pages
 			// trim the axis on that sentinel).
+			const p0 = new Array<number>(timeLength).fill(0);
 			const p10 = new Array<number>(timeLength).fill(0);
 			const p25 = new Array<number>(timeLength).fill(0);
 			const p50 = new Array<number>(timeLength).fill(0);
 			const p75 = new Array<number>(timeLength).fill(0);
 			const p90 = new Array<number>(timeLength).fill(0);
+			const p100 = new Array<number>(timeLength).fill(0);
 
 			for (let t = 0; t < timeLength; t++) {
 				const values: number[] = [];
@@ -789,20 +794,24 @@ export async function fetchEnsembleForecast(
 				}
 				if (values.length === 0) continue;
 				values.sort((a, b) => a - b);
+				p0[t] = values[0];
 				p10[t] = percentileSorted(values, 0.1);
 				p25[t] = percentileSorted(values, 0.25);
 				p50[t] = percentileSorted(values, 0.5);
 				p75[t] = percentileSorted(values, 0.75);
 				p90[t] = percentileSorted(values, 0.9);
+				p100[t] = values[values.length - 1];
 			}
 
 			variables[varName] = {
 				members,
+				p0,
 				p10,
 				p25,
 				p50,
 				p75,
 				p90,
+				p100,
 				unit: unitStr
 			};
 		}

@@ -237,21 +237,37 @@
 
 			// Trim to the valid horizon so the axis scale ignores the trailing
 			// zeros the service pads past the model's range.
+			const vP0 = varData.p0.slice(0, validLength);
 			const vP10 = varData.p10.slice(0, validLength);
 			const vP25 = varData.p25.slice(0, validLength);
 			const vP50 = varData.p50.slice(0, validLength);
 			const vP75 = varData.p75.slice(0, validLength);
 			const vP90 = varData.p90.slice(0, validLength);
+			const vP100 = varData.p100.slice(0, validLength);
 
-			// Percentile bands (p10-p90 outer, p25-p75 inner) + median, instead of
-			// every individual member
+			// A percentile fan instead of every individual member: nested bands
+			// (p0-p100, p10-p90, p25-p75) drawn as pure fills - width 0 draws no
+			// boundary line - stacking to deeper opacity towards the median, which
+			// is the only line. The width-0, fill-less entries exist so the lower
+			// bounds still read out in the tooltip.
 			const series: ChartSeries[] = [
+				{
+					name: 'p100',
+					type: 'line',
+					color: BAND_COLOR,
+					data: vP100,
+					width: 0,
+					fill: true,
+					fillOpacity: 0.08,
+					bandTo: vP0,
+					format: (v) => `${v.toFixed(1)} ${unit}`
+				},
 				{
 					name: 'p90',
 					type: 'line',
 					color: BAND_COLOR,
 					data: vP90,
-					width: 1,
+					width: 0,
 					fill: true,
 					fillOpacity: 0.18,
 					bandTo: vP10,
@@ -262,7 +278,7 @@
 					type: 'line',
 					color: BAND_COLOR,
 					data: vP75,
-					width: 1,
+					width: 0,
 					fill: true,
 					fillOpacity: 0.35,
 					bandTo: vP25,
@@ -283,7 +299,7 @@
 					type: 'line',
 					color: BAND_COLOR,
 					data: vP25,
-					width: 1,
+					width: 0,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				},
 				{
@@ -291,7 +307,15 @@
 					type: 'line',
 					color: BAND_COLOR,
 					data: vP10,
-					width: 1,
+					width: 0,
+					format: (v) => `${v.toFixed(1)} ${unit}`
+				},
+				{
+					name: 'p0',
+					type: 'line',
+					color: BAND_COLOR,
+					data: vP0,
+					width: 0,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				}
 			];
@@ -304,8 +328,8 @@
 				// each chart is labelled so the variable is obvious at a glance
 				title: `${varLabel(variable)}${isColumn ? '' : ' spread'}`,
 				subtitle: isFirst
-					? `p10 – p90 and p25 – p75 bands · median, across ${memberCount} ensemble members`
-					: `p10 · p25 · median · p75 · p90 (${unit})`,
+					? `p0 – p100 · p10 – p90 · p25 – p75 bands and median, across ${memberCount} ensemble members`
+					: `p0 · p10 · p25 · median · p75 · p90 · p100 (${unit})`,
 				unit,
 				showCredit: isLast,
 				series,
