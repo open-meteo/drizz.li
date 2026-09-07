@@ -200,7 +200,9 @@
 <Popover.Root bind:open={popoverOpen}>
 	<Popover.Trigger
 		class="flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-full border border-border/80 bg-background py-1 ps-1 pe-3 text-[0.8125rem] font-medium text-muted-foreground shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-primary/70 hover:shadow-md md:h-10"
-		aria-label={m.search_aria()}
+		aria-label={[location?.name ?? label, locationDetail, m.search_aria()]
+			.filter(Boolean)
+			.join(' · ')}
 		title={location ? [location.name, locationDetail].filter(Boolean).join(' · ') : label}
 	>
 		{#if location}
