@@ -93,6 +93,8 @@
 	interface GroupState {
 		range: { start: number; end: number } | null;
 		hover: number | null;
+		/** Series hidden via the legend, shared by charts opting into sharedLegend. */
+		hiddenSeries: SvelteSet<string>;
 		count: number;
 	}
 
@@ -102,7 +104,7 @@
 
 	function acquireGroup(name: string): GroupState {
 		if (!groups[name]) {
-			groups[name] = { range: null, hover: null, count: 0 };
+			groups[name] = { range: null, hover: null, hiddenSeries: new SvelteSet<string>(), count: 0 };
 		}
 		groups[name].count++;
 		return groups[name];
@@ -194,6 +196,9 @@
 		height?: number;
 		/** Charts sharing a group share x-zoom range and crosshair */
 		group?: string;
+		/** Legend toggles apply to the whole group instead of this chart alone
+		 *  (hiding a series hides it on every chart of the page). Needs `group`. */
+		sharedLegend?: boolean;
 		/** Fixed left-axis minimum (otherwise derived from data, including 0) */
 		yMin?: number;
 		/** Minimum breathing room (axis units) above the left-axis data range. */
@@ -255,6 +260,7 @@
 		unitRight,
 		height = 300,
 		group,
+		sharedLegend = false,
 		yMin,
 		yMax,
 		yTicks,
@@ -436,6 +442,11 @@
 	// The group is acquired once at component init (the prop is treated as fixed).
 	const groupName = untrack(() => group);
 	const groupState: GroupState | null = groupName ? acquireGroup(groupName) : null;
+	// Legend visibility: the group's shared set when sharedLegend is on (hiding a
+	// series hides it on every chart of the page), otherwise this chart's own.
+	const hiddenSeries = untrack(() =>
+		sharedLegend && groupState ? groupState.hiddenSeries : legendHidden
+	);
 	let localRange = $state<{ start: number; end: number } | null>(null);
 	let localHover = $state<number | null>(null);
 	// Pointer hover is visual only. Live-region announcements are enabled by
@@ -460,7 +471,7 @@
 	);
 	let zoomed = $derived(viewRange !== null && viewEnd - viewStart < tMax - tMin);
 
-	let visibleSeries = $derived(series.filter((s) => !s.hidden && !legendHidden.has(s.name)));
+	let visibleSeries = $derived(series.filter((s) => !s.hidden && !hiddenSeries.has(s.name)));
 	// Cloud-band series draw a decorative top band and are excluded from the
 	// axis scale and from the normal line/bar drawing.
 	let plottedSeries = $derived(visibleSeries.filter((s) => !s.cloudBand));
@@ -1841,8 +1852,8 @@
 	});
 
 	function toggleSeries(name: string): void {
-		if (legendHidden.has(name)) legendHidden.delete(name);
-		else legendHidden.add(name);
+		if (hiddenSeries.has(name)) hiddenSeries.delete(name);
+		else hiddenSeries.add(name);
 	}
 
 	function handleKeydown(event: KeyboardEvent): void {
@@ -1990,7 +2001,7 @@
 			{#each series.filter((s) => s.showInLegend !== false) as s (s.name)}
 				<button
 					type="button"
-					class="flex cursor-pointer items-center gap-1.5 text-xs transition-opacity {legendHidden.has(
+					class="flex cursor-pointer items-center gap-1.5 text-xs transition-opacity {hiddenSeries.has(
 						s.name
 					)
 						? 'opacity-40'

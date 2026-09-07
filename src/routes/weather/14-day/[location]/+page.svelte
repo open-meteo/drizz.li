@@ -153,7 +153,7 @@
 	// ─── Chart Building (runs when fetchedData or the variable list changes) ────
 
 	// Ensemble members stop at the model's horizon; past it the service collapses
-	// every value to 0 (min = max = mean = 0). Trim the axis to the last hour that
+	// every value to 0 (all percentiles = 0). Trim the axis to the last hour that
 	// actually has data so the charts cut off instead of flat-lining to zero.
 	let validLength = $derived.by((): number => {
 		if (!fetchedData) return 0;
@@ -162,7 +162,7 @@
 		if (!temp) return n;
 		let last = 0;
 		for (let i = 0; i < n; i++) {
-			if (!(temp.max[i] === 0 && temp.min[i] === 0 && temp.average[i] === 0)) last = i + 1;
+			if (!(temp.p90[i] === 0 && temp.p10[i] === 0 && temp.p50[i] === 0)) last = i + 1;
 		}
 		return last || n;
 	});
@@ -237,39 +237,85 @@
 
 			// Trim to the valid horizon so the axis scale ignores the trailing
 			// zeros the service pads past the model's range.
-			const vMax = varData.max.slice(0, validLength);
-			const vMin = varData.min.slice(0, validLength);
-			const vAvg = varData.average.slice(0, validLength);
+			const vP0 = varData.p0.slice(0, validLength);
+			const vP10 = varData.p10.slice(0, validLength);
+			const vP25 = varData.p25.slice(0, validLength);
+			const vP50 = varData.p50.slice(0, validLength);
+			const vP75 = varData.p75.slice(0, validLength);
+			const vP90 = varData.p90.slice(0, validLength);
+			const vP100 = varData.p100.slice(0, validLength);
 
-			// Min/max spread band + mean, instead of every individual member
+			// A percentile fan instead of every individual member: nested bands
+			// (p0-p100, p10-p90, p25-p75) drawn as pure fills - width 0 draws no
+			// boundary line - stacking to deeper opacity towards the median, which
+			// is the only line. The width-0, fill-less entries exist so the lower
+			// bounds still read out in the tooltip.
 			const series: ChartSeries[] = [
 				{
-					name: 'Max',
+					name: 'p100',
 					type: 'line',
 					color: BAND_COLOR,
-					data: vMax,
-					width: 1,
+					data: vP100,
+					width: 0,
 					fill: true,
-					fillOpacity: 0.25,
-					bandTo: vMin,
+					fillOpacity: 0.12,
+					bandTo: vP0,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				},
 				{
-					name: 'Mean',
+					name: 'p90',
+					type: 'line',
+					color: BAND_COLOR,
+					data: vP90,
+					width: 0,
+					fill: true,
+					fillOpacity: 0.28,
+					bandTo: vP10,
+					format: (v) => `${v.toFixed(1)} ${unit}`
+				},
+				{
+					name: 'p75',
+					type: 'line',
+					color: BAND_COLOR,
+					data: vP75,
+					width: 0,
+					fill: true,
+					fillOpacity: 0.45,
+					bandTo: vP25,
+					format: (v) => `${v.toFixed(1)} ${unit}`
+				},
+				{
+					name: 'Median',
 					type: isColumn ? 'bar' : 'line',
 					color: CHART_COLORS.average,
-					data: vAvg,
+					data: vP50,
 					width: 3.5,
 					dashed: !isColumn,
 					outline: !isColumn,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				},
 				{
-					name: 'Min',
+					name: 'p25',
 					type: 'line',
 					color: BAND_COLOR,
-					data: vMin,
-					width: 1,
+					data: vP25,
+					width: 0,
+					format: (v) => `${v.toFixed(1)} ${unit}`
+				},
+				{
+					name: 'p10',
+					type: 'line',
+					color: BAND_COLOR,
+					data: vP10,
+					width: 0,
+					format: (v) => `${v.toFixed(1)} ${unit}`
+				},
+				{
+					name: 'p0',
+					type: 'line',
+					color: BAND_COLOR,
+					data: vP0,
+					width: 0,
 					format: (v) => `${v.toFixed(1)} ${unit}`
 				}
 			];
@@ -282,8 +328,8 @@
 				// each chart is labelled so the variable is obvious at a glance
 				title: `${varLabel(variable)}${isColumn ? '' : ' spread'}`,
 				subtitle: isFirst
-					? `min · mean · max across ${memberCount} ensemble members`
-					: `min · mean · max (${unit})`,
+					? `p0 – p100 · p10 – p90 · p25 – p75 bands and median, across ${memberCount} ensemble members`
+					: `p0 · p10 · p25 · median · p75 · p90 · p100 (${unit})`,
 				unit,
 				showCredit: isLast,
 				series,
@@ -374,6 +420,7 @@
 							{showLegend}
 							height={300}
 							group={CHART_GROUP}
+							sharedLegend
 						/>
 					</ChartContainer>
 				</div>
