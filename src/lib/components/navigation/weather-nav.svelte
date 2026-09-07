@@ -13,10 +13,9 @@
 	interface Props {
 		collapsed?: boolean;
 		onToggle?: () => void;
-		onMobileClose?: () => void;
 	}
 
-	let { collapsed = false, onToggle, onMobileClose }: Props = $props();
+	let { collapsed = false, onToggle }: Props = $props();
 
 	const links = [
 		{
@@ -79,18 +78,10 @@
 </script>
 
 <aside
-	class="flex h-full flex-col bg-sidebar transition-all duration-200 {onMobileClose
-		? 'overflow-y-auto rounded-t-3xl border-t border-sidebar-border'
-		: 'border-r border-sidebar-border'}"
-	class:w-full={Boolean(onMobileClose)}
-	class:w-55={!collapsed && !onMobileClose}
+	class="flex h-full flex-col border-r border-sidebar-border bg-sidebar transition-all duration-200"
+	class:w-55={!collapsed}
 	class:w-14={collapsed}
 >
-	{#if onMobileClose}
-		<div class="flex h-5 shrink-0 items-center justify-center" aria-hidden="true">
-			<div class="h-1 w-10 rounded-full bg-sidebar-foreground/20"></div>
-		</div>
-	{/if}
 	<!-- Sidebar header: same height as the topbar so the borders align; the
 	     home link fills the entire row, padding included -->
 	<div class="flex h-14 shrink-0 items-stretch border-b border-sidebar-border">
@@ -99,7 +90,6 @@
 			class="flex flex-1 items-center gap-2.5 transition-colors hover:bg-sidebar-accent {collapsed
 				? 'justify-center'
 				: 'px-4'}"
-			onclick={onMobileClose}
 			aria-label={m.nav_home()}
 		>
 			<div
@@ -125,7 +115,6 @@
 					? 'bg-sidebar-accent text-sidebar-primary! opacity-100! font-semibold! nav-active'
 					: ''}"
 				title={collapsed ? link.title() : undefined}
-				onclick={onMobileClose}
 			>
 				<div class="flex h-5 w-5 shrink-0 items-center justify-center">
 					<svg
@@ -146,31 +135,6 @@
 			</a>
 		{/each}
 	</nav>
-
-	<!-- On phones the footer sits a long scroll away, so the same about/legal
-	     links get a quiet home at the bottom of the drawer. -->
-	{#if onMobileClose}
-		<nav
-			aria-label={m.legal_nav()}
-			class="flex flex-wrap gap-x-3 gap-y-1 border-t border-sidebar-border px-4 py-3 text-[11px] text-sidebar-foreground/70"
-		>
-			<a
-				class="hover:text-sidebar-foreground hover:underline"
-				href={href('/about')}
-				onclick={onMobileClose}>{m.legal_about()}</a
-			>
-			<a
-				class="hover:text-sidebar-foreground hover:underline"
-				href={href('/legal/imprint')}
-				onclick={onMobileClose}>{m.legal_imprint()}</a
-			>
-			<a
-				class="hover:text-sidebar-foreground hover:underline"
-				href={href('/legal/privacy')}
-				onclick={onMobileClose}>{m.legal_privacy()}</a
-			>
-		</nav>
-	{/if}
 
 	<!-- Collapse toggle (desktop sidebar only; the mobile drawer omits onToggle) -->
 	{#if onToggle}

@@ -68,13 +68,14 @@
 	);
 </script>
 
+<!-- The location heading is desktop-only; forecast controls remain available on mobile. -->
 {#if subtitle}
 	<div class="relative mb-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 md:mb-2">
 		{#if !location}
 			<!-- Same metrics as the heading below, and `relative` on the row lets it
 			     dissolve over the real one rather than holding its own slot
 			     (skeletonOut). -->
-			<div class="flex min-w-0 items-center gap-3" out:skeletonOut aria-hidden="true">
+			<div class="hidden min-w-0 items-center gap-3 md:flex" out:skeletonOut aria-hidden="true">
 				<div
 					class="h-10 w-10 shrink-0 animate-pulse rounded-full bg-muted ring-2 ring-border"
 				></div>
@@ -95,7 +96,7 @@
 				</div>
 			</div>
 		{:else}
-			<div class="flex min-w-0 items-center gap-3">
+			<div class="hidden min-w-0 items-center gap-3 md:flex">
 				<img
 					class="h-10 w-10 shrink-0 rounded-full shadow-sm ring-2 ring-border"
 					src="/images/country-flags/{(
