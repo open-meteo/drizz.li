@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	import XIcon from '@lucide/svelte/icons/x';
 	import { Dialog as DialogPrimitive } from 'bits-ui';
 
@@ -13,6 +15,17 @@
 	}
 
 	let { onClose }: Props = $props();
+
+	onMount(() => {
+		// Match Tailwind's md breakpoint so a hidden sheet cannot retain its modal lock.
+		const desktop = window.matchMedia('(min-width: 48rem)');
+		const closeOnDesktop = () => {
+			if (desktop.matches) onClose();
+		};
+		closeOnDesktop();
+		desktop.addEventListener('change', closeOnDesktop);
+		return () => desktop.removeEventListener('change', closeOnDesktop);
+	});
 </script>
 
 <Dialog.Portal>
