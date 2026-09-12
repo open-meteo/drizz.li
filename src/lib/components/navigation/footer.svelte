@@ -26,6 +26,7 @@
 		{ href: href('/weather/week'), label: m.nav_week() },
 		{ href: href('/weather/compare'), label: m.nav_compare() },
 		{ href: href('/weather/14-day'), label: m.nav_14day() },
+		{ href: href('/weather/marine'), label: m.nav_marine() },
 		{ href: href('/weather/seasonal'), label: m.page_seasonal_subtitle() },
 		{ href: href('/weather/historical'), label: m.page_historical_subtitle() },
 		{ href: href('/weather/maps'), label: m.nav_maps() }

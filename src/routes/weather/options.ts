@@ -531,6 +531,49 @@ export const archiveModelGroups: WeatherModelGroup[] = [
 	}
 ];
 
+/** Wave models the marine API accepts (verified against marine-api.open-meteo.com). */
+export const marineModelGroups: WeatherModelGroup[] = [
+	{
+		value: 'auto',
+		label: 'Automatic',
+		models: [{ value: 'best_match', label: 'Best match', resolution: 'varies', update: 'varies' }]
+	},
+	{
+		value: 'meteofrance',
+		label: 'Météo-France',
+		models: [
+			{ value: 'meteofrance_wave', label: 'MF MFWAM', resolution: '8 km', update: 'every 12 h' }
+		]
+	},
+	{
+		value: 'ecmwf',
+		label: 'ECMWF',
+		models: [
+			{ value: 'ecmwf_wam025', label: 'ECMWF WAM 0.25°', resolution: '25 km', update: 'every 6 h' }
+		]
+	},
+	{
+		value: 'ncep',
+		label: 'NOAA U.S.',
+		models: [
+			{
+				value: 'ncep_gfswave025',
+				label: 'GFS Wave 0.25°',
+				resolution: '25 km',
+				update: 'every 6 h'
+			}
+		]
+	},
+	{
+		value: 'dwd',
+		label: 'DWD Germany',
+		models: [
+			{ value: 'gwam', label: 'DWD GWAM', resolution: '27 km', update: 'every 12 h' },
+			{ value: 'ewam', label: 'DWD EWAM (Europe)', resolution: '5 km', update: 'every 12 h' }
+		]
+	}
+];
+
 /** Seasonal models the seasonal API accepts. */
 export const seasonalModelGroups: WeatherModelGroup[] = [
 	{

@@ -74,6 +74,8 @@
 			goto(href('/weather/compare/[location]', { location: locationRoute }));
 		} else if (currentPath.startsWith('/weather/14-day')) {
 			goto(href('/weather/14-day/[location]', { location: locationRoute }));
+		} else if (currentPath.startsWith('/weather/marine')) {
+			goto(href('/weather/marine/[location]', { location: locationRoute }));
 		} else if (currentPath.startsWith('/weather/historical')) {
 			goto(href('/weather/historical/[location]', { location: locationRoute }));
 		} else if (currentPath.startsWith('/weather/seasonal')) {

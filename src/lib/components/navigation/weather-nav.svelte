@@ -42,6 +42,16 @@
 			]
 		},
 		{
+			title: m.nav_marine,
+			url: '/weather/marine' as const,
+			route: '/weather/marine/[location]' as const,
+			// two stacked waves
+			iconPaths: [
+				'M2 10c2.5-3 5-3 7.5 0s5 3 7.5 0 3.5-2 5 0',
+				'M2 16c2.5-3 5-3 7.5 0s5 3 7.5 0 3.5-2 5 0'
+			]
+		},
+		{
 			title: m.nav_seasonal,
 			url: '/weather/seasonal' as const,
 			route: '/weather/seasonal/[location]' as const,
