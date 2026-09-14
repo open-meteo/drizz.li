@@ -47,13 +47,6 @@
 		};
 		return m.model_updated({ cadence: (named[update] ?? (() => update))() });
 	}
-
-	let modelMeta = $derived.by(() => {
-		if (model?.resolution && model.resolution !== 'varies') {
-			return model.update ? `${model.resolution} · ${updateLabel(model.update)}` : model.resolution;
-		}
-		return selectedModel === 'best_match' ? m.model_best_match_hint() : '';
-	});
 </script>
 
 <Select.Root
@@ -64,50 +57,22 @@
 		if (val) onModelChange(val);
 	}}
 >
-	<!-- Fixed width from sm up (mobile stays full-width): the trigger used to hug
-	     its content, so its size changed with every model name and differed
-	     between pages. One constant footprint, sized for the longest label in
-	     the catalogue; anything longer truncates. -->
 	<Select.Trigger
 		aria-label={m.model_selector_aria({ label })}
-		class="group h-auto min-h-12 min-w-0 flex-1 cursor-pointer gap-2.5 rounded-xl border-2 border-primary/35 bg-card py-1.5 ps-2.5 shadow-sm transition-colors hover:border-primary/70 hover:shadow-md data-[size=default]:h-auto data-[state=open]:border-primary sm:min-h-14 sm:w-80 sm:gap-3 sm:py-2 sm:flex-none"
+		title={modelLabel}
+		class="min-w-0 max-w-full cursor-pointer items-baseline gap-1 rounded-md border-0 bg-transparent p-0 text-xl leading-snug font-bold text-muted-foreground shadow-none hover:bg-muted hover:text-foreground data-[size=default]:h-auto data-[state=open]:bg-muted dark:bg-transparent dark:hover:bg-muted [&_svg]:self-center"
 	>
-		<div
-			class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary sm:size-9"
-		>
-			<!-- layered-globe icon: weather model -->
-			<svg
-				class="size-4.5 sm:size-5"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
-				stroke-width="1.75"
-			>
-				<circle cx="12" cy="12" r="9" />
-				<path
-					stroke-linecap="round"
-					d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"
-				/>
-			</svg>
-		</div>
-		<div class="flex min-w-0 flex-1 flex-col items-start gap-0 overflow-hidden text-left">
-			<span class="text-[11px] font-semibold tracking-wide text-primary uppercase">
-				{label}
-			</span>
-			<span class="max-w-full truncate text-[13px] font-bold text-foreground sm:text-sm"
-				>{modelLabel}</span
-			>
-			{#if modelMeta}
-				<!-- the meta line is dropped on mobile to keep the trigger compact -->
-				<span
-					class="hidden max-w-full truncate text-[11px] leading-tight text-muted-foreground sm:block"
-				>
-					{modelMeta}
-				</span>
-			{/if}
-		</div>
+		<span class="min-w-0 whitespace-normal text-left md:hidden">{modelLabel}</span>
+		<span class="hidden min-w-0 whitespace-normal text-left md:inline">
+			{selectedModel === 'best_match'
+				? m.forecast_using_automatic()
+				: m.forecast_using_model({ model: modelLabel })}
+		</span>
 	</Select.Trigger>
-	<Select.Content preventScroll={false} class="max-h-[min(480px,60vh)] border-border">
+	<Select.Content
+		preventScroll={false}
+		class="max-h-[min(480px,60vh)] w-80 max-w-[calc(100vw-2rem)] border-border"
+	>
 		{#each groups as group (group.value)}
 			<Select.Group>
 				<Select.GroupHeading
