@@ -77,6 +77,13 @@
 			href={href('/legal/privacy')}
 			onclick={onClose}>{m.legal_privacy()}</a
 		>
+		<a
+			class="hover:text-sidebar-foreground hover:underline"
+			href="https://github.com/open-meteo/drizz.li"
+			target="_blank"
+			rel="noopener noreferrer"
+			onclick={onClose}>{m.oss_github()}</a
+		>
 	</nav>
 </div>
 
