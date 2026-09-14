@@ -33,13 +33,7 @@
 	let homeLocationRoute = $derived(buildLocationRoute(location ?? $storedLocation));
 
 	// Built as a string rather than inline markup: the pieces are optional.
-	let locationRegion = $derived([location?.admin1, location?.country].filter(Boolean).join(', '));
-	// A 0 m coastal town is a real reading; only a missing value is dropped.
-	let locationDetail = $derived(
-		[locationRegion, location?.elevation != null ? `${Math.round(location.elevation)}m` : null]
-			.filter(Boolean)
-			.join(' · ')
-	);
+	let locationDetail = $derived([location?.country, location?.admin1].filter(Boolean).join(', '));
 
 	function navigateToLocation(newLocation: GeoLocation) {
 		setActiveLocation(newLocation);

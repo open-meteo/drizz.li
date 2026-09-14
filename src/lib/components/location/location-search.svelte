@@ -20,6 +20,9 @@
 	export let location: GeoLocation | null = null;
 	export let locationDetail: string = '';
 
+	// Keep zero elevation visible; only omit missing readings.
+	$: elevation = location?.elevation != null ? `${Math.round(location.elevation)}m` : '';
+
 	interface ResultSet {
 		results: GeoLocation[] | undefined;
 	}
@@ -200,10 +203,12 @@
 <Popover.Root bind:open={popoverOpen}>
 	<Popover.Trigger
 		class="flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-full border border-border/80 bg-background py-1 ps-1 pe-3 text-[0.8125rem] font-medium text-muted-foreground shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-primary/70 hover:shadow-md md:h-10"
-		aria-label={[location?.name ?? label, locationDetail, m.search_aria()]
+		aria-label={[location?.name ?? label, elevation, locationDetail, m.search_aria()]
 			.filter(Boolean)
 			.join(' · ')}
-		title={location ? [location.name, locationDetail].filter(Boolean).join(' · ') : label}
+		title={location
+			? [location.name, elevation, locationDetail].filter(Boolean).join(' · ')
+			: label}
 	>
 		{#if location}
 			<img
@@ -212,7 +217,10 @@
 				alt={location.country}
 			/>
 			<span class="min-w-0 flex-1 text-left leading-tight">
-				<span class="block truncate text-sm font-semibold text-foreground">{location.name}</span>
+				<span class="block truncate text-sm font-semibold text-foreground">
+					{location.name}
+					{#if elevation}<span class="font-normal text-muted-foreground"> · {elevation}</span>{/if}
+				</span>
 				{#if locationDetail}
 					<span class="block truncate text-[11px] font-normal text-muted-foreground sm:text-xs">
 						{locationDetail}
