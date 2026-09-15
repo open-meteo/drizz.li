@@ -41,11 +41,15 @@
 
 <!-- Keep the place name in the heading and the model selection alongside it. -->
 {#if title}
-	<div class="-mt-1 mb-2 flex min-h-9 flex-wrap items-baseline gap-x-1 gap-y-0 lg:-mt-4">
-		<h1 class="sr-only text-xl leading-snug font-bold text-muted-foreground md:not-sr-only">
-			{location?.name
-				? m.forecast_heading_location({ forecast: title, location: location.name })
-				: title}
+	<!-- Match the space below to main's top padding: 12px, or 24px on large screens. -->
+	<div class="mb-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-0 md:min-h-9 lg:mb-6">
+		<h1 class="text-xl leading-tight font-bold tracking-tight text-foreground md:text-3xl">
+			{title}
+			{#if location?.name}
+				<span class="hidden font-medium text-muted-foreground md:inline"
+					>{m.forecast_location({ location: location.name })}</span
+				>
+			{/if}
 		</h1>
 		{#if hasModelSelector}
 			<div class="flex min-w-0 max-w-full items-baseline">

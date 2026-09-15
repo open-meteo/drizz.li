@@ -1,5 +1,6 @@
 {
-	"forecast_heading_location": "{forecast} für {location}",
+	"forecast_mobile_model": "mit dem Modell {model}",
+	"forecast_location": "für {location}",
 	"forecast_using_model": "mit dem Modell {model}",
 	"forecast_using_automatic": "mit automatischer Modellauswahl",
 	"$schema": "https://inlang.com/schema/inlang-message-format",

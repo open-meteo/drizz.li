@@ -60,9 +60,11 @@
 	<Select.Trigger
 		aria-label={m.model_selector_aria({ label })}
 		title={modelLabel}
-		class="min-w-0 max-w-full cursor-pointer items-baseline gap-1 rounded-md border-0 bg-transparent p-0 text-xl leading-snug font-bold text-muted-foreground shadow-none hover:bg-muted hover:text-foreground data-[size=default]:h-auto data-[state=open]:bg-muted dark:bg-transparent dark:hover:bg-muted [&_svg]:self-center"
+		class="min-w-0 max-w-full cursor-pointer items-baseline gap-1 rounded-md border-0 bg-muted/50 p-0 text-xl leading-tight font-medium tracking-tight text-muted-foreground shadow-none hover:bg-muted hover:text-foreground data-[size=default]:h-auto data-[state=open]:bg-muted md:text-3xl dark:bg-muted/50 dark:hover:bg-muted [&_svg]:self-center"
 	>
-		<span class="min-w-0 whitespace-normal text-left md:hidden">{modelLabel}</span>
+		<span class="min-w-0 whitespace-normal text-left md:hidden">
+			{m.forecast_mobile_model({ model: modelLabel })}
+		</span>
 		<span class="hidden min-w-0 whitespace-normal text-left md:inline">
 			{selectedModel === 'best_match'
 				? m.forecast_using_automatic()
