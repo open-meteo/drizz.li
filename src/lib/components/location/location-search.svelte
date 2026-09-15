@@ -252,10 +252,10 @@
 	</Popover.Trigger>
 
 	<Popover.Content
-		class="popover-dropdown w-(--bits-popover-anchor-width) min-w-[min(320px,calc(100vw-1rem))] p-0"
+		class="popover-dropdown w-(--bits-popover-anchor-width) max-w-[calc(100vw-1rem)] min-w-[min(320px,calc(100vw-1rem))] p-0 md:w-[44.75rem]"
 		side="bottom"
 		align="start"
-		sideOffset={4}
+		sideOffset={8}
 		onOpenAutoFocus={(e) => {
 			e.preventDefault();
 			focusInput();

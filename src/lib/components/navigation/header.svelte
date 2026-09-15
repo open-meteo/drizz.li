@@ -71,7 +71,7 @@
 				<LogoMark />
 			</div>
 		</a>
-		<div class="flex min-w-0 flex-1 items-center md:max-w-[44.75rem]">
+		<div class="flex min-w-0 flex-1 items-center md:max-w-xl">
 			<LocationSearch
 				label={m.search_placeholder()}
 				{location}
