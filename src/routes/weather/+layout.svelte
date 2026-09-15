@@ -41,8 +41,8 @@
 
 <!-- Keep the place name in the heading and the model selection alongside it. -->
 {#if title}
-	<!-- Match the space below to main's top padding: 12px, or 24px on large screens. -->
-	<div class="mb-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-0 md:min-h-9 lg:mb-6">
+	<!-- Keep mobile controls close; desktop spacing matches main's top padding. -->
+	<div class="mb-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-0 md:mb-3 md:min-h-9 lg:mb-6">
 		<h1 class="text-xl leading-tight font-bold tracking-tight text-foreground md:text-3xl">
 			{title}
 			{#if location?.name}
