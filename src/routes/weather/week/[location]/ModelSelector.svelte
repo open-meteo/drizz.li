@@ -73,7 +73,7 @@
 	</Select.Trigger>
 	<Select.Content
 		preventScroll={false}
-		viewportClass="md:p-3"
+		viewportClass="min-w-0 md:p-3"
 		class="max-h-[min(480px,60vh)] w-80 max-w-[calc(100vw-2rem)] border-border"
 	>
 		{#each groups as group (group.value)}
