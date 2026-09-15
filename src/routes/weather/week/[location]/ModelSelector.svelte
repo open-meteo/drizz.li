@@ -60,7 +60,7 @@
 	<Select.Trigger
 		aria-label={m.model_selector_aria({ label })}
 		title={modelLabel}
-		class="min-w-0 max-w-full cursor-pointer items-baseline gap-1 rounded-md border-0 bg-muted/50 p-0 text-xl leading-tight font-medium tracking-tight text-muted-foreground shadow-none hover:bg-muted hover:text-foreground data-[size=default]:h-auto data-[state=open]:bg-muted md:text-3xl dark:bg-muted/50 dark:hover:bg-muted [&_svg]:self-center"
+		class="min-w-0 max-w-full cursor-pointer items-baseline gap-1 rounded-md border-0 bg-sidebar-accent p-0 text-xl leading-tight font-medium tracking-tight text-muted-foreground shadow-none hover:bg-primary/15 hover:text-primary data-[size=default]:h-auto data-[state=open]:bg-primary/15 data-[state=open]:text-primary md:text-3xl dark:bg-sidebar-accent dark:hover:bg-primary/15 [&_svg]:self-center"
 	>
 		<span class="min-w-0 whitespace-normal text-left md:hidden">
 			{m.forecast_mobile_model({ model: modelLabel })}
@@ -83,16 +83,19 @@
 					{groupLabel(group)}
 				</Select.GroupHeading>
 				{#each group.models as mo (mo.value)}
-					<Select.Item class="cursor-pointer" value={mo.value} label={mo.label}>
+					<Select.Item class="group/model-option cursor-pointer" value={mo.value} label={mo.label}>
 						<!-- div, not span: the item base styles force flex row on spans -->
 						<div class="flex w-full flex-col items-start gap-0 leading-tight">
 							<span class="font-medium">{mo.label}</span>
 							{#if mo.resolution && mo.resolution !== 'varies'}
-								<span class="text-[11px] text-muted-foreground">
+								<span
+									class="text-[11px] text-muted-foreground group-data-[highlighted]/model-option:text-accent-foreground"
+								>
 									{mo.resolution}{mo.update ? ` · ${updateLabel(mo.update)}` : ''}
 								</span>
 							{:else if mo.value === 'best_match'}
-								<span class="text-[11px] text-muted-foreground"
+								<span
+									class="text-[11px] text-muted-foreground group-data-[highlighted]/model-option:text-accent-foreground"
 									>{m.model_automatic_selection()}</span
 								>
 							{/if}

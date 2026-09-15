@@ -142,7 +142,7 @@
 {#snippet locationRow(location: GeoLocation, removable: boolean)}
 	{@const fav = favKeys.has(locationKey(location))}
 	<div
-		class="group flex items-center rounded-md border border-transparent transition-[background,border-color] duration-150 hover:border-border hover:bg-accent"
+		class="group flex items-center rounded-md border border-transparent transition-[background,border-color] duration-150 focus-within:border-border focus-within:bg-accent hover:border-border hover:bg-accent"
 	>
 		<button
 			class="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-left"
@@ -154,8 +154,14 @@
 				alt={location.country}
 			/>
 			<div class="min-w-0 flex-1">
-				<div class="truncate text-sm font-medium text-foreground">{location.name}</div>
-				<div class="truncate text-xs text-muted-foreground">
+				<div
+					class="truncate text-sm font-medium text-foreground group-focus-within:text-accent-foreground group-hover:text-accent-foreground"
+				>
+					{location.name}
+				</div>
+				<div
+					class="truncate text-xs text-muted-foreground group-focus-within:text-accent-foreground group-hover:text-accent-foreground"
+				>
 					{location.admin1 || ''}
 					{location.country || ''}
 					· {location.latitude.toFixed(2)}°N {location.longitude.toFixed(2)}°E
