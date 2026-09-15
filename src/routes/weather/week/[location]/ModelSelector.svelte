@@ -60,7 +60,7 @@
 	<Select.Trigger
 		aria-label={m.model_selector_aria({ label })}
 		title={modelLabel}
-		class="min-w-0 max-w-full cursor-pointer items-baseline gap-1 rounded-md border-0 bg-sidebar-accent p-0 text-xl leading-tight font-medium tracking-tight text-muted-foreground shadow-none hover:bg-primary/15 hover:text-primary data-[size=default]:h-auto data-[state=open]:bg-primary/15 data-[state=open]:text-primary md:text-3xl dark:bg-sidebar-accent dark:hover:bg-primary/15 [&_svg]:self-center"
+		class="min-w-0 max-w-full cursor-pointer items-baseline gap-1 rounded-md border-0 bg-sidebar-accent/50 p-0 text-xl leading-tight font-medium tracking-tight text-muted-foreground shadow-none hover:bg-primary/15 hover:text-primary data-[size=default]:h-auto data-[state=open]:bg-primary/15 data-[state=open]:text-primary md:text-2xl dark:bg-sidebar-accent/50 dark:hover:bg-primary/15 [&_svg]:self-center"
 	>
 		<span class="min-w-0 whitespace-normal text-left md:hidden">
 			{m.forecast_mobile_model({ model: modelLabel })}
@@ -73,17 +73,22 @@
 	</Select.Trigger>
 	<Select.Content
 		preventScroll={false}
+		viewportClass="md:p-3"
 		class="max-h-[min(480px,60vh)] w-80 max-w-[calc(100vw-2rem)] border-border"
 	>
 		{#each groups as group (group.value)}
 			<Select.Group>
 				<Select.GroupHeading
-					class="text-[10.5px] font-bold tracking-wider text-primary/80 uppercase"
+					class="text-[10.5px] font-bold tracking-wider text-primary/80 uppercase md:px-1"
 				>
 					{groupLabel(group)}
 				</Select.GroupHeading>
 				{#each group.models as mo (mo.value)}
-					<Select.Item class="group/model-option cursor-pointer" value={mo.value} label={mo.label}>
+					<Select.Item
+						class="group/model-option cursor-pointer md:py-2 md:ps-2.5"
+						value={mo.value}
+						label={mo.label}
+					>
 						<!-- div, not span: the item base styles force flex row on spans -->
 						<div class="flex w-full flex-col items-start gap-0 leading-tight">
 							<span class="font-medium">{mo.label}</span>

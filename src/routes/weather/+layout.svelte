@@ -46,7 +46,7 @@
 		<h1 class="text-xl leading-tight font-bold tracking-tight text-foreground md:text-3xl">
 			{title}
 			{#if location?.name}
-				<span class="hidden font-medium text-muted-foreground md:inline"
+				<span class="hidden font-medium text-muted-foreground md:inline md:text-2xl"
 					>{m.forecast_location({ location: location.name })}</span
 				>
 			{/if}
