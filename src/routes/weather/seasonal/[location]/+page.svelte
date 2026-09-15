@@ -189,44 +189,9 @@
 	/>
 </svelte:head>
 
-<!-- the range buttons ride in the layout's location row (see weather/+layout) -->
+<!-- Only model selection belongs beside the forecast title. -->
 {#snippet heroActions()}
-	<!-- Out of flow on lg+ (the hero row is `relative`), same as the week, 14-day
-	     and archive pages: the controls then cannot move the heading when they
-	     change size. -->
-	<div class="flex w-full flex-wrap items-center gap-3 sm:w-auto">
-		<!-- Range buttons reslice the already-fetched horizon (no refetch). While a
-		     forecast is on its way they stay mounted but invisible, because
-		     mounting them on arrival re-flowed the row and nudged the heading.
-		     The exception is below sm, where the group is a full-width row of its
-		     own and the gap would be reserved for nothing. -->
-		<div
-			class="flex w-full gap-1 rounded-lg border border-border bg-card p-1 sm:w-auto {result
-				? ''
-				: 'hidden sm:flex sm:invisible'}"
-			role="group"
-			aria-label={m.seasonal_range_aria()}
-			aria-hidden={!result}
-		>
-			{#each RANGES as range, i (range.label)}
-				{@const disabled = !result || (range.days !== Infinity && range.days > horizonDays)}
-				<button
-					type="button"
-					class="flex-1 cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors sm:flex-none {rangeIndex ===
-					i
-						? 'bg-primary text-primary-foreground'
-						: 'text-muted-foreground hover:bg-muted hover:text-foreground'} {disabled
-						? 'cursor-not-allowed opacity-40'
-						: ''}"
-					aria-pressed={rangeIndex === i}
-					{disabled}
-					tabindex={result ? undefined : -1}
-					onclick={() => (rangeIndex = i)}
-				>
-					{range.label}
-				</button>
-			{/each}
-		</div>
+	<div class="flex min-w-0 max-w-full flex-wrap items-center gap-3">
 		<ModelSelector
 			selectedModel={seasonalModel}
 			groups={seasonalModelGroups}
@@ -258,9 +223,6 @@
 		{m.seasonal_explainer_before()}
 		<strong class="font-semibold text-foreground">{m.seasonal_explainer_strong()}</strong>
 		{m.seasonal_explainer_after()}
-		{#if lastDayLabel}
-			{m.seasonal_runs_to({ date: lastDayLabel })}
-		{/if}
 	</p>
 </div>
 
@@ -275,6 +237,36 @@
 <!-- `relative` anchors the placeholder while it fades out over the real
      outlook rather than holding its own slot in the layout (skeletonOut). -->
 <div class="relative">
+	<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+		<p class="text-xs text-muted-foreground">
+			{#if lastDayLabel}{m.seasonal_runs_to({ date: lastDayLabel })}{/if}
+		</p>
+		<!-- The range controls the monthly summaries and charts below. -->
+		<div
+			class="inline-flex max-w-full gap-0.5 overflow-x-auto rounded-lg bg-muted p-0.5"
+			role="group"
+			aria-label={m.seasonal_range_aria()}
+		>
+			{#each RANGES as range, i (range.label)}
+				{@const disabled = !result || (range.days !== Infinity && range.days > horizonDays)}
+				<button
+					type="button"
+					class="flex-1 cursor-pointer rounded-md px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors sm:flex-none {rangeIndex ===
+					i
+						? 'bg-background text-foreground shadow-sm'
+						: 'text-muted-foreground hover:bg-background/60 hover:text-foreground'} {disabled
+						? 'cursor-not-allowed opacity-40'
+						: ''}"
+					aria-pressed={rangeIndex === i}
+					{disabled}
+					tabindex={result ? undefined : -1}
+					onclick={() => (rangeIndex = i)}
+				>
+					{range.label}
+				</button>
+			{/each}
+		</div>
+	</div>
 	{#if visible && months.length > 0}
 		<SeasonalMonths {months} units={params} {normals} />
 

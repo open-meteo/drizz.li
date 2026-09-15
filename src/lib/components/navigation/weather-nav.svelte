@@ -180,7 +180,6 @@
 			>
 		</nav>
 	{/if}
-
 	<!-- Collapse toggle (desktop sidebar only; the mobile drawer omits onToggle) -->
 	{#if onToggle}
 		<div class="border-t border-sidebar-border px-2 py-3">

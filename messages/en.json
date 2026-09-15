@@ -1,4 +1,8 @@
 {
+	"forecast_mobile_model": "using {model} model",
+	"forecast_location": "for {location}",
+	"forecast_using_model": "using the {model} model",
+	"forecast_using_automatic": "using automatic model selection",
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"nav_week": "Weekly Forecast",
 	"nav_compare": "Model Comparison",

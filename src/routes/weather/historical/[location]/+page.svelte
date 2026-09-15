@@ -222,9 +222,9 @@
 	}
 </script>
 
-<!-- the reanalysis picker rides in the layout's location row -->
+<!-- Model selection forms part of the shared forecast heading. -->
 {#snippet heroActions()}
-	<div class="flex w-full min-w-0 items-center gap-3 sm:w-auto">
+	<div class="flex min-w-0 max-w-full items-center gap-3">
 		<ModelSelector
 			selectedModel={archiveModel}
 			groups={archiveModelGroups}
