@@ -46,7 +46,7 @@
 		"openmeteo": "^1.2.3",
 		"playwright": "^1.63.0",
 		"prettier": "^3.9.5",
-		"prettier-plugin-svelte": "^4.1.1",
+		"prettier-plugin-svelte": "^3.5.2",
 		"prettier-plugin-tailwindcss": "^0.8.1",
 		"svelte": "^5.57.0",
 		"svelte-check": "^4.7.3",
