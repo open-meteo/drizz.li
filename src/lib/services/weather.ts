@@ -26,6 +26,7 @@ const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const ENSEMBLE_URL = 'https://ensemble-api.open-meteo.com/v1/ensemble';
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive';
 const SEASONAL_URL = 'https://seasonal-api.open-meteo.com/v1/seasonal';
+const AIR_QUALITY_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 
 // ─── Core Helpers ───────────────────────────────────────────────────────────────
 
@@ -825,6 +826,105 @@ export async function fetchEnsembleForecast(
 		daylightBands,
 		hourlyFlat,
 		hourlyUnitsFlat
+	};
+}
+
+// ─── Air Quality Types ──────────────────────────────────────────────────────────
+
+export interface AirQualityParams extends WeatherLocation {
+	hourlyVariables: string[];
+	/** CAMS domain to read from; 'auto' blends the European and global domains. */
+	domains?: string;
+	forecast_days?: number;
+	past_days?: number;
+}
+
+export interface AirQualitySeries {
+	values: number[];
+	unit: string;
+}
+
+export interface AirQualityResult {
+	variables: Record<string, AirQualitySeries>;
+	timestamps: number[];
+	utcOffsetSeconds: number;
+	timezone: string;
+	daylightBands: DaylightBand[];
+}
+
+// ─── Air Quality Fetch ──────────────────────────────────────────────────────────
+
+/**
+ * Fetches hourly air quality data (particulates, gases, AQI indices, pollen)
+ * from Open-Meteo's CAMS-backed air quality API. Variables the chosen domain
+ * does not carry (pollen outside Europe, for one) come back as NaN rather than
+ * an error. Daily sunrise/sunset for the daylight bands comes from the standard
+ * forecast API in parallel (the air quality API carries none).
+ */
+export async function fetchAirQuality(params: AirQualityParams): Promise<AirQualityResult> {
+	const forecastDays = params.forecast_days ?? 5;
+	const pastDays = params.past_days ?? 1;
+
+	const apiParams: Record<string, string | number | undefined> = {
+		latitude: params.latitude,
+		longitude: params.longitude,
+		hourly: params.hourlyVariables.join(','),
+		forecast_days: forecastDays,
+		past_days: pastDays,
+		domains: params.domains && params.domains !== 'auto' ? params.domains : undefined,
+		timezone: params.timezone
+	};
+
+	const cleanParams: Record<string, string> = {};
+	for (const [key, value] of Object.entries(apiParams)) {
+		if (value !== undefined) cleanParams[key] = String(value);
+	}
+
+	const dailyParams: Record<string, string> = {
+		latitude: String(params.latitude),
+		longitude: String(params.longitude),
+		daily: 'sunrise,sunset',
+		forecast_days: String(forecastDays),
+		past_days: String(pastDays),
+		timezone: params.timezone ?? 'auto'
+	};
+
+	const [aqResponses, dailyResponses] = await Promise.all([
+		fetchWeatherApi(AIR_QUALITY_URL, cleanParams),
+		fetchWeatherApi(FORECAST_URL, dailyParams)
+	]);
+
+	const response = aqResponses[0];
+	const utcOffsetSeconds = response.utcOffsetSeconds();
+	const timezone = response.timezone() ?? params.timezone ?? 'UTC';
+
+	const hourlyBlock = response.hourly()!;
+	const timestamps = getTimestamps(hourlyBlock);
+
+	let daylightBands: DaylightBand[] = [];
+	const dailyBlock = dailyResponses[0]?.daily();
+	if (dailyBlock) {
+		const sunrise = getInt64Values(dailyBlock.variables(0)!);
+		const sunset = getInt64Values(dailyBlock.variables(1)!);
+		daylightBands = buildDaylightBands(sunrise, sunset);
+	}
+
+	// Values come back in the requested order.
+	const variables: Record<string, AirQualitySeries> = {};
+	params.hourlyVariables.forEach((name, i) => {
+		const variable = hourlyBlock.variables(i);
+		variables[name] = {
+			values: variable ? getValues(variable) : [],
+			unit: variable ? unitToDisplayString(variable.unit()) : ''
+		};
+	});
+
+	return {
+		variables,
+		timestamps,
+		utcOffsetSeconds,
+		timezone,
+		daylightBands
 	};
 }
 
