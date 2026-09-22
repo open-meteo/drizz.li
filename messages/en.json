@@ -1,4 +1,8 @@
 {
+	"forecast_mobile_model": "using {model} model",
+	"forecast_location": "for {location}",
+	"forecast_using_model": "using the {model} model",
+	"forecast_using_automatic": "using automatic model selection",
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"nav_week": "Weekly Forecast",
 	"nav_compare": "Model Comparison",
@@ -10,6 +14,11 @@
 	"app_update_available": "A new version is ready",
 	"app_update_now": "Update",
 	"app_install": "Install Drizz.li",
+	"nav_forecast": "Forecast",
+	"nav_14day_short": "14 days",
+	"nav_compare_short": "Compare",
+	"nav_more": "More",
+	"mobile_navigation": "Primary navigation",
 	"nav_collapse": "Collapse",
 	"nav_expand_sidebar": "Expand sidebar",
 	"nav_collapse_sidebar": "Collapse sidebar",
@@ -108,6 +117,9 @@
 	"period_evening": "in the evening",
 	"footer_tagline": "Fast, free, no-nonsense weather forecasts built on open data.",
 	"footer_data_by": "Weather data by",
+	"footer_open_source": "Drizz.li is free and open-source software (AGPL) — star it, fork it, or open an issue.",
+	"oss_github": "View on GitHub",
+	"oss_fork": "Fork",
 	"footer_forecasts": "Forecasts",
 	"footer_popular": "Popular locations",
 	"footer_about_section": "About",
@@ -401,5 +413,9 @@
 	"wmo_97": "Heavy thunderstorm",
 	"wmo_99": "Thunderstorm with heavy hail",
 	"summary_read_more": "Read more",
-	"summary_read_less": "Show less"
+	"summary_read_less": "Show less",
+	"update_title": "Drizzli has been updated",
+	"update_message": "A newer version is available.",
+	"update_reload": "Reload page",
+	"update_dismiss": "Dismiss notification"
 }

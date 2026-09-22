@@ -1,4 +1,8 @@
 {
+	"forecast_mobile_model": "avec le modèle {model}",
+	"forecast_location": "pour {location}",
+	"forecast_using_model": "avec le modèle {model}",
+	"forecast_using_automatic": "avec sélection automatique du modèle",
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"nav_week": "Prévisions hebdomadaires",
 	"nav_compare": "Comparaison des modèles",
@@ -10,6 +14,11 @@
 	"app_update_available": "Une nouvelle version est disponible",
 	"app_update_now": "Mettre à jour",
 	"app_install": "Installer Drizz.li",
+	"nav_forecast": "Prévisions",
+	"nav_14day_short": "14 jours",
+	"nav_compare_short": "Comparer",
+	"nav_more": "Plus",
+	"mobile_navigation": "Navigation principale",
 	"nav_collapse": "Réduire",
 	"nav_expand_sidebar": "Déployer la barre latérale",
 	"nav_collapse_sidebar": "Réduire la barre latérale",
@@ -108,6 +117,9 @@
 	"period_evening": "en soirée",
 	"footer_tagline": "Des prévisions météo rapides et sans fioritures, basées sur des données ouvertes.",
 	"footer_data_by": "Données météo par",
+	"footer_open_source": "Drizz.li est un logiciel libre et open source (AGPL) — mettez une étoile, forkez-le ou ouvrez un ticket.",
+	"oss_github": "Voir sur GitHub",
+	"oss_fork": "Fork",
 	"footer_forecasts": "Prévisions",
 	"footer_popular": "Lieux populaires",
 	"footer_about_section": "À propos",
@@ -401,5 +413,9 @@
 	"wmo_97": "Orage violent",
 	"wmo_99": "Orage avec forte grêle",
 	"summary_read_more": "Lire la suite",
-	"summary_read_less": "Afficher moins"
+	"summary_read_less": "Afficher moins",
+	"update_title": "Drizzli a été mis à jour",
+	"update_message": "Une version plus récente est disponible.",
+	"update_reload": "Recharger la page",
+	"update_dismiss": "Fermer la notification"
 }

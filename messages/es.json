@@ -1,4 +1,8 @@
 {
+	"forecast_mobile_model": "usando el modelo {model}",
+	"forecast_location": "para {location}",
+	"forecast_using_model": "usando el modelo {model}",
+	"forecast_using_automatic": "usando selección automática de modelos",
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"nav_week": "Pronóstico semanal",
 	"nav_compare": "Comparación de modelos",
@@ -10,6 +14,11 @@
 	"app_update_available": "Hay una nueva versión disponible",
 	"app_update_now": "Actualizar",
 	"app_install": "Instalar Drizz.li",
+	"nav_forecast": "Pronóstico",
+	"nav_14day_short": "14 días",
+	"nav_compare_short": "Comparar",
+	"nav_more": "Más",
+	"mobile_navigation": "Navegación principal",
 	"nav_collapse": "Contraer",
 	"nav_expand_sidebar": "Expandir barra lateral",
 	"nav_collapse_sidebar": "Contraer barra lateral",
@@ -108,6 +117,9 @@
 	"period_evening": "al anochecer",
 	"footer_tagline": "Pronósticos rápidos y directos basados en datos abiertos.",
 	"footer_data_by": "Datos meteorológicos de",
+	"footer_open_source": "Drizz.li es software libre y de código abierto (AGPL): dale una estrella, haz un fork o abre una incidencia.",
+	"oss_github": "Ver en GitHub",
+	"oss_fork": "Fork",
 	"footer_forecasts": "Pronósticos",
 	"footer_popular": "Ubicaciones populares",
 	"footer_about_section": "Acerca de",
@@ -401,5 +413,9 @@
 	"wmo_97": "Tormenta fuerte",
 	"wmo_99": "Tormenta con granizo fuerte",
 	"summary_read_more": "Leer más",
-	"summary_read_less": "Mostrar menos"
+	"summary_read_less": "Mostrar menos",
+	"update_title": "Drizzli se ha actualizado",
+	"update_message": "Hay una versión más reciente disponible.",
+	"update_reload": "Recargar página",
+	"update_dismiss": "Descartar notificación"
 }

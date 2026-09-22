@@ -1,4 +1,8 @@
 {
+	"forecast_mobile_model": "mit dem Modell {model}",
+	"forecast_location": "für {location}",
+	"forecast_using_model": "mit dem Modell {model}",
+	"forecast_using_automatic": "mit automatischer Modellauswahl",
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"nav_week": "Wochenvorhersage",
 	"nav_compare": "Modellvergleich",
@@ -10,6 +14,11 @@
 	"app_update_available": "Eine neue Version ist verfügbar",
 	"app_update_now": "Aktualisieren",
 	"app_install": "Drizz.li installieren",
+	"nav_forecast": "Vorhersage",
+	"nav_14day_short": "14 Tage",
+	"nav_compare_short": "Vergleich",
+	"nav_more": "Mehr",
+	"mobile_navigation": "Hauptnavigation",
 	"nav_collapse": "Einklappen",
 	"nav_expand_sidebar": "Seitenleiste ausklappen",
 	"nav_collapse_sidebar": "Seitenleiste einklappen",
@@ -108,6 +117,9 @@
 	"period_evening": "in den Abendstunden",
 	"footer_tagline": "Schnelle, gratis, unkomplizierte Wettervorhersagen auf Basis offener Daten.",
 	"footer_data_by": "Wetterdaten von",
+	"footer_open_source": "Drizz.li ist freie Open-Source-Software (AGPL) — Stern dalassen, forken oder ein Issue eröffnen.",
+	"oss_github": "Auf GitHub ansehen",
+	"oss_fork": "Fork",
 	"footer_forecasts": "Vorhersagen",
 	"footer_popular": "Beliebte Orte",
 	"footer_about_section": "Über",
@@ -401,5 +413,9 @@
 	"wmo_97": "Schweres Gewitter",
 	"wmo_99": "Gewitter mit starkem Hagel",
 	"summary_read_more": "Mehr anzeigen",
-	"summary_read_less": "Weniger anzeigen"
+	"summary_read_less": "Weniger anzeigen",
+	"update_title": "Drizzli wurde aktualisiert",
+	"update_message": "Eine neuere Version ist verfügbar.",
+	"update_reload": "Seite neu laden",
+	"update_dismiss": "Benachrichtigung schließen"
 }

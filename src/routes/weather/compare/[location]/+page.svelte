@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { onDestroy, onMount, tick, untrack } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 
 	import { page } from '$app/stores';
 
-	import { reportPageReady } from '$lib/stores/page-transition.svelte';
+	import { markPageReady, reportPageReady } from '$lib/stores/page-transition.svelte';
 	import { setActiveLocation, storedModel, storedUnits } from '$lib/stores/settings';
 
 	import { formatZoned } from '$lib/utils/date';
@@ -36,7 +36,6 @@
 		humanizeWeatherError
 	} from '$lib/services/weather';
 
-	import { useHeroActions } from '../../hero.svelte';
 	import { defaultParameters, hourly, modelGroups, models as modelOptions } from '../../options';
 	import ComparisonSelectionPanel from './ComparisonSelectionPanel.svelte';
 	import ModelPictogramTimeline from './ModelPictogramTimeline.svelte';
@@ -185,7 +184,6 @@
 	);
 
 	reportPageReady(() => mounted && !loading);
-	useHeroActions(heroActions);
 
 	$effect(() => setActiveLocation(data.location));
 	$effect(() => {
@@ -264,11 +262,15 @@
 			fetchedData = null;
 			loading = false;
 			loadError = null;
+			markPageReady();
 			return;
 		}
 
-		const hasFetchedData = untrack(() => fetchedData !== null);
-		loading = !hasFetchedData;
+		// Keep the previous comparison rendered while refreshing, but still mark the
+		// request as loading. Location navigations clear the layout's page-ready flag;
+		// if `loading` stayed false because old data exists, reportPageReady would not
+		// re-run when this request finishes and the page-wide loading veil would remain.
+		loading = true;
 		loadError = null;
 		const timer = window.setTimeout(() => {
 			const controller = new AbortController();
@@ -606,7 +608,7 @@
 </svelte:head>
 
 {#snippet rangeControls(compact = false)}
-	<div class="flex min-w-max items-center gap-2" aria-label={m.range_group_aria()}>
+	<div class="flex min-w-max items-center gap-2" role="group" aria-label={m.range_group_aria()}>
 		{#if zoomActive}
 			<button
 				type="button"
@@ -627,73 +629,6 @@
 		</div>
 	</div>
 {/snippet}
-
-{#snippet heroActions()}
-	<!-- Same footprint and look as the model selector on the other pages, so the
-	     title row is the same height everywhere. Selection itself happens in the
-	     multi-select panel further down, so this only hands over to it. -->
-	<div class="flex w-full min-w-0 items-center gap-3 sm:w-auto">
-		<button
-			type="button"
-			class="group flex h-auto min-h-12 w-full min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-xl border-2 border-primary/35 bg-card py-1.5 ps-2.5 pe-3 text-left shadow-sm transition-colors hover:border-primary/70 hover:shadow-md sm:min-h-14 sm:w-80 sm:flex-none sm:gap-3 sm:py-2"
-			onclick={() =>
-				document.getElementById('models')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-		>
-			<div
-				class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/12 text-primary sm:size-9"
-			>
-				<!-- layered-globe icon, matching the model selector -->
-				<svg
-					class="size-4.5 sm:size-5"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					stroke-width="1.75"
-				>
-					<circle cx="12" cy="12" r="9" />
-					<path
-						stroke-linecap="round"
-						d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"
-					/>
-				</svg>
-			</div>
-			<div class="flex min-w-0 flex-1 flex-col items-start gap-0 overflow-hidden">
-				<span class="text-[11px] font-semibold tracking-wide text-primary uppercase">
-					{m.compare_models_heading()}
-				</span>
-				<span class="max-w-full truncate text-[13px] font-bold text-foreground sm:text-sm">
-					{params.models.length} / {modelOptions.length}
-				</span>
-				<span
-					class="hidden max-w-full truncate text-[11px] leading-tight text-muted-foreground sm:block"
-				>
-					{m.compare_models_choose()}
-				</span>
-			</div>
-			<svg
-				class="size-4 shrink-0 text-muted-foreground"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
-				stroke-width="2"
-			>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" />
-			</svg>
-		</button>
-	</div>
-
-	<div class="lg:absolute lg:right-0 lg:top-20 z-40 hidden items-center gap-3 lg:flex">
-		<span class="text-xs text-muted-foreground">
-			{m.meteograms_zoom_hint()}
-			<kbd class="rounded border border-border bg-muted px-1 py-0.5 font-sans text-[10px]">Ctrl</kbd
-			>
-			{m.meteograms_zoom_hint_end()}
-		</span>
-		{@render rangeControls()}
-	</div>
-{/snippet}
-
-<div class="-mx-3 mb-3 overflow-x-auto px-3 lg:hidden">{@render rangeControls(true)}</div>
 
 {#if loadError}
 	<div
@@ -752,9 +687,16 @@
 			>
 				{#each chartDefs as def, i (def.title)}
 					<div class="px-0 pt-1.5 pb-1 lg:px-4 lg:pb-3 {i > 0 ? 'border-t border-border/50' : ''}">
-						<div class="mb-1 px-3 lg:px-0">
-							<h2 class="text-sm font-bold tracking-tight">{def.title}</h2>
-							<p class="text-xs text-muted-foreground">{def.subtitle}</p>
+						<div
+							class="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 lg:px-0"
+						>
+							<div class="min-w-0">
+								<h2 class="text-sm font-bold tracking-tight">{def.title}</h2>
+								<p class="text-xs text-muted-foreground">{def.subtitle}</p>
+							</div>
+							{#if i === 0}
+								<div class="max-w-full overflow-x-auto">{@render rangeControls(true)}</div>
+							{/if}
 						</div>
 						<ChartContainer
 							loading={loading && !fetchedData}

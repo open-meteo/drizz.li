@@ -1,7 +1,24 @@
 import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+
+// The version name MUST be deterministic: it is baked into both the
+// prerendered HTML and the client bundle, and Vite evaluates this config more
+// than once per build. A `Date.now()` fallback produces two different values,
+// the `__sveltekit_*` globals stop matching, and hydration crashes on every
+// page (breaking client-side routing in production).
+const buildVersion = () => {
+	// commit sha provided by Cloudflare CI (Workers Builds / Pages)
+	const sha = process.env.WORKERS_CI_COMMIT_SHA ?? process.env.CF_PAGES_COMMIT_SHA;
+	if (sha) return sha;
+	try {
+		return execSync('git rev-parse HEAD', { encoding: 'utf-8' }).trim();
+	} catch {
+		return 'dev';
+	}
+};
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -14,6 +31,14 @@ const config = {
 		// resolves the location client-side. Most static hosts serve 404.html
 		// for unknown paths automatically.
 		adapter: adapter({ fallback: '404.html' }),
+		// Poll _app/version.json so a deploy while the SPA is open surfaces the
+		// update-notification toast (see update-notification.svelte). NOTE for the
+		// upcoming service worker / offline PRs: version.json must stay
+		// network-only (never cache-first), or a new deploy is never detected.
+		version: {
+			name: buildVersion(),
+			pollInterval: 2 * 60 * 1000 // 2 mins
+		},
 		// Pregenerate city pages to improve SEO during static build
 		prerender: {
 			// dynamic per-location routes (14-day, compare, unlisted cities) are

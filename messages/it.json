@@ -1,4 +1,8 @@
 {
+	"forecast_mobile_model": "con il modello {model}",
+	"forecast_location": "per {location}",
+	"forecast_using_model": "con il modello {model}",
+	"forecast_using_automatic": "con selezione automatica del modello",
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"nav_week": "Previsioni settimanali",
 	"nav_compare": "Confronto modelli",
@@ -10,6 +14,11 @@
 	"app_update_available": "È disponibile una nuova versione",
 	"app_update_now": "Aggiorna",
 	"app_install": "Installa Drizz.li",
+	"nav_forecast": "Previsioni",
+	"nav_14day_short": "14 giorni",
+	"nav_compare_short": "Confronta",
+	"nav_more": "Altro",
+	"mobile_navigation": "Navigazione principale",
 	"nav_collapse": "Comprimi",
 	"nav_expand_sidebar": "Espandi barra laterale",
 	"nav_collapse_sidebar": "Comprimi barra laterale",
@@ -108,6 +117,9 @@
 	"period_evening": "in serata",
 	"footer_tagline": "Previsioni meteo rapide e senza fronzoli, basate su dati aperti.",
 	"footer_data_by": "Dati meteo da",
+	"footer_open_source": "Drizz.li è software libero e open source (AGPL): metti una stella, fai un fork o apri una segnalazione.",
+	"oss_github": "Vedi su GitHub",
+	"oss_fork": "Fork",
 	"footer_forecasts": "Previsioni",
 	"footer_popular": "Località popolari",
 	"footer_about_section": "Informazioni",
@@ -401,5 +413,9 @@
 	"wmo_97": "Temporale forte",
 	"wmo_99": "Temporale con grandine forte",
 	"summary_read_more": "Leggi tutto",
-	"summary_read_less": "Mostra meno"
+	"summary_read_less": "Mostra meno",
+	"update_title": "Drizzli è stato aggiornato",
+	"update_message": "È disponibile una versione più recente.",
+	"update_reload": "Ricarica la pagina",
+	"update_dismiss": "Chiudi la notifica"
 }

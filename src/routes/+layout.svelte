@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
-	import { fade, fly } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 
 	import { afterNavigate, onNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -20,10 +20,15 @@
 		supportsViewTransitions
 	} from '$lib/utils/view-transition';
 
+	import * as Dialog from '$lib/components/ui/dialog';
+
 	import AppStatus from '$lib/components/app-status.svelte';
 	import Footer from '$lib/components/navigation/footer.svelte';
 	import Header from '$lib/components/navigation/header.svelte';
+	import MobileBottomNav from '$lib/components/navigation/mobile-bottom-nav.svelte';
+	import MobileMoreSheet from '$lib/components/navigation/mobile-more-sheet.svelte';
 	import WeatherNav from '$lib/components/navigation/weather-nav.svelte';
+	import UpdateNotification from '$lib/components/update-notification.svelte';
 
 	import { routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
@@ -319,20 +324,12 @@
 	const toggleSidebar = () => {
 		sidebarCollapsed = !sidebarCollapsed;
 	};
-
-	const toggleMobileMenu = () => {
-		mobileMenuOpen = !mobileMenuOpen;
-	};
-
-	const closeMobileMenu = () => {
-		mobileMenuOpen = false;
-	};
 </script>
 
 <svelte:head>
 	<!-- the icon itself lives in app.html, so the SPA fallback carries it too -->
 	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 </svelte:head>
 
 <!-- Page-wide loading veil. Deliberately `pointer-events-none`: it is a status
@@ -395,28 +392,13 @@
 		<WeatherNav collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
 	</div>
 
-	<!-- Mobile overlay -->
-	{#if mobileMenuOpen}
-		<div class="fixed inset-0 z-50 md:hidden" role="presentation">
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div
-				class="absolute inset-0 bg-black/30"
-				transition:fade={{ duration: 150 }}
-				onclick={closeMobileMenu}
-				onkeydown={closeMobileMenu}
-			></div>
-			<div
-				class="relative z-1 h-full w-55 shadow-lg"
-				transition:fly={{ x: -220, duration: 200, opacity: 1 }}
-			>
-				<WeatherNav collapsed={false} onMobileClose={closeMobileMenu} />
-			</div>
-		</div>
-	{/if}
-
 	<!-- Main area: topbar + content -->
 	<div class="flex min-w-0 flex-1 flex-col h-full">
-		<Header onMenuToggle={toggleMobileMenu} />
+		<!-- Maps needs every available pixel for the map, so it deliberately omits
+		     the location header and the settings control that belongs to it. -->
+		{#if !fullBleed}
+			<Header />
+		{/if}
 
 		<!-- The padding stays on <main> itself: the day strip sticks with a
 		     negative offset that exactly cancels it, so moving it to an inner
@@ -426,8 +408,8 @@
 		<main
 			bind:this={mainEl}
 			class={fullBleed
-				? 'flex-1 overflow-hidden'
-				: 'flex flex-1 flex-col overflow-y-auto p-3 lg:px-8 lg:py-6'}
+				? 'mobile-nav-clearance flex-1 overflow-hidden'
+				: 'mobile-nav-clearance flex flex-1 flex-col overflow-y-auto p-3 lg:px-8 lg:py-6'}
 		>
 			{#if fullBleed}
 				{@render children()}
@@ -439,10 +421,28 @@
 				</div>
 				<!-- full-bleed footer inside the scroll area (its own inner max-w),
 				     cancelling main's padding so it sits flush with the edges -->
-				<div class="-mx-3 -mb-3 lg:-mx-8 lg:-mb-6">
+				<div class="-mx-3 -mb-3 hidden md:block lg:-mx-8 lg:-mb-6">
 					<Footer />
 				</div>
 			{/if}
 		</main>
+		<Dialog.Root bind:open={mobileMenuOpen}>
+			<MobileMoreSheet onClose={() => (mobileMenuOpen = false)} />
+			<MobileBottomNav moreOpen={mobileMenuOpen} />
+		</Dialog.Root>
 	</div>
 </div>
+
+<UpdateNotification />
+
+<style>
+	@media (max-width: 767px) {
+		.app-frame {
+			height: 100dvh;
+		}
+
+		.mobile-nav-clearance {
+			padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+		}
+	}
+</style>
