@@ -34,6 +34,12 @@
 			iconPaths: ['M13 7h8m0 0v8m0-8l-8 8-4-4-6 6']
 		},
 		{
+			title: m.sounding_title,
+			url: '/weather/soundings' as const,
+			route: '/weather/soundings/[location]' as const,
+			iconPaths: ['M4 3v17h17', 'M5 16l5-4-2-4 6-4', 'M11 19l5-7-2-4 6-4']
+		},
+		{
 			title: m.nav_14day,
 			url: '/weather/14-day' as const,
 			route: '/weather/14-day/[location]' as const,

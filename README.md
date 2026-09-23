@@ -16,14 +16,15 @@ derived from the request, so a first visit opens on the right city.
 
 ## Pages
 
-| Route                            | What it shows                                                    |
-| -------------------------------- | ---------------------------------------------------------------- |
-| `/weather/week/[location]`       | 7-day forecast: daily cards, hourly table, meteograms            |
-| `/weather/compare/[location]`    | The same forecast across models, side by side                    |
-| `/weather/14-day/[location]`     | 14-day ensemble outlook                                          |
-| `/weather/seasonal/[location]`   | Monthly outlook for the months ahead, against the climate normal |
-| `/weather/historical/[location]` | Reanalysis archive back to 1940, with climate-normal comparison  |
-| `/weather/maps/`                 | The Open-Meteo map viewer (`maps.open-meteo.com`) in an iframe   |
+| Route                            | What it shows                                                             |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `/weather/week/[location]`       | 7-day forecast: daily cards, hourly table, meteograms                     |
+| `/weather/soundings/[location]`  | Interactive forecast skew-T soundings, fetched one selected day at a time |
+| `/weather/compare/[location]`    | The same forecast across models, side by side                             |
+| `/weather/14-day/[location]`     | 14-day ensemble outlook                                                   |
+| `/weather/seasonal/[location]`   | Monthly outlook for the months ahead, against the climate normal          |
+| `/weather/historical/[location]` | Reanalysis archive back to 1940, with climate-normal comparison           |
+| `/weather/maps/`                 | The Open-Meteo map viewer (`maps.open-meteo.com`) in an iframe            |
 
 Locations come from Open-Meteo's geocoding API. A location is encoded in the
 path either as a city slug or as a coordinate pair (`52.09N5.12E`).
@@ -220,3 +221,27 @@ here.)
 Drizz.li is open-source under the GNU Affero General Public Licence Version 3
 (AGPLv3) or any later version. You can [find the licence here](LICENSE).
 Exceptions are third party source-code with individual licensing in each file.
+
+### Soundings
+
+The soundings page uses hardcoded model pressure levels and forecast limits in
+`src/lib/soundings/models.ts`. Each forecast request covers only the selected local
+calendar day; visited days are cached for the active location/model. Surface-only
+models are excluded, and missing profile fields remain optional. Calculations use
+Celsius, hPa, metres and m/s internally. Surface values use the nearest model grid
+cell without elevation downscaling. Older days use the Historical Forecast API; recent days use the live forecast
+endpoint. Archive coverage varies by model and field. The rolling day strip
+and Left/Right keys navigate across historical and forecast days without a
+calendar picker. Day and hour controls retain gaps and repeated
+DST hours; stepping across midnight loads only the newly selected day. Chart axes
+stay fixed across the selected day. Hover, touch dragging and keyboard inspection
+label trace intersections without interpolating across missing values. Each finite
+trace sample has a point marker. The pressure ceiling control sits above the
+y-axis, and the near-square chart scales to the available vertical space.
+
+Skew-T geometry and thermodynamic helpers are adapted from
+[meteo-fly](https://github.com/terraputix/meteo-fly), under GPL-3.0; the adapted files
+carry their source and license notices. The chart extends to at least 1050 hPa,
+with a shaded, hatched region below the model surface. Supplied trace values
+remain visible and inspectable in this region. Pointer-driven parcel guides do
+not calculate CAPE or CIN.

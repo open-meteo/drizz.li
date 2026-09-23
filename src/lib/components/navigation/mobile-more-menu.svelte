@@ -23,6 +23,12 @@
 
 	const links = [
 		{
+			title: m.sounding_title,
+			path: '/weather/soundings',
+			href: () => href('/weather/soundings/[location]', { location: locationRoute }),
+			icon: TrendingUpIcon
+		},
+		{
 			title: m.nav_seasonal,
 			path: '/weather/seasonal',
 			href: () => href('/weather/seasonal/[location]', { location: locationRoute }),
