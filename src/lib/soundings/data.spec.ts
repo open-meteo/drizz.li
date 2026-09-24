@@ -98,21 +98,19 @@ describe('single-day sounding request', () => {
 		expect(params.hourly).toContain('temperature_200hPa');
 		expect(params.hourly).not.toContain('temperature_100hPa');
 	});
-	it('routes older single-day requests to the pressure-level archive', async () => {
+	it('requests the oldest retained day on the normal forecast endpoint', async () => {
 		await fetchSoundingForecast({
 			latitude: 47,
 			longitude: 8,
 			model: 'icon_global',
-			date: '2024-06-15',
+			date: '2026-09-16',
 			timezone: 'Europe/Zurich'
 		});
 		expect(fetchWeatherApi).toHaveBeenCalledTimes(1);
-		expect(fetchWeatherApi.mock.calls[0][0]).toBe(
-			'https://historical-forecast-api.open-meteo.com/v1/forecast'
-		);
+		expect(fetchWeatherApi.mock.calls[0][0]).toBe('https://api.open-meteo.com/v1/forecast');
 		expect(fetchWeatherApi.mock.calls[0][1]).toMatchObject({
-			start_date: '2024-06-15',
-			end_date: '2024-06-15',
+			start_date: '2026-09-16',
+			end_date: '2026-09-16',
 			models: 'icon_global'
 		});
 	});

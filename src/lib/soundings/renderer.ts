@@ -57,6 +57,24 @@ export interface ChartLabels {
 	windUnit: string;
 }
 
+const INSET = 8;
+const BOTTOM = 45;
+// Preserve the plot proportions of the previous 600 × 600 chart.
+const PLOT_ASPECT = 484 / 511;
+
+export function soundingChartSize(availableWidth: number, availableHeight: number) {
+	const width = Math.min(
+		availableWidth,
+		(Math.max(440, availableHeight) - INSET - BOTTOM) * PLOT_ASPECT + 2 * INSET
+	);
+	return { width, height: Math.max(440, (width - 2 * INSET) / PLOT_ASPECT + INSET + BOTTOM) };
+}
+
+function windLayout(layout: PlotLayout) {
+	const showSpeed = layout.width >= 480;
+	return { showSpeed, width: showSpeed ? 58 : 0 };
+}
+
 export function toCanvas(
 	layout: PlotLayout,
 	temperature: number,
@@ -139,10 +157,10 @@ export function buildLayout(
 	const minX = Math.floor((Math.min(...xs) - 10) / 10) * 10;
 	const maxX = Math.max(minX + 40, Math.ceil((Math.max(...xs) + 10) / 10) * 10);
 	return {
-		left: 46,
-		top: 44,
-		width: Math.max(80, width - 116),
-		height: height - 89,
+		left: INSET,
+		top: INSET,
+		width: Math.max(80, width - 2 * INSET),
+		height: height - INSET - BOTTOM,
 		minPressure,
 		maxPressure,
 		minX,
@@ -189,6 +207,26 @@ function label(
 	ctx.fillText(text, x, y);
 }
 
+function insetLabel(
+	ctx: CanvasRenderingContext2D,
+	text: string,
+	x: number,
+	y: number,
+	color: string,
+	palette: ChartPalette,
+	align: CanvasTextAlign = 'left'
+) {
+	ctx.font = '11px system-ui, sans-serif';
+	const width = ctx.measureText(text).width;
+	const left = x - (align === 'right' ? width : align === 'center' ? width / 2 : 0);
+	ctx.save();
+	ctx.fillStyle = palette.background;
+	ctx.globalAlpha = 0.9;
+	ctx.fillRect(left - 3, y - 12, width + 6, 16);
+	ctx.restore();
+	label(ctx, text, x, y, color, align);
+}
+
 function clip(ctx: CanvasRenderingContext2D, layout: PlotLayout) {
 	ctx.beginPath();
 	ctx.rect(layout.left, layout.top, layout.width, layout.height);
@@ -211,6 +249,7 @@ export function renderSounding(
 	const { left, top, minPressure, maxPressure } = layout;
 	const bottom = top + layout.height;
 	const right = left + layout.width;
+	const wind = windLayout(layout);
 	const pressures = Array.from(
 		{ length: 181 },
 		(_, i) => maxPressure * Math.pow(minPressure / maxPressure, i / 180)
@@ -261,7 +300,6 @@ export function renderSounding(
 	]
 		.filter((p) => p >= minPressure && p <= maxPressure)
 		.sort((a, b) => b - a);
-	let lastLabel = Infinity;
 	for (const p of ticks) {
 		const y = point(0, p)[1];
 		stroke(
@@ -272,20 +310,13 @@ export function renderSounding(
 			],
 			palette.grid
 		);
-		if (lastLabel - y >= 19) {
-			label(ctx, `${Math.round(p)}`, left - 6, y + 4, palette.foreground, 'right');
-			lastLabel = y;
-		}
 	}
-	label(ctx, 'hPa', left - 6, 16, palette.muted, 'right');
-	label(ctx, labels.wind, right + 34, 16, palette.muted, 'center');
-	label(ctx, labels.windUnit, right + 34, height - 17, palette.muted, 'center');
 	const tempStep = layout.width < 350 ? 20 : 10;
 	for (let t = Math.ceil(layout.minX / tempStep) * tempStep; t <= layout.maxX; t += tempStep)
 		label(
 			ctx,
 			valueText(temperatureDisplay(t, units), 0),
-			point(t, maxPressure)[0],
+			Math.max(left + 12, Math.min(right - 12, point(t, maxPressure)[0])),
 			bottom + 19,
 			palette.foreground,
 			'center'
@@ -360,7 +391,7 @@ export function renderSounding(
 			1,
 			[5, 3]
 		);
-		label(ctx, labels.surface, right - 4, y - 5, palette.muted, 'right');
+		insetLabel(ctx, labels.surface, right - wind.width - 5, y - 5, palette.muted, palette, 'right');
 		for (const [t, color] of [
 			[profile.surfaceTemperature, TRACE_COLORS.temperature],
 			[profile.surfaceDewpoint, TRACE_COLORS.dewpoint]
@@ -373,19 +404,46 @@ export function renderSounding(
 		}
 	}
 
+	// Draw inset labels after shading and traces so their backgrounds stay readable.
+	let lastLabel = Infinity;
+	for (const p of ticks) {
+		const y = point(0, p)[1];
+		if (lastLabel - y >= 19 && y >= top + 38) {
+			insetLabel(
+				ctx,
+				`${Math.round(p)}`,
+				left + 4,
+				Math.min(bottom - 3, y + 4),
+				palette.foreground,
+				palette
+			);
+			lastLabel = y;
+		}
+	}
+	insetLabel(ctx, `${Math.round(minPressure)} hPa`, left + 5, top + 19, palette.muted, palette);
+	if (wind.showSpeed) {
+		insetLabel(ctx, labels.wind, right - 3, top + 15, palette.muted, palette, 'right');
+		insetLabel(ctx, labels.windUnit, right - 3, top + 30, palette.muted, palette, 'right');
+	}
+
 	let lastWindY = Infinity;
-	for (const level of levels) {
+	for (const level of wind.showSpeed ? levels : []) {
 		const y = point(0, level.pressure)[1];
 		if (
-			y < top ||
-			y > bottom ||
+			y < top + (wind.showSpeed ? 44 : 12) ||
+			y > bottom - 10 ||
 			lastWindY - y < 26 ||
 			!Number.isFinite(level.windSpeed) ||
 			!Number.isFinite(level.windDirection)
 		)
 			continue;
 		lastWindY = y;
-		const x = right + 18;
+		const x = right - wind.width + 13;
+		ctx.save();
+		ctx.fillStyle = palette.background;
+		ctx.globalAlpha = 0.85;
+		ctx.fillRect(right - wind.width, y - 11, wind.width, 22);
+		ctx.restore();
 		ctx.save();
 		ctx.translate(x, y);
 		ctx.rotate(((level.windDirection - 180) * Math.PI) / 180);
@@ -409,13 +467,15 @@ export function renderSounding(
 			1.4
 		);
 		ctx.restore();
-		label(
-			ctx,
-			valueText(windDisplay(level.windSpeed, units), 0),
-			right + 32,
-			y + 4,
-			palette.foreground
-		);
+		if (wind.showSpeed)
+			label(
+				ctx,
+				valueText(windDisplay(level.windSpeed, units), 0),
+				right - 3,
+				y + 4,
+				palette.foreground,
+				'right'
+			);
 	}
 }
 
@@ -494,11 +554,11 @@ export function renderSelection(
 		const left = Math.max(
 			1,
 			Math.min(
-				layout.left + layout.width + 69 - width,
+				layout.left + layout.width - width,
 				x - (align === 'right' ? width : align === 'center' ? width / 2 : 0)
 			)
 		);
-		const top = Math.max(1, Math.min(layout.top + layout.height + 24, y - 12));
+		const top = Math.max(layout.top, Math.min(layout.top + layout.height - 18, y - 12));
 		ctx.fillStyle = palette.background;
 		ctx.fillRect(left, top, width, 18);
 		label(ctx, text, left + 5, top + 13, color);
@@ -517,26 +577,38 @@ export function renderSelection(
 	};
 	// Hide the static axis/wind labels underneath the inspection readout.
 	ctx.fillStyle = palette.background;
-	ctx.fillRect(0, y - 20, layout.left, 42);
-	ctx.fillRect(layout.left + layout.width + 1, y - 20, 69, 42);
+	ctx.fillRect(
+		layout.left,
+		Math.max(layout.top, y - 20),
+		38,
+		Math.min(42, layout.top + layout.height - Math.max(layout.top, y - 20))
+	);
+	ctx.fillRect(
+		layout.left + layout.width - windLayout(layout).width,
+		Math.max(layout.top, y - 20),
+		windLayout(layout).width,
+		Math.min(42, layout.top + layout.height - Math.max(layout.top, y - 20))
+	);
 	const inspected = interpolateLevel(profile.levels, p);
-	box(`${Math.round(p)}`, layout.left - 3, y - 4, palette.foreground, 'right');
+	box(`${Math.round(p)} hPa`, layout.left, y - 4, palette.foreground);
 	if (inspected) {
 		if (Number.isFinite(inspected.height))
-			box(`${Math.round(inspected.height)} m`, 0, y + 15, palette.muted);
+			box(`${Math.round(inspected.height)} m`, layout.left, y + 15, palette.muted);
 		if (Number.isFinite(inspected.windSpeed))
 			box(
 				`${valueText(windDisplay(inspected.windSpeed, units))} ${windUnit(units)}`,
-				layout.left + layout.width + 2,
+				layout.left + layout.width,
 				y - 4,
-				palette.foreground
+				palette.foreground,
+				'right'
 			);
 		if (Number.isFinite(inspected.windDirection))
 			box(
 				`${Math.round(inspected.windDirection)}°`,
-				layout.left + layout.width + 2,
+				layout.left + layout.width,
 				y + 15,
-				palette.muted
+				palette.muted,
+				'right'
 			);
 		for (const [field, name, offset] of [
 			['temperature', 'T', -12],

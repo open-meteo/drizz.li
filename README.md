@@ -229,15 +229,16 @@ The soundings page uses hardcoded model pressure levels and forecast limits in
 calendar day; visited days are cached for the active location/model. Surface-only
 models are excluded, and missing profile fields remain optional. Calculations use
 Celsius, hPa, metres and m/s internally. Surface values use the nearest model grid
-cell without elevation downscaling. Older days use the Historical Forecast API; recent days use the live forecast
-endpoint. Archive coverage varies by model and field. The rolling day strip
+cell without elevation downscaling. The normal forecast endpoint serves both forecasts and the preceding 7 days
+of history. Older dates are not selectable. The rolling day strip
 and Left/Right keys navigate across historical and forecast days without a
 calendar picker. Day and hour controls retain gaps and repeated
 DST hours; stepping across midnight loads only the newly selected day. Chart axes
 stay fixed across the selected day. Hover, touch dragging and keyboard inspection
 label trace intersections without interpolating across missing values. Each finite
-trace sample has a point marker. The pressure ceiling control sits above the
-y-axis, and the near-square chart scales to the available vertical space.
+trace sample has a point marker. The pressure ceiling and pressure labels sit inside the plot; wind arrows and numeric speeds use a
+compact inset band on wider charts. Narrow charts show wind only on inspection. The near-square plot
+scales to the available vertical space.
 
 Skew-T geometry and thermodynamic helpers are adapted from
 [meteo-fly](https://github.com/terraputix/meteo-fly), under GPL-3.0; the adapted files

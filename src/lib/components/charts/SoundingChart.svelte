@@ -16,7 +16,8 @@
 		buildLayout,
 		fromCanvas,
 		renderSelection,
-		renderSounding
+		renderSounding,
+		soundingChartSize
 	} from '$lib/soundings/renderer';
 
 	import type { SoundingProfile } from '$lib/soundings/profile';
@@ -48,13 +49,11 @@
 	let palette: ChartPalette;
 	let viewportHeight = $state(900);
 	// Grow vertically without stretching the skew-T into a landscape chart.
-	let width = $derived(
-		Math.min(
-			availableWidth,
-			Math.max(440, viewportHeight - chartTop - (availableWidth < 768 ? 100 : 48))
-		)
+	let size = $derived(
+		soundingChartSize(availableWidth, viewportHeight - chartTop - (availableWidth < 768 ? 100 : 48))
 	);
-	let height = $derived(Math.max(440, width));
+	let width = $derived(size.width);
+	let height = $derived(size.height);
 	function measure() {
 		if (!container) return;
 		availableWidth = container.clientWidth;
@@ -206,7 +205,7 @@
 			aria-label={m.sounding_top()}
 			title={m.sounding_top()}
 			bind:value={topPressure}
-			class="absolute top-0 left-0 z-10 h-9 cursor-pointer rounded-md border border-transparent bg-background px-1 text-xs text-muted-foreground hover:border-border focus-visible:outline-2 focus-visible:outline-primary"
+			class="absolute top-2 left-2 z-10 h-8 cursor-pointer rounded-md border border-border/50 bg-background/95 px-1 text-xs text-muted-foreground hover:border-border focus-visible:outline-2 focus-visible:outline-primary"
 		>
 			{#each TOP_PRESSURES as pressure (pressure)}<option value={pressure}>{pressure} hPa</option
 				>{/each}

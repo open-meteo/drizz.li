@@ -7,6 +7,8 @@ import { page as routePage } from '$app/stores';
 
 import { defaultLocation, defaultUnits, storedModel, storedUnits } from '$lib/stores/settings';
 
+import { formatZoned } from '$lib/utils/date';
+
 import * as m from '$lib/paraglide/messages';
 import { addDays } from '$lib/soundings/profile';
 
@@ -94,7 +96,12 @@ describe('soundings day navigation', () => {
 		storedUnits.set({ ...defaultUnits, temperature_unit: 'fahrenheit', wind_speed_unit: 'kn' });
 		await expect.poll(() => syncSearchParams.mock.lastCall?.[0].top).toBe('300');
 		expect(fetchSoundingForecast).toHaveBeenCalledTimes(1);
-		await screen.getByRole('button', { name: m.sounding_next_day() }).click();
+		await screen
+			.getByRole('button', {
+				name: formatZoned(new Date(`${tomorrow}T12:00:00Z`), 'UTC', 'EEE d MMM yyyy'),
+				exact: true
+			})
+			.click();
 		await expect
 			.element(screen.getByRole('group', { name: m.sounding_hour(), exact: true }))
 			.toBeVisible();
@@ -103,7 +110,12 @@ describe('soundings day navigation', () => {
 		await expect
 			.poll(() => syncSearchParams.mock.lastCall?.[0].time)
 			.toBe(`${tomorrow}T13:00:00.000Z`);
-		await screen.getByRole('button', { name: m.sounding_previous_day() }).click();
+		await screen
+			.getByRole('button', {
+				name: formatZoned(new Date(`${today}T12:00:00Z`), 'UTC', 'EEE d MMM yyyy'),
+				exact: true
+			})
+			.click();
 		await expect
 			.poll(() => syncSearchParams.mock.lastCall?.[0].time)
 			.toBe(`${today}T13:00:00.000Z`);
@@ -170,17 +182,56 @@ describe('soundings day navigation', () => {
 		expect(fetchSoundingForecast).toHaveBeenCalledTimes(2);
 	});
 	it('restores historical links and preserves the day when changing model', async () => {
-		navigate('2024-06-15', 'icon_global', 10);
+		navigate(addDays(today, -5), 'icon_global', 10);
 		await render(Soundings, { data });
 		await expect
 			.poll(() => syncSearchParams.mock.lastCall?.[0].time)
-			.toBe('2024-06-15T10:00:00.000Z');
-		expect(fetchSoundingForecast.mock.lastCall?.[0].date).toBe('2024-06-15');
-		navigate('2024-06-15', 'gfs_global', 10);
+			.toBe(`${addDays(today, -5)}T10:00:00.000Z`);
+		expect(fetchSoundingForecast.mock.lastCall?.[0].date).toBe(addDays(today, -5));
+		navigate(addDays(today, -5), 'gfs_global', 10);
 		await expect.poll(() => fetchSoundingForecast.mock.lastCall?.[0].model).toBe('gfs_global');
 		await expect
 			.poll(() => syncSearchParams.mock.lastCall?.[0].time)
-			.toBe('2024-06-15T10:00:00.000Z');
+			.toBe(`${addDays(today, -5)}T10:00:00.000Z`);
+	});
+
+	it('retains the full short-model forecast horizon when browsing history', async () => {
+		const historical = addDays(today, -4);
+		const last = addDays(today, 2);
+		navigate(historical, 'icon_d2', 12);
+		const screen = await render(Soundings, { data });
+		await expect
+			.element(screen.getByRole('group', { name: m.sounding_hour(), exact: true }))
+			.toBeVisible();
+		const finalDay = screen.getByRole('button', {
+			name: formatZoned(new Date(`${last}T12:00:00Z`), 'UTC', 'EEE d MMM yyyy'),
+			exact: true
+		});
+		await finalDay.click();
+		await expect.poll(() => syncSearchParams.mock.lastCall?.[0].time).toBe(`${last}T12:00:00.000Z`);
+		expect(fetchSoundingForecast).toHaveBeenCalledTimes(2);
+		expect(fetchSoundingForecast.mock.calls.map((call) => call[0].date)).toEqual([
+			historical,
+			last
+		]);
+	});
+
+	it('bounds historical links and keyboard navigation to the preceding 7 days', async () => {
+		const first = addDays(today, -7);
+		navigate(addDays(today, -8), 'icon_d2', 0);
+		const screen = await render(Soundings, { data });
+		await expect
+			.poll(() => syncSearchParams.mock.lastCall?.[0].time)
+			.toBe(`${first}T00:00:00.000Z`);
+		expect(fetchSoundingForecast.mock.lastCall?.[0].date).toBe(first);
+		await expect
+			.element(screen.getByRole('button', { name: m.sounding_previous_hour() }))
+			.toBeDisabled();
+		const days = document.querySelector('[aria-label="' + m.sounding_day() + '"]')!;
+		expect(days.querySelectorAll('button')).toHaveLength(10);
+		window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', cancelable: true }));
+		expect(fetchSoundingForecast).toHaveBeenCalledTimes(1);
+		expect(syncSearchParams.mock.lastCall?.[0].time).toBe(`${first}T00:00:00.000Z`);
 	});
 
 	it('restores URL model/day/hour/top and clears the cache for a new model', async () => {
@@ -210,7 +261,12 @@ describe('soundings day navigation', () => {
 		);
 		const screen = await render(Soundings, { data });
 		await expect.poll(() => fetchSoundingForecast.mock.calls.length).toBe(1);
-		await screen.getByRole('button', { name: m.sounding_next_day() }).click();
+		await screen
+			.getByRole('button', {
+				name: formatZoned(new Date(`${tomorrow}T12:00:00Z`), 'UTC', 'EEE d MMM yyyy'),
+				exact: true
+			})
+			.click();
 		await expect
 			.element(screen.getByRole('group', { name: m.sounding_hour(), exact: true }))
 			.toBeVisible();

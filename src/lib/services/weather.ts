@@ -14,13 +14,10 @@ import { Model } from '@openmeteo/sdk/model';
 import { Unit } from '@openmeteo/sdk/unit';
 import { fetchWeatherApi } from 'openmeteo';
 
-import { formatZoned } from '$lib/utils/date';
-
 import { type DaylightBand, buildDaylightBands } from '$lib/charts/bands';
 import * as m from '$lib/paraglide/messages';
 import { decodeSounding } from '$lib/soundings/data';
 import { SOUNDING_MODELS } from '$lib/soundings/models';
-import { addDays } from '$lib/soundings/profile';
 
 import type { SoundingForecastResult } from '$lib/soundings/profile';
 import type { VariableWithValues } from '@openmeteo/sdk/variable-with-values';
@@ -29,7 +26,6 @@ import type { VariablesWithTime } from '@openmeteo/sdk/variables-with-time';
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
-const HISTORICAL_FORECAST_URL = 'https://historical-forecast-api.open-meteo.com/v1/forecast';
 const ENSEMBLE_URL = 'https://ensemble-api.open-meteo.com/v1/ensemble';
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive';
 const SEASONAL_URL = 'https://seasonal-api.open-meteo.com/v1/seasonal';
@@ -60,11 +56,7 @@ export async function fetchSoundingForecast(
 			'geopotential_height'
 		].map((field) => `${field}_${pressure}hPa`)
 	);
-	// Keep recent days on the live endpoint; use the pressure-level archive for
-	// older dates. Both endpoints receive exactly one local calendar day.
-	const today = formatZoned(new Date(), params.timezone ?? 'UTC', 'yyyy-MM-dd');
-	const endpoint = params.date < addDays(today, -5) ? HISTORICAL_FORECAST_URL : FORECAST_URL;
-	const responses = await fetchWeatherApi(endpoint, {
+	const responses = await fetchWeatherApi(FORECAST_URL, {
 		latitude: params.latitude,
 		longitude: params.longitude,
 		models: params.model,

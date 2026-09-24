@@ -19,8 +19,8 @@
 	import * as m from '$lib/paraglide/messages';
 	import { fetchSoundingForecast, humanizeWeatherError } from '$lib/services/weather';
 	import {
-		SOUNDING_HISTORY_START,
 		SOUNDING_MODELS,
+		SOUNDING_PAST_DAYS,
 		TOP_PRESSURES,
 		soundingModel,
 		soundingModelGroups
@@ -58,6 +58,7 @@
 	let days: Record<string, SoundingForecastResult> = {};
 	let now = $state(Date.now());
 	let today = $derived(formatZoned(new Date(now), location.timezone, 'yyyy-MM-dd'));
+	let firstDay = $derived(addDays(today, -SOUNDING_PAST_DAYS));
 	let lastDay = $derived(addDays(today, SOUNDING_MODELS[model].forecastDays - 1));
 	let profiles = $derived(result?.profiles.filter((profile) => isPlottable(profile)) ?? []);
 	let profile = $derived(profiles.find((item) => item.time === selectedTime) ?? null);
@@ -67,13 +68,11 @@
 			profiles.findIndex((item) => item.time === selectedTime)
 		)
 	);
-	let visibleDays = $derived.by(() => {
-		const anchor = day || today;
-		const start = boundDay(addDays(anchor, -7));
-		return Array.from({ length: 7 + SOUNDING_MODELS[model].forecastDays }, (_, i) =>
-			addDays(start, i)
-		).filter((date) => date <= lastDay);
-	});
+	let visibleDays = $derived(
+		Array.from({ length: SOUNDING_PAST_DAYS + SOUNDING_MODELS[model].forecastDays }, (_, i) =>
+			addDays(firstDay, i)
+		)
+	);
 	let hours = $derived.by(() => {
 		if (!day) return [];
 		const times = soundingHours(day, location.timezone);
@@ -250,7 +249,7 @@
 	function boundDay(value: string) {
 		// Compute directly: readUrl can change the model before a derived bound updates.
 		const last = addDays(today, SOUNDING_MODELS[model].forecastDays - 1);
-		return value < SOUNDING_HISTORY_START ? SOUNDING_HISTORY_START : value > last ? last : value;
+		return value < firstDay ? firstDay : value > last ? last : value;
 	}
 	function changeDay(next: string) {
 		if (!/^\d{4}-\d{2}-\d{2}$/.test(next)) return;
@@ -281,7 +280,7 @@
 			return;
 		}
 		const nextDay = addDays(day, direction);
-		if (nextDay < SOUNDING_HISTORY_START || nextDay > lastDay) return;
+		if (nextDay < firstDay || nextDay > lastDay) return;
 		preferredClock = direction > 0 ? '00:00' : '23:59';
 		changeDay(nextDay);
 	}
@@ -356,98 +355,81 @@
 	aria-keyshortcuts="ArrowLeft ArrowRight"
 	aria-label={m.sounding_title()}
 >
-	<div class="flex items-center gap-2">
-		<button
-			class="time-arrow"
-			disabled={!day || day <= SOUNDING_HISTORY_START}
-			onclick={() => changeDay(addDays(day, -1))}
-			aria-label={m.sounding_previous_day()}>‹</button
-		>
-		<div
-			class="relative flex min-w-0 flex-1 gap-1 overflow-x-auto py-1"
-			role="group"
-			aria-label={m.sounding_day()}
-		>
-			{#each visibleDays as date (date)}
-				<button
-					use:revealSelected={day === date}
-					class="day-button"
-					class:chosen={day === date}
-					aria-pressed={day === date}
-					onclick={() => changeDay(date)}
-				>
-					<span class="text-xs"
-						>{formatZoned(
-							fromZonedTime(`${date}T12:00:00`, location.timezone),
-							location.timezone,
-							'EEE'
-						)}</span
+	<div class="space-y-1">
+		<div class="flex items-center gap-2">
+			<div class="time-strip" role="group" aria-label={m.sounding_day()}>
+				{#each visibleDays as date (date)}
+					{@const instant = fromZonedTime(`${date}T12:00:00`, location.timezone)}
+					<button
+						use:revealSelected={day === date}
+						class="day-button"
+						class:chosen={day === date}
+						aria-pressed={day === date}
+						aria-label={formatZoned(instant, location.timezone, 'EEE d MMM yyyy')}
+						onclick={() => changeDay(date)}
 					>
-					<span class="text-sm font-semibold"
-						>{formatZoned(
-							fromZonedTime(`${date}T12:00:00`, location.timezone),
-							location.timezone,
-							'd MMM'
-						)}</span
-					>
-				</button>
-			{/each}
+						<span class="text-xs">{formatZoned(instant, location.timezone, 'EEE')}</span>
+						<span class="text-sm font-semibold"
+							>{formatZoned(
+								instant,
+								location.timezone,
+								date.slice(0, 4) === today.slice(0, 4) ? 'd MMM' : 'd MMM yyyy'
+							)}</span
+						>
+					</button>
+				{/each}
+			</div>
+			<button
+				class="shrink-0 rounded-md px-3 py-2 text-xs text-muted-foreground"
+				onclick={() => changeDay(today)}
+				disabled={day === today}>{m.day_today()}</button
+			>
 		</div>
-		<button
-			class="time-arrow"
-			disabled={!day || day >= lastDay}
-			onclick={() => changeDay(addDays(day, 1))}
-			aria-label={m.sounding_next_day()}>›</button
-		>
-		<button
-			class="shrink-0 rounded-md px-3 py-2 text-xs text-muted-foreground"
-			onclick={() => changeDay(today)}
-			disabled={day === today}>{m.day_today()}</button
-		>
-	</div>
-	{#if profile && !loading}
-		<div class="space-y-2">
-			<div class="flex items-center justify-between gap-2">
+		{#if profile && !loading}
+			<div class="flex w-full min-w-0 items-center gap-1">
 				<button
 					class="time-arrow"
-					disabled={hourIndex === 0 && day <= SOUNDING_HISTORY_START}
+					disabled={hourIndex === 0 && day <= firstDay}
 					onclick={() => stepHour(-1)}
 					aria-label={m.sounding_previous_hour()}>‹</button
 				>
-				<p class="text-sm font-semibold tabular-nums" aria-live="polite">
-					{formatZoned(new Date(profile.time), timezone, 'EEE d MMM yyyy · HH:mm zzz')}
-				</p>
+
+				<div class="time-strip" role="group" aria-label={m.sounding_hour()}>
+					{#each hours as hour (hour.time)}
+						<button
+							use:revealSelected={selectedTime === hour.time}
+							class="hour-button"
+							class:chosen={selectedTime === hour.time}
+							aria-pressed={selectedTime === hour.time}
+							aria-label={formatZoned(new Date(hour.time), timezone, 'HH:mm zzz')}
+							title={hour.index < 0
+								? m.sounding_empty()
+								: formatZoned(new Date(hour.time), timezone, 'HH:mm zzz')}
+							disabled={hour.index < 0}
+							onclick={() => changeHour(hour.index)}
+						>
+							{formatZoned(new Date(hour.time), timezone, 'HH')}
+							{#if hour.repeated}<span class="block text-[9px]"
+									>{formatZoned(new Date(hour.time), timezone, 'zzz')}</span
+								>{/if}
+						</button>
+					{/each}
+				</div>
 				<button
 					class="time-arrow"
 					disabled={hourIndex === profiles.length - 1 && day >= lastDay}
 					onclick={() => stepHour(1)}
 					aria-label={m.sounding_next_hour()}>›</button
 				>
+				<span class="shrink-0 pl-1 text-xs text-muted-foreground" title={timezone}
+					>{formatZoned(new Date(profile.time), timezone, 'zzz')}</span
+				>
 			</div>
-			<div
-				class="grid grid-cols-8 gap-1 sm:grid-cols-12 xl:grid-cols-24"
-				role="group"
-				aria-label={m.sounding_hour()}
-			>
-				{#each hours as hour (hour.time)}
-					<button
-						class="hour-button"
-						class:chosen={selectedTime === hour.time}
-						aria-pressed={selectedTime === hour.time}
-						aria-label={formatZoned(new Date(hour.time), timezone, 'HH:mm zzz')}
-						title={hour.index < 0
-							? m.sounding_empty()
-							: formatZoned(new Date(hour.time), timezone, 'HH:mm zzz')}
-						disabled={hour.index < 0}
-						onclick={() => changeHour(hour.index)}
-						>{formatZoned(new Date(hour.time), timezone, 'HH')}{#if hour.repeated}<span
-								class="block text-[9px]">{formatZoned(new Date(hour.time), timezone, 'zzz')}</span
-							>{/if}</button
-					>
-				{/each}
-			</div>
-		</div>
-	{/if}
+			<p class="sr-only" aria-live="polite">
+				{formatZoned(new Date(profile.time), timezone, 'EEE d MMM yyyy · HH:mm zzz')}
+			</p>
+		{/if}
+	</div>
 	{#if combined}<p class="text-xs text-muted-foreground">{m.sounding_combined()}</p>{/if}
 	{#if adjusted}<p role="status" class="text-sm text-muted-foreground">
 			{m.sounding_adjusted()}
@@ -485,7 +467,7 @@
 	{:else}
 		<div>
 			<div class="flex items-center justify-between gap-2">
-				<p class="text-xs text-muted-foreground">
+				<p class="min-w-0 flex-1 text-xs text-muted-foreground">
 					{#if Number.isFinite(result?.elevation)}{m.sounding_elevation({
 							elevation: String(Math.round(result!.elevation))
 						})}{/if}
@@ -511,13 +493,24 @@
 </section>
 
 <style>
+	.time-strip {
+		position: relative;
+		display: flex;
+		flex: 1;
+		min-width: 0;
+		gap: 0.25rem;
+		padding-block: 0.25rem;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+
 	.time-arrow {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
-		width: 2.5rem;
-		height: 2.5rem;
+		width: 2.75rem;
+		height: 2.75rem;
 		border-radius: 0.5rem;
 		font-size: 1.5rem;
 		color: var(--muted-foreground);
@@ -536,6 +529,7 @@
 		color: var(--muted-foreground);
 	}
 	.hour-button {
+		flex: 1 0 2.75rem;
 		min-height: 2.75rem;
 		border-radius: 0.375rem;
 		font-size: 0.8125rem;

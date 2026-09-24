@@ -13,7 +13,14 @@ import {
 	temperatureDisplay,
 	windDisplay
 } from './profile';
-import { buildLayout, fromCanvas, renderSelection, renderSounding, toCanvas } from './renderer';
+import {
+	buildLayout,
+	fromCanvas,
+	renderSelection,
+	renderSounding,
+	soundingChartSize,
+	toCanvas
+} from './renderer';
 import {
 	dryTemperature,
 	inverseSaturationVaporPressure,
@@ -179,6 +186,72 @@ describe('sounding profiles', () => {
 			defaultUnits
 		);
 		expect(labels).toContain('T 0.0°C');
+	});
+
+	it('keeps inset labels inside the canvas and reveals narrow-chart wind values on inspection', () => {
+		const sample = {
+			...profile,
+			levels: profile.levels.map((level) => ({ ...level, windSpeed: 7.25 }))
+		};
+		const palette = { background: '#fff', foreground: '#111', grid: '#ddd', muted: '#777' };
+		for (const width of [360, 600]) {
+			const labels: Array<{ text: string; x: number; y: number; align: string }> = [];
+			const state: Record<string | symbol, unknown> = {};
+			let windArrows = 0;
+			const ctx = new Proxy(
+				{},
+				{
+					get: (_, key) =>
+						key === 'translate'
+							? () => {
+									windArrows++;
+								}
+							: key === 'measureText'
+								? (text: string) => ({ width: text.length * 6 })
+								: key === 'fillText'
+									? (text: string, x: number, y: number) =>
+											labels.push({ text, x, y, align: String(state.textAlign) })
+									: () => {},
+					set: (_, key, value) => {
+						state[key] = value;
+						return true;
+					}
+				}
+			) as CanvasRenderingContext2D;
+			const layout = buildLayout(sample, 500, 100, width, 600)!;
+			renderSounding(ctx, sample, 500, layout, width, 600, palette, defaultUnits, {
+				wind: 'Wind',
+				surface: 'Surface',
+				temperatureUnit: '°C',
+				windUnit: 'km/h'
+			});
+			expect(labels.some((label) => label.text === '26')).toBe(width >= 496);
+			expect(windArrows > 0).toBe(width >= 496);
+			renderSelection(
+				ctx,
+				layout,
+				{ temperature: 0, pressure: 700 },
+				palette,
+				sample,
+				500,
+				defaultUnits
+			);
+			expect(labels.some((label) => label.text === '26.1 km/h')).toBe(true);
+			for (const label of labels) {
+				const textWidth = label.text.length * 6;
+				const left =
+					label.x -
+					(label.align === 'right' ? textWidth : label.align === 'center' ? textWidth / 2 : 0);
+				expect(left).toBeGreaterThanOrEqual(0);
+				expect(left + textWidth).toBeLessThanOrEqual(width);
+				expect(label.y).toBeGreaterThan(0);
+				expect(label.y).toBeLessThan(600);
+			}
+		}
+		const size = soundingChartSize(1000, 800);
+		const layout = buildLayout(profile, 500, 100, size.width, size.height)!;
+		expect(layout.width / layout.height).toBeCloseTo(484 / 511);
+		expect(size.height).toBeCloseTo(800);
 	});
 
 	it('holds the axes steady across profiles in the selected day', () => {

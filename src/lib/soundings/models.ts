@@ -110,7 +110,5 @@ export function soundingModel(value: string | null | undefined): string {
 
 export const TOP_PRESSURES = [100, 200, 300, 500, 700] as const;
 
-// Earliest pressure-level archive boundary. Individual model/field coverage can
-// start later; those gaps are handled like missing forecast values, without probes.
-// https://open-meteo.com/en/docs/historical-forecast-api
-export const SOUNDING_HISTORY_START = '2021-03-23';
+// Offer the preceding seven days from the normal forecast endpoint.
+export const SOUNDING_PAST_DAYS = 7;
