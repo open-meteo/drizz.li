@@ -9,6 +9,7 @@
 	import * as m from '$lib/paraglide/messages';
 
 	import LogoMark from './logo-mark.svelte';
+	import { soundingIconPaths } from './sounding-icon';
 
 	interface Props {
 		collapsed?: boolean;
@@ -37,7 +38,7 @@
 			title: m.sounding_title,
 			url: '/weather/soundings' as const,
 			route: '/weather/soundings/[location]' as const,
-			iconPaths: ['M4 3v17h17', 'M5 16l5-4-2-4 6-4', 'M11 19l5-7-2-4 6-4']
+			iconPaths: soundingIconPaths
 		},
 		{
 			title: m.nav_14day,
