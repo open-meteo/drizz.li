@@ -40,7 +40,9 @@
 		const locationRoute = buildLocationRoute(newLocation);
 		const currentPath = routePath(get(page).url.pathname);
 
-		if (currentPath.startsWith('/weather/compare')) {
+		if (currentPath.startsWith('/weather/soundings')) {
+			goto(href('/weather/soundings/[location]', { location: locationRoute }));
+		} else if (currentPath.startsWith('/weather/compare')) {
 			goto(href('/weather/compare/[location]', { location: locationRoute }));
 		} else if (currentPath.startsWith('/weather/14-day')) {
 			goto(href('/weather/14-day/[location]', { location: locationRoute }));

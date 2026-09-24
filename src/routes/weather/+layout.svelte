@@ -31,6 +31,7 @@
 		['/weather/compare', m.page_compare_subtitle],
 		['/weather/14-day', m.page_14day_subtitle],
 		['/weather/seasonal', m.page_seasonal_subtitle],
+		['/weather/soundings', m.sounding_title],
 		['/weather/historical', m.page_historical_subtitle]
 	];
 	let hasModelSelector = $derived(!routePath($page.url.pathname).startsWith('/weather/compare'));
