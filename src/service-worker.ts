@@ -40,6 +40,13 @@ async function trimCache(name: string, maximum: number): Promise<void> {
 }
 
 worker.addEventListener('install', (event) => {
+	// Activate as soon as the shell is cached instead of waiting for every tab
+	// to close. Shell files are matched by path, so a page still running the
+	// previous build simply gets its remaining chunks from the network; if one
+	// is gone after a deploy, SvelteKit already reloads the page. New builds
+	// are announced through the version poll (see update-notification.svelte),
+	// so the worker has no update prompt of its own.
+	void worker.skipWaiting();
 	event.waitUntil(
 		caches.open(SHELL_CACHE).then(async (cache) => {
 			await cache.addAll(SHELL);
@@ -66,10 +73,6 @@ worker.addEventListener('activate', (event) => {
 			await worker.clients.claim();
 		})()
 	);
-});
-
-worker.addEventListener('message', (event) => {
-	if (event.data?.type === 'SKIP_WAITING') void worker.skipWaiting();
 });
 
 worker.addEventListener('fetch', (event) => {

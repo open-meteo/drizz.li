@@ -9,10 +9,7 @@
 	}
 
 	let online = $state(true);
-	let updateAvailable = $state(false);
 	let installPrompt = $state<BeforeInstallPromptEvent | null>(null);
-	let registration = $state<ServiceWorkerRegistration | null>(null);
-	let reloadOnControllerChange = false;
 
 	onMount(() => {
 		online = navigator.onLine;
@@ -38,38 +35,10 @@
 		};
 		window.addEventListener('beforeinstallprompt', onInstallPrompt);
 
-		const onControllerChange = () => {
-			if (reloadOnControllerChange) window.location.reload();
-		};
-		navigator.serviceWorker?.addEventListener('controllerchange', onControllerChange);
-
-		let disposed = false;
-		let updateFound: (() => void) | null = null;
-		if ('serviceWorker' in navigator) {
-			void navigator.serviceWorker.ready.then((readyRegistration) => {
-				if (disposed) return;
-				registration = readyRegistration;
-				updateAvailable = Boolean(readyRegistration.waiting);
-				updateFound = () => {
-					const installing = readyRegistration.installing;
-					if (!installing) return;
-					installing.addEventListener('statechange', () => {
-						if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-							updateAvailable = true;
-						}
-					});
-				};
-				readyRegistration.addEventListener('updatefound', updateFound);
-			});
-		}
-
 		return () => {
-			disposed = true;
 			window.removeEventListener('online', setOnline);
 			window.removeEventListener('offline', setOffline);
 			window.removeEventListener('beforeinstallprompt', onInstallPrompt);
-			navigator.serviceWorker?.removeEventListener('controllerchange', onControllerChange);
-			if (registration && updateFound) registration.removeEventListener('updatefound', updateFound);
 		};
 	});
 
@@ -80,14 +49,9 @@
 		await prompt.userChoice;
 		installPrompt = null;
 	}
-
-	function applyUpdate(): void {
-		reloadOnControllerChange = true;
-		registration?.waiting?.postMessage({ type: 'SKIP_WAITING' });
-	}
 </script>
 
-{#if !online || updateAvailable || installPrompt}
+{#if !online || installPrompt}
 	<div
 		class="app-status fixed right-3 left-3 z-55 flex justify-center md:right-4 md:bottom-4 md:left-auto"
 	>
@@ -104,15 +68,6 @@
 					<span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
 				</span>
 				<span class="font-medium">{m.app_offline()}</span>
-			{:else if updateAvailable}
-				<span class="font-medium">{m.app_update_available()}</span>
-				<button
-					type="button"
-					class="min-h-9 cursor-pointer rounded-lg bg-primary px-3 font-bold text-primary-foreground active:scale-[0.98]"
-					onclick={applyUpdate}
-				>
-					{m.app_update_now()}
-				</button>
 			{:else if installPrompt}
 				<svg
 					class="h-5 w-5 shrink-0 text-primary"
