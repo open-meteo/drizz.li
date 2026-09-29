@@ -22,6 +22,7 @@
 
 	import * as Dialog from '$lib/components/ui/dialog';
 
+	import AppStatus from '$lib/components/app-status.svelte';
 	import Footer from '$lib/components/navigation/footer.svelte';
 	import Header from '$lib/components/navigation/header.svelte';
 	import MobileBottomNav from '$lib/components/navigation/mobile-bottom-nav.svelte';
@@ -382,6 +383,8 @@
 		</div>
 	</div>
 {/if}
+
+<AppStatus />
 
 <div class="app-frame flex h-screen overflow-hidden bg-background text-foreground">
 	<!-- Desktop sidebar -->

@@ -10,6 +10,8 @@
 	"nav_seasonal": "Saisonal",
 	"nav_historical": "Rückblick",
 	"nav_maps": "Karten",
+	"app_offline": "Offline — gespeicherte Daten werden angezeigt, sofern verfügbar",
+	"app_install": "Drizz.li installieren",
 	"nav_forecast": "Vorhersage",
 	"nav_14day_short": "14 Tage",
 	"nav_compare_short": "Vergleich",
