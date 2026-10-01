@@ -16,7 +16,10 @@ import { fetchWeatherApi } from 'openmeteo';
 
 import { type DaylightBand, buildDaylightBands } from '$lib/charts/bands';
 import * as m from '$lib/paraglide/messages';
+import { decodeSounding } from '$lib/soundings/data';
+import { SOUNDING_MODELS } from '$lib/soundings/models';
 
+import type { SoundingForecastResult } from '$lib/soundings/profile';
 import type { VariableWithValues } from '@openmeteo/sdk/variable-with-values';
 import type { VariablesWithTime } from '@openmeteo/sdk/variables-with-time';
 
@@ -26,6 +29,49 @@ const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const ENSEMBLE_URL = 'https://ensemble-api.open-meteo.com/v1/ensemble';
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive';
 const SEASONAL_URL = 'https://seasonal-api.open-meteo.com/v1/seasonal';
+
+export interface SoundingForecastParams extends WeatherLocation {
+	model: string;
+	/** Calendar date in the location's timezone, YYYY-MM-DD. */
+	date: string;
+}
+
+export async function fetchSoundingForecast(
+	params: SoundingForecastParams
+): Promise<SoundingForecastResult> {
+	const capability = Object.hasOwn(SOUNDING_MODELS, params.model)
+		? SOUNDING_MODELS[params.model]
+		: undefined;
+	if (!capability) throw new Error('Invalid sounding model');
+	const date = new Date(`${params.date}T12:00:00Z`);
+	if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== params.date)
+		throw new Error('Invalid sounding date');
+	const hourly = capability.levels.flatMap((pressure) =>
+		[
+			'temperature',
+			'dew_point',
+			'wind_speed',
+			'wind_direction',
+			'cloud_cover',
+			'geopotential_height'
+		].map((field) => `${field}_${pressure}hPa`)
+	);
+	const responses = await fetchWeatherApi(FORECAST_URL, {
+		latitude: params.latitude,
+		longitude: params.longitude,
+		models: params.model,
+		start_date: params.date,
+		end_date: params.date,
+		timezone: params.timezone ?? 'auto',
+		hourly: [...hourly, 'surface_pressure', 'temperature_2m', 'dew_point_2m'].join(','),
+		cell_selection: 'nearest',
+		elevation: 'nan',
+		temperature_unit: 'celsius',
+		wind_speed_unit: 'ms'
+	});
+	if (!responses[0]) throw new Error('No data is available for this location');
+	return decodeSounding(responses[0], capability.levels, params.timezone ?? 'UTC');
+}
 
 // ─── Core Helpers ───────────────────────────────────────────────────────────────
 
