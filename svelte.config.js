@@ -60,6 +60,7 @@ const config = {
 					'/weather/week',
 					'/weather/compare',
 					'/weather/14-day',
+					'/weather/marine',
 					'/weather/seasonal',
 					'/weather/historical',
 					'/weather/maps',
@@ -77,6 +78,7 @@ const config = {
 					'/weather/week',
 					'/weather/compare',
 					'/weather/14-day',
+					'/weather/marine',
 					'/weather/seasonal',
 					'/weather/historical'
 				];

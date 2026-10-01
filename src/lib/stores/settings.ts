@@ -186,6 +186,9 @@ export const storedEnsembleModel = persisted<string>('ensemble_model', 'ncep_gef
 export const storedArchiveModel = persisted<string>('archive_model', 'best_match');
 export const storedSeasonalModel = persisted<string>('seasonal_model', 'best_match');
 
+/** Wave model used on the marine page. */
+export const storedMarineModel = persisted<string>('marine_model', 'best_match');
+
 /** Measurement units, shared across every forecast page and persisted. */
 export interface UnitPrefs {
 	temperature_unit: 'celsius' | 'fahrenheit';
