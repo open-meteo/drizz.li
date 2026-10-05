@@ -443,6 +443,7 @@
 	"sounding_hour": "Hora de previsión",
 	"sounding_elevation": "Elevación de la cuadrícula del modelo: {elevation} m sobre el nivel del mar",
 	"sounding_surface_parcel": "Parcela de superficie",
+	"sounding_subcloud_buoyancy": "Flotabilidad positiva bajo la base de las nubes",
 	"sounding_parcel_temperature": "Temperatura de la parcela",
 	"sounding_shading_note": "El sombreado usa temperaturas reales y es aproximado. Los valores CAPE/CIN incluyen la corrección por humedad (temperatura virtual).",
 	"sounding_buoyancy_unavailable": "CAPE/CIN no disponibles: datos de superficie ausentes o inválidos.",

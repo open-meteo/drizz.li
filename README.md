@@ -256,7 +256,14 @@ temperature, starting at the surface temperature, and approximate shading agains
 the actual environmental temperature. Its crossings and shaded regions are
 computed separately from the corrected totals; the original T/Td traces remain unchanged. Crossings are interpolated in log pressure. CAPE sums positive
 areas above the first LFC at/above saturation, while CIN sums negative areas
-below it. Negative layers above the LFC are not shaded as CIN.
+below it. Negative layers above the LFC are not shaded as CIN. Positive
+actual-temperature areas between the model surface and cloud base receive a
+lighter warm fill labelled sub-cloud positive buoyancy, even without a moist
+LFC. This display-only shading does not contribute to the CAPE/CIN totals. Its
+environmental boundary follows the plotted pressure-level temperature trace,
+including interpolation to the model surface where covered, rather than an
+invented connection to the separate 2 m temperature marker. No shading is drawn
+where that trace is unavailable or below the model surface.
 
 The calculation excludes below-ground samples and stops at missing T/Td values.
 Complete totals require a contiguous profile through 100 hPa and nonpositive

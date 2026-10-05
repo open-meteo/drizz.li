@@ -315,6 +315,12 @@
 					<span class="inline-block w-4 border-t border-dashed border-foreground align-middle"
 					></span>
 					{m.sounding_parcel_temperature()}
+					{#if parcel.display.areas.some((area) => area.kind === 'subcloud')}
+						· <span class="inline-flex items-center gap-1"
+							><span class="h-2 w-2 rounded-sm" style:background={TRACE_COLORS.subcloud}
+							></span>{m.sounding_subcloud_buoyancy()}</span
+						>
+					{/if}
 				</p>{/if}
 		</div>
 

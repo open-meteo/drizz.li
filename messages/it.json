@@ -443,6 +443,7 @@
 	"sounding_hour": "Ora di previsione",
 	"sounding_elevation": "Quota della griglia del modello: {elevation} m sul livello del mare",
 	"sounding_surface_parcel": "Particella di superficie",
+	"sounding_subcloud_buoyancy": "Galleggiamento positivo sotto la base delle nubi",
 	"sounding_parcel_temperature": "Temperatura della particella",
 	"sounding_shading_note": "Le aree colorate usano temperature reali e sono approssimative. I valori CAPE/CIN includono la correzione per l’umidità (temperatura virtuale).",
 	"sounding_buoyancy_unavailable": "CAPE/CIN non disponibili: dati di superficie mancanti o non validi.",

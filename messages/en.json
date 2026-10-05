@@ -443,6 +443,7 @@
 	"sounding_hour": "Forecast hour",
 	"sounding_elevation": "Model grid elevation: {elevation} m above sea level",
 	"sounding_surface_parcel": "Surface parcel",
+	"sounding_subcloud_buoyancy": "Sub-cloud positive buoyancy",
 	"sounding_parcel_temperature": "Parcel temperature",
 	"sounding_shading_note": "Shading uses actual temperatures and is approximate. CAPE/CIN totals include the humidity correction (virtual temperature).",
 	"sounding_buoyancy_unavailable": "CAPE/CIN unavailable: missing or invalid surface data.",

@@ -97,6 +97,7 @@
 	);
 	let exportLegend = $derived([
 		{ name: 'CAPE', color: TRACE_COLORS.cape },
+		{ name: m.sounding_subcloud_buoyancy(), color: TRACE_COLORS.subcloud },
 		{ name: 'CIN', color: TRACE_COLORS.cin },
 		{ name: m.sounding_parcel_temperature(), color: '#64748b', style: 'dashed' as const },
 		{ name: m.var_temperature(), color: TRACE_COLORS.temperature },

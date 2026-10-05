@@ -19,7 +19,7 @@ import {
 } from './thermo';
 
 import type { UnitPrefs } from '$lib/stores/settings';
-import type { ParcelArea, ParcelDiagnostics } from './parcel';
+import type { ParcelDiagnostics, ParcelDisplayArea } from './parcel';
 import type { SoundingProfile } from './profile';
 
 export const TRACE_COLORS = {
@@ -30,6 +30,7 @@ export const TRACE_COLORS = {
 	mixing: '#92958c',
 	parcel: '#3b82f6',
 	cape: '#f59e0b',
+	subcloud: '#fbbf24',
 	cin: '#6366f1'
 };
 
@@ -493,15 +494,15 @@ export function renderParcel(
 ) {
 	ctx.save();
 	clip(ctx, layout);
-	const runs: ParcelArea[][] = [];
+	const runs: ParcelDisplayArea[][] = [];
 	for (const area of parcel.display.areas) {
 		const run = runs.at(-1);
 		if (run && run[0].kind === area.kind && run.at(-1)!.top.pressure === area.bottom.pressure)
 			run.push(area);
 		else runs.push([area]);
 	}
-	ctx.globalAlpha = 0.2;
 	for (const run of runs) {
+		ctx.globalAlpha = run[0].kind === 'subcloud' ? 0.12 : 0.2;
 		const points = [run[0].bottom, ...run.map((area) => area.top)];
 		const polygon = [
 			...points.map((p) => toCanvas(layout, p.environment, p.pressure)),

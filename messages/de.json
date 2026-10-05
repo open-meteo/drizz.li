@@ -443,6 +443,7 @@
 	"sounding_hour": "Vorhersagestunde",
 	"sounding_elevation": "Modellgitterhöhe: {elevation} m über dem Meeresspiegel",
 	"sounding_surface_parcel": "Bodenluftpaket",
+	"sounding_subcloud_buoyancy": "Positiver Auftrieb unter der Wolkenbasis",
 	"sounding_parcel_temperature": "Pakettemperatur",
 	"sounding_shading_note": "Die Schattierung verwendet tatsächliche Temperaturen und ist näherungsweise. CAPE/CIN-Werte berücksichtigen die Feuchtekorrektur (virtuelle Temperatur).",
 	"sounding_buoyancy_unavailable": "CAPE/CIN nicht verfügbar: fehlende oder ungültige Bodendaten.",

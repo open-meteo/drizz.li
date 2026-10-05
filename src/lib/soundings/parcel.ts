@@ -1,3 +1,4 @@
+import { interpolateLevel } from './profile';
 import { EPS, RD, dryTemperature, moistLapseRate, saturationVaporPressure } from './thermo';
 
 import type { SoundingProfile } from './profile';
@@ -13,6 +14,7 @@ export interface ParcelArea {
 	bottom: ParcelPoint;
 	top: ParcelPoint;
 }
+export type ParcelDisplayArea = Omit<ParcelArea, 'kind'> & { kind: 'cape' | 'cin' | 'subcloud' };
 export interface ParcelDiagnostics {
 	status: 'complete' | 'incomplete' | 'unavailable';
 	cape: number | null;
@@ -21,7 +23,7 @@ export interface ParcelDiagnostics {
 	lfc: number | null;
 	points: ParcelPoint[];
 	areas: ParcelArea[];
-	display: { points: ParcelPoint[]; areas: ParcelArea[] };
+	display: { points: ParcelPoint[]; areas: ParcelDisplayArea[] };
 }
 
 function mixingRatio(dewpoint: number, pressure: number) {
@@ -94,7 +96,13 @@ export function surfaceParcel(profile: SoundingProfile, elevation: number): Parc
 			parcel: virtualTemperature(t0, ratio)
 		}
 	];
-	const actual: ParcelPoint[] = [{ pressure: p0, environment: t0, parcel: t0 }];
+	// Match the rendered pressure-level trace, which does not pass through the
+	// separate 2 m surface marker. Interpolation may use its below-ground segment
+	// to locate the boundary at p0, but no shaded point is below p0. Missing trace
+	// coverage stays NaN so we never invent an environmental line to shade against.
+	const plottedTemperature = (pressure: number) =>
+		interpolateLevel(profile.levels, pressure)?.temperature ?? NaN;
+	const actual: ParcelPoint[] = [{ pressure: p0, environment: plottedTemperature(p0), parcel: t0 }];
 	let previous = { pressure: p0, temperature: t0, dewpoint: td0 };
 	let parcelT = t0;
 	let broken = false;
@@ -124,7 +132,7 @@ export function surfaceParcel(profile: SoundingProfile, elevation: number): Parc
 			};
 			if (!Number.isFinite(point.environment) || !Number.isFinite(point.parcel))
 				return { ...empty, status: 'incomplete', points, display: { points: actual, areas: [] } };
-			actual.push({ pressure: nextP, environment: t, parcel: parcelT });
+			actual.push({ pressure: nextP, environment: plottedTemperature(nextP), parcel: parcelT });
 			points.push(point);
 			p = nextP;
 		}
@@ -134,6 +142,18 @@ export function surfaceParcel(profile: SoundingProfile, elevation: number): Parc
 		return { ...empty, status: 'incomplete', points, display: { points: actual, areas: [] } };
 	const { split, lfc, cape, cin, areas } = integrateAreas(points, lcl);
 	const display = integrateAreas(actual, lcl);
+	// The integration steps include the LCL exactly. Classify only the positive
+	// actual-temperature segments below it, independently of any moist LFC.
+	const displayAreas: ParcelDisplayArea[] = [...display.areas];
+	for (let i = 1; i < display.split.length; i++) {
+		const bottom = display.split[i - 1],
+			top = display.split[i];
+		if (
+			top.pressure >= lcl &&
+			(bottom.parcel - bottom.environment + top.parcel - top.environment) / 2 > 1e-8
+		)
+			displayAreas.push({ kind: 'subcloud', bottom, top });
+	}
 	const top = split[split.length - 1];
 	const complete = !broken && top.pressure <= 100 && top.parcel <= top.environment + 1e-8;
 	return {
@@ -142,7 +162,7 @@ export function surfaceParcel(profile: SoundingProfile, elevation: number): Parc
 		cin: complete && lfc !== null ? cin : null,
 		lfc,
 		points: split,
-		display: { points: display.split, areas: display.areas },
+		display: { points: display.split, areas: displayAreas },
 		areas
 	};
 }

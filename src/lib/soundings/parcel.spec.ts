@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { surfaceParcel } from './parcel';
+import { interpolateLevel } from './profile';
 import { inverseSaturationVaporPressure, saturationVaporPressure } from './thermo';
 
 import type { SoundingProfile } from './profile';
@@ -41,6 +42,74 @@ function sounding(): SoundingProfile {
 }
 
 describe('surface parcel buoyancy', () => {
+	it('bounds the surface fill by the plotted model trace, not a synthetic 2 m anchor', () => {
+		const profile = sounding();
+		profile.surfacePressure = 975;
+		profile.surfaceTemperature = 30;
+		profile.surfaceDewpoint = 10;
+		const result = surfaceParcel(profile, NaN);
+		expect(result.display.points[0].parcel).toBe(30);
+		expect(result.display.points[0].environment).toBeCloseTo(
+			interpolateLevel(profile.levels, 975)!.temperature,
+			9
+		);
+		const surfaceArea = result.display.areas.find((area) => area.bottom.pressure === 975);
+		expect(surfaceArea?.kind).toBe('subcloud');
+		for (const area of result.display.areas) {
+			for (const point of [area.bottom, area.top]) {
+				expect(point.pressure).toBeLessThanOrEqual(975);
+				expect(point.environment).toBeCloseTo(
+					interpolateLevel(profile.levels, point.pressure)!.temperature,
+					8
+				);
+			}
+		}
+	});
+	it('does not invent a shaded boundary when the temperature trace does not reach the surface', () => {
+		const profile = sounding();
+		profile.levels = profile.levels.filter((level) => level.pressure <= 950);
+		const result = surfaceParcel(profile, NaN);
+		expect(result.display.points[0].parcel).toBe(profile.surfaceTemperature);
+		expect(result.display.points[0].environment).toBeNaN();
+		for (const area of result.display.areas) expect(area.bottom.pressure).toBeLessThanOrEqual(950);
+	});
+	it('shades dry thermals without a moist LFC or adding to CAPE', () => {
+		const profile = sounding();
+		profile.surfaceTemperature = 30;
+		profile.surfaceDewpoint = -10;
+		profile.levels = profile.levels.map((level) => ({
+			...level,
+			temperature: level.pressure === 950 ? 20 : 30,
+			dewpoint: -20
+		}));
+		const result = surfaceParcel(profile, NaN);
+		expect(result.lfc).toBeNull();
+		expect(result.cape).toBe(0);
+		expect(result.cin).toBeNull();
+		expect(result.areas).toEqual([]);
+		const shaded = result.display.areas.filter((area) => area.kind === 'subcloud');
+		expect(shaded.length).toBeGreaterThan(0);
+		for (const area of shaded) {
+			expect(area.bottom.pressure).toBeLessThanOrEqual(profile.surfacePressure);
+			for (const point of [area.bottom, area.top])
+				expect(point.parcel - point.environment).toBeGreaterThanOrEqual(-1e-9);
+		}
+	});
+	it('ends sub-cloud shading at saturation, with none for a saturated surface', () => {
+		const profile = sounding();
+		const result = surfaceParcel(profile, NaN);
+		const subcloud = result.display.areas.filter((area) => area.kind === 'subcloud');
+		expect(subcloud.length).toBeGreaterThan(0);
+		const cape = result.display.areas.filter((area) => area.kind === 'cape');
+		expect(cape.length).toBeGreaterThan(0);
+		expect(Math.min(...subcloud.map((area) => area.top.pressure))).toBeGreaterThanOrEqual(
+			Math.max(...cape.map((area) => area.bottom.pressure))
+		);
+		profile.surfaceDewpoint = profile.surfaceTemperature;
+		expect(surfaceParcel(profile, NaN).display.areas.some((area) => area.kind === 'subcloud')).toBe(
+			false
+		);
+	});
 	it('starts the traditional path at actual surface temperature and shades its own crossings', () => {
 		const profile = sounding();
 		profile.levels[1].temperature = 32;
@@ -54,7 +123,7 @@ describe('surface parcel buoyancy', () => {
 		for (const area of result.display.areas) {
 			for (const point of [area.bottom, area.top]) {
 				const difference = point.parcel - point.environment;
-				expect(area.kind === 'cape' ? difference >= -1e-9 : difference <= 1e-9).toBe(true);
+				expect(area.kind !== 'cin' ? difference >= -1e-9 : difference <= 1e-9).toBe(true);
 			}
 		}
 	});
