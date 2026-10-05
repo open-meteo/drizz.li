@@ -137,7 +137,7 @@
 			requestedTime = null;
 		}
 		preferredClock = formatZoned(instant, location.timezone, 'HH:mm');
-		const top = Number(url.searchParams.get('top'));
+		const top = Number(url.searchParams.get('top') ?? 100);
 		topPressure = TOP_PRESSURES.some((p) => p === top) ? top : 100;
 	}
 
@@ -251,7 +251,7 @@
 
 	$effect(() => {
 		if (!mounted || loading || !day) return;
-		syncSearchParams({ ...viewParams(), top: topPressure === 100 ? null : String(topPressure) });
+		syncSearchParams(viewParams());
 	});
 
 	function boundDay(value: string) {

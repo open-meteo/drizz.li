@@ -84,6 +84,19 @@ describe('soundings day navigation', () => {
 		navigate();
 	});
 
+	it('defaults to 100 hPa without a URL height and writes changes to the URL', async () => {
+		const route = get(routePage);
+		const url = new URL(route.url);
+		url.searchParams.delete('top');
+		(routePage as unknown as Writable<{ url: URL }>).set({ ...route, url });
+		const screen = await render(Soundings, { data });
+		const selector = screen.getByRole('combobox', { name: m.sounding_top() });
+		await expect.element(selector).toHaveValue('100');
+		await selector.selectOptions('500');
+		await expect.poll(() => syncSearchParams.mock.lastCall?.[0].top).toBe('500');
+		await selector.selectOptions('100');
+		await expect.poll(() => syncSearchParams.mock.lastCall?.[0].top).toBe('100');
+	});
 	it('fetches a selected day once; hours, range, units and cached days stay local', async () => {
 		const screen = await render(Soundings, { data });
 		await expect
