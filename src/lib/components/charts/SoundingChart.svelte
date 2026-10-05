@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 
 	import * as m from '$lib/paraglide/messages';
+	import { soundingLegend } from '$lib/soundings/legend';
 	import { TOP_PRESSURES } from '$lib/soundings/models';
 	import { surfaceParcel } from '$lib/soundings/parcel';
 	import {
@@ -13,7 +14,6 @@
 		windUnit
 	} from '$lib/soundings/profile';
 	import {
-		TRACE_COLORS,
 		buildLayout,
 		fromCanvas,
 		renderSelection,
@@ -79,14 +79,7 @@
 		`${m.sounding_surface_parcel()} · CAPE ${parcel.cape === null ? '—' : Math.round(parcel.cape)} J/kg · CIN ${parcel.cin === null ? '—' : Math.round(parcel.cin)} J/kg${parcelStatus ? ' · ' + parcelStatus : ''} · ${m.sounding_shading_note()}`
 	);
 
-	let legend = $derived([
-		{ name: m.var_temperature(), color: TRACE_COLORS.temperature, style: 'solid' },
-		{ name: m.var_dew_point(), color: TRACE_COLORS.dewpoint, style: 'solid' },
-		{ name: m.sounding_parcel_temperature(), color: 'var(--foreground)', style: 'dashed' },
-		{ name: m.sounding_dry(), color: TRACE_COLORS.dry, style: 'dashed' },
-		{ name: m.sounding_moist(), color: TRACE_COLORS.moist, style: 'solid' },
-		{ name: m.sounding_mixing(), color: TRACE_COLORS.mixing, style: 'dotted' }
-	]);
+	let legend = $derived(soundingLegend());
 
 	function context(target: HTMLCanvasElement) {
 		const dpr = window.devicePixelRatio || 1;
@@ -319,7 +312,7 @@
 		</div>
 
 		<div class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-			{#each legend as item (item.name)}<span class="inline-flex items-center gap-1"
+			{#each legend.lines as item (item.name)}<span class="inline-flex items-center gap-1"
 					><span
 						class="w-4 border-t-2"
 						style:border-color={item.color}
@@ -328,11 +321,13 @@
 				>{/each}
 		</div>
 		<div class="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-			{#each [{ name: 'CAPE', color: TRACE_COLORS.cape, visible: true }, { name: 'CIN', color: TRACE_COLORS.cin, visible: true }, { name: m.sounding_subcloud_buoyancy(), color: TRACE_COLORS.subcloud, visible: parcel.display.areas.some((area) => area.kind === 'subcloud') }, { name: m.sounding_cloud_shading(), color: 'var(--muted-foreground)', visible: true }] as area (area.name)}
+			{#each legend.areas as area (area.name)}
 				<span
 					class="inline-flex items-center gap-1.5"
-					class:invisible={!area.visible}
-					aria-hidden={!area.visible}
+					class:invisible={area.key === 'subcloud' &&
+						!parcel.display.areas.some((a) => a.kind === 'subcloud')}
+					aria-hidden={area.key === 'subcloud' &&
+						!parcel.display.areas.some((a) => a.kind === 'subcloud')}
 				>
 					<span class="area-swatch" style:--area-color={area.color}></span>{area.name}
 				</span>

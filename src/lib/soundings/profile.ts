@@ -101,8 +101,3 @@ export function addDays(day: string, count: number): string {
 	date.setUTCDate(date.getUTCDate() + count);
 	return date.toISOString().slice(0, 10);
 }
-
-export function clampDay(day: string, today: string, forecastDays: number): string {
-	const last = addDays(today, forecastDays - 1);
-	return day < today ? today : day > last ? last : day;
-}

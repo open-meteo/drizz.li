@@ -20,7 +20,7 @@ export interface ChartExportItem {
 export interface ExportLegendItem {
 	name: string;
 	color: string;
-	style?: 'point' | 'line' | 'dashed' | 'bar' | 'area';
+	style?: 'point' | 'line' | 'solid' | 'dashed' | 'dotted' | 'bar' | 'area';
 }
 
 export interface ChartDownloadOptions {
@@ -145,10 +145,19 @@ export async function downloadChartsPng(
 			let x = padding;
 			for (const item of row) {
 				const markerWidth = 12 * dpr;
-				ctx.strokeStyle = item.color;
-				ctx.fillStyle = item.color;
+				const color = item.color.startsWith('var(')
+					? styles.getPropertyValue(item.color.slice(4, -1)).trim()
+					: item.color;
+				ctx.strokeStyle = color;
+				ctx.fillStyle = color;
 				ctx.lineWidth = 2 * dpr;
-				ctx.setLineDash(item.style === 'dashed' ? [4 * dpr, 3 * dpr] : []);
+				ctx.setLineDash(
+					item.style === 'dashed'
+						? [4 * dpr, 3 * dpr]
+						: item.style === 'dotted'
+							? [dpr, 3 * dpr]
+							: []
+				);
 				if (item.style === 'point') {
 					ctx.beginPath();
 					ctx.arc(x + markerWidth / 2, y + rowHeight / 2, 3 * dpr, 0, Math.PI * 2);

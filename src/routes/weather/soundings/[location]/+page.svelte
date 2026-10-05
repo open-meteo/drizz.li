@@ -18,6 +18,7 @@
 	import { href } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 	import { fetchSoundingForecast, humanizeWeatherError } from '$lib/services/weather';
+	import { soundingLegend } from '$lib/soundings/legend';
 	import {
 		SOUNDING_MODELS,
 		SOUNDING_PAST_DAYS,
@@ -26,7 +27,6 @@
 		soundingModelGroups
 	} from '$lib/soundings/models';
 	import { addDays, isPlottable } from '$lib/soundings/profile';
-	import { TRACE_COLORS } from '$lib/soundings/renderer';
 	import { soundingHours } from '$lib/soundings/time';
 
 	import { useHeroActions } from '../../hero.svelte';
@@ -103,18 +103,10 @@
 	let title = $derived(
 		`${m.sounding_title()} · ${location.name} · ${modelLabel}${profile ? ` · ${formatZoned(new Date(profile.time), timezone, 'yyyy-MM-dd HH:mm zzz')}` : ''}`
 	);
-	let exportLegend = $derived([
-		{ name: 'CAPE', color: TRACE_COLORS.cape, style: 'area' as const },
-		{ name: 'CIN', color: TRACE_COLORS.cin, style: 'area' as const },
-		{ name: m.sounding_subcloud_buoyancy(), color: TRACE_COLORS.subcloud, style: 'area' as const },
-		{ name: m.sounding_cloud_shading(), color: '#64748b', style: 'area' as const },
-		{ name: m.sounding_parcel_temperature(), color: '#64748b', style: 'dashed' as const },
-		{ name: m.var_temperature(), color: TRACE_COLORS.temperature },
-		{ name: m.var_dew_point(), color: TRACE_COLORS.dewpoint },
-		{ name: m.sounding_dry(), color: TRACE_COLORS.dry, style: 'dashed' as const },
-		{ name: m.sounding_moist(), color: TRACE_COLORS.moist },
-		{ name: m.sounding_mixing(), color: TRACE_COLORS.mixing, style: 'dashed' as const }
-	]);
+	let exportLegend = $derived.by(() => {
+		const { lines, areas } = soundingLegend();
+		return [...lines, ...areas];
+	});
 
 	useHeroActions(heroActions);
 	reportPageReady(() => mounted && !loading);
@@ -160,10 +152,12 @@
 				const route = `${url.href}|${loc.latitude},${loc.longitude},${loc.timezone}`;
 				if (route === observedRoute) return;
 				observedRoute = route;
+				const loadedDay = day;
 				readUrl(url);
 				// Hour-only navigation reuses the current day's profiles.
 				const scope = JSON.stringify([loc.latitude, loc.longitude, loc.timezone, model]);
-				if (!loading && scope === cacheScope && days[day]) selectResult(days[day]);
+				if (!loading && day === loadedDay && scope === cacheScope && days[day])
+					selectResult(days[day]);
 			});
 	});
 

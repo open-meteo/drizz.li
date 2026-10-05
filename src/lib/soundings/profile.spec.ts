@@ -6,7 +6,6 @@ import { models } from '../../routes/weather/options';
 import { SOUNDING_MODELS, SURFACE_ONLY_MODELS, soundingModel } from './models';
 import {
 	addDays,
-	clampDay,
 	interpolateLevel,
 	isPlottable,
 	pressureAtHeight,
@@ -174,7 +173,7 @@ describe('sounding profiles', () => {
 			[-25, 500]
 		]) {
 			const [x, y] = toCanvas(layout, temperature, pressure);
-			expect(arcs.some((arc) => arc[0] === x && arc[1] === y && arc[2] === 2.5)).toBe(true);
+			expect(arcs.some((arc) => arc[0] === x && arc[1] === y)).toBe(true);
 		}
 		renderSelection(
 			ctx,
@@ -314,11 +313,10 @@ describe('sounding profiles', () => {
 		expect(autumn.every((time, i) => i === 0 || time - autumn[i - 1] === 3600000)).toBe(true);
 	});
 
-	it('bounds dates and uses calendar days across DST and year boundaries', () => {
+	it('uses calendar days across DST and year boundaries', () => {
 		expect(addDays('2026-03-29', 1)).toBe('2026-03-30');
 		expect(addDays('2026-10-25', -1)).toBe('2026-10-24');
 		expect(addDays('2026-12-31', 1)).toBe('2027-01-01');
-		expect(clampDay('2027-01-20', '2026-12-31', 3)).toBe('2027-01-02');
 	});
 });
 

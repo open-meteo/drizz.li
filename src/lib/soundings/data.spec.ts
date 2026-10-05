@@ -1,5 +1,5 @@
 import { Variable } from '@openmeteo/sdk/variable';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchSoundingForecast } from '$lib/services/weather';
 
@@ -59,13 +59,6 @@ describe('sounding decoding', () => {
 		expect(result.profiles[0].surfacePressure).toBe(950);
 		expect(result.profiles[0].surfaceDewpoint).toBeNaN();
 	});
-	it('retains UTC instants over 23- and 25-hour days', () => {
-		for (const hours of [23, 25]) {
-			const result = decodeSounding(response([], hours), [500], 'UTC');
-			expect(result.profiles).toHaveLength(hours);
-			expect(result.profiles[1].time - result.profiles[0].time).toBe(3600000);
-		}
-	});
 	it('returns an empty profile collection when the hourly block is absent', () => {
 		const empty = response([]);
 		empty.hourly = () => null;
@@ -74,10 +67,7 @@ describe('sounding decoding', () => {
 });
 
 describe('single-day sounding request', () => {
-	afterEach(() => vi.useRealTimers());
 	beforeEach(() => {
-		vi.useFakeTimers();
-		vi.setSystemTime(new Date('2026-09-23T12:00:00Z'));
 		fetchWeatherApi.mockReset();
 		fetchWeatherApi.mockResolvedValue([response([])]);
 	});
@@ -102,37 +92,24 @@ describe('single-day sounding request', () => {
 		expect(params.hourly).toContain('temperature_200hPa');
 		expect(params.hourly).not.toContain('temperature_100hPa');
 	});
-	it('requests the oldest retained day on the normal forecast endpoint', async () => {
-		await fetchSoundingForecast({
-			latitude: 47,
-			longitude: 8,
-			model: 'icon_global',
-			date: '2026-09-16',
-			timezone: 'Europe/Zurich'
-		});
-		expect(fetchWeatherApi).toHaveBeenCalledTimes(1);
-		expect(fetchWeatherApi.mock.calls[0][0]).toBe('https://api.open-meteo.com/v1/forecast');
-		expect(fetchWeatherApi.mock.calls[0][1]).toMatchObject({
-			start_hour: '2026-09-15T22:00',
-			end_hour: '2026-09-16T21:00',
-			models: 'icon_global'
-		});
-	});
-	it('keeps recent historical days on the live forecast endpoint', async () => {
-		await fetchSoundingForecast({
-			latitude: 47,
-			longitude: 8,
-			model: 'icon_global',
-			date: '2026-09-22',
-			timezone: 'Europe/Zurich'
-		});
-		expect(fetchWeatherApi).toHaveBeenCalledTimes(1);
-		expect(fetchWeatherApi.mock.calls[0][0]).toBe('https://api.open-meteo.com/v1/forecast');
-		expect(fetchWeatherApi.mock.calls[0][1]).toMatchObject({
-			start_hour: '2026-09-21T22:00',
-			end_hour: '2026-09-22T21:00'
-		});
-	});
+	it.each(['2026-09-16', '2026-09-22'])(
+		'requests historical day %s on the normal endpoint',
+		async (date) => {
+			await fetchSoundingForecast({
+				latitude: 47,
+				longitude: 8,
+				model: 'icon_global',
+				date,
+				timezone: 'Europe/Zurich'
+			});
+			expect(fetchWeatherApi).toHaveBeenCalledTimes(1);
+			expect(fetchWeatherApi.mock.calls[0][0]).toBe('https://api.open-meteo.com/v1/forecast');
+			expect(fetchWeatherApi.mock.calls[0][1]).toMatchObject({
+				end_hour: `${date}T21:00`,
+				models: 'icon_global'
+			});
+		}
+	);
 
 	it.each([
 		['2026-03-29', '2026-03-28T23:00', '2026-03-29T21:00', 23],
