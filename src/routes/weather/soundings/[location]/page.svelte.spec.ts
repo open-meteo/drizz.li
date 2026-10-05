@@ -12,6 +12,7 @@ import { formatZoned } from '$lib/utils/date';
 import * as m from '$lib/paraglide/messages';
 import { addDays } from '$lib/soundings/profile';
 
+import '../../../layout.css';
 import Soundings from './+page.svelte';
 
 import type { SoundingForecastParams } from '$lib/services/weather';
@@ -69,6 +70,31 @@ function forecast(date: string): SoundingForecastResult {
 }
 
 describe('soundings day navigation', () => {
+	it.each([375, 1024])('reserves chart and page geometry while loading at %i px', async (width) => {
+		let finish!: (result: SoundingForecastResult) => void;
+		fetchSoundingForecast.mockImplementation(
+			() =>
+				new Promise<SoundingForecastResult>((resolve) => {
+					finish = resolve;
+				})
+		);
+		const screen = await render(Soundings, { data });
+		await expect.poll(() => typeof finish).toBe('function');
+		const canvas = document.querySelector('canvas')!;
+		const section = canvas.closest('section')!;
+		section.style.width = `${width}px`;
+		await new Promise<void>((resolve) =>
+			requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+		);
+		const chartBefore = canvas.getBoundingClientRect();
+		const heightBefore = section.getBoundingClientRect().height;
+		finish(forecast(today));
+		await expect.element(screen.getByRole('combobox', { name: m.sounding_top() })).toBeVisible();
+		expect(document.querySelector('canvas')).toBe(canvas);
+		expect(canvas.getBoundingClientRect().top).toBeCloseTo(chartBefore.top, 0);
+		expect(canvas.getBoundingClientRect().height).toBeCloseTo(chartBefore.height, 0);
+		expect(section.getBoundingClientRect().height).toBeCloseTo(heightBefore, 0);
+	});
 	beforeEach(() => {
 		fetchSoundingForecast.mockReset();
 		fetchSoundingForecast.mockImplementation(async (params: SoundingForecastParams) =>

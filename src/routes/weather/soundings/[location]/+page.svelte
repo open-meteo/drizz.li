@@ -37,6 +37,14 @@
 	import type { SoundingForecastResult, SoundingProfile } from '$lib/soundings/profile';
 	import type { PageData } from './$types';
 
+	const emptyProfile: SoundingProfile = {
+		time: 0,
+		levels: [],
+		surfacePressure: NaN,
+		surfaceTemperature: NaN,
+		surfaceDewpoint: NaN
+	};
+
 	let { data }: { data: PageData } = $props();
 	let location = $derived(data.location);
 	let mounted = $state(false);
@@ -393,87 +401,68 @@
 				disabled={day === today}>{m.day_today()}</button
 			>
 		</div>
-		{#if profile && !loading}
-			<div class="flex w-full min-w-0 items-center gap-1">
-				<button
-					class="time-arrow"
-					disabled={hourIndex === 0 && day <= firstDay}
-					onclick={() => stepHour(-1)}
-					aria-label={m.sounding_previous_hour()}>‹</button
-				>
+		<div class="min-h-13">
+			{#if profile && !loading}
+				<div class="flex w-full min-w-0 items-center gap-1">
+					<button
+						class="time-arrow"
+						disabled={hourIndex === 0 && day <= firstDay}
+						onclick={() => stepHour(-1)}
+						aria-label={m.sounding_previous_hour()}>‹</button
+					>
 
-				<div class="time-strip" role="group" aria-label={m.sounding_hour()}>
-					{#each hours as hour (hour.time)}
-						<button
-							use:revealSelected={selectedTime === hour.time}
-							class="hour-button"
-							class:chosen={selectedTime === hour.time}
-							aria-pressed={selectedTime === hour.time}
-							aria-label={formatZoned(new Date(hour.time), timezone, 'HH:mm zzz')}
-							title={hour.index < 0
-								? m.sounding_empty()
-								: formatZoned(new Date(hour.time), timezone, 'HH:mm zzz')}
-							disabled={hour.index < 0}
-							onclick={() => changeHour(hour.index)}
-						>
-							{formatZoned(new Date(hour.time), timezone, 'HH')}
-							{#if hour.repeated}<span class="block text-[9px]"
-									>{formatZoned(new Date(hour.time), timezone, 'zzz')}</span
-								>{/if}
-						</button>
-					{/each}
+					<div class="time-strip" role="group" aria-label={m.sounding_hour()}>
+						{#each hours as hour (hour.time)}
+							<button
+								use:revealSelected={selectedTime === hour.time}
+								class="hour-button"
+								class:chosen={selectedTime === hour.time}
+								aria-pressed={selectedTime === hour.time}
+								aria-label={formatZoned(new Date(hour.time), timezone, 'HH:mm zzz')}
+								title={hour.index < 0
+									? m.sounding_empty()
+									: formatZoned(new Date(hour.time), timezone, 'HH:mm zzz')}
+								disabled={hour.index < 0}
+								onclick={() => changeHour(hour.index)}
+							>
+								{formatZoned(new Date(hour.time), timezone, 'HH')}
+								{#if hour.repeated}<span class="block text-[9px]"
+										>{formatZoned(new Date(hour.time), timezone, 'zzz')}</span
+									>{/if}
+							</button>
+						{/each}
+					</div>
+					<button
+						class="time-arrow"
+						disabled={hourIndex === profiles.length - 1 && day >= lastDay}
+						onclick={() => stepHour(1)}
+						aria-label={m.sounding_next_hour()}>›</button
+					>
+					<span class="shrink-0 pl-1 text-xs text-muted-foreground" title={timezone}
+						>{formatZoned(new Date(profile.time), timezone, 'zzz')}</span
+					>
 				</div>
-				<button
-					class="time-arrow"
-					disabled={hourIndex === profiles.length - 1 && day >= lastDay}
-					onclick={() => stepHour(1)}
-					aria-label={m.sounding_next_hour()}>›</button
-				>
-				<span class="shrink-0 pl-1 text-xs text-muted-foreground" title={timezone}
-					>{formatZoned(new Date(profile.time), timezone, 'zzz')}</span
-				>
-			</div>
-			<p class="sr-only" aria-live="polite">
-				{formatZoned(new Date(profile.time), timezone, 'EEE d MMM yyyy · HH:mm zzz')}
-			</p>
-		{/if}
+				<p class="sr-only" aria-live="polite">
+					{formatZoned(new Date(profile.time), timezone, 'EEE d MMM yyyy · HH:mm zzz')}
+				</p>
+			{/if}
+		</div>
 	</div>
-	{#if combined}<p class="text-xs text-muted-foreground">{m.sounding_combined()}</p>{/if}
-	{#if adjusted}<p role="status" class="text-sm text-muted-foreground">
-			{m.sounding_adjusted()}
-		</p>{/if}
-	{#if loading}
-		<div
+	<div class="space-y-1">
+		<p class="text-xs text-muted-foreground" class:invisible={!combined} aria-hidden={!combined}>
+			{m.sounding_combined()}
+		</p>
+		<p
 			role="status"
-			class="flex min-h-120 items-center justify-center rounded-xl bg-muted/30 text-muted-foreground"
+			class="text-sm text-muted-foreground"
+			class:invisible={!adjusted}
+			aria-hidden={!adjusted}
 		>
-			{m.charts_loading()}
-		</div>
-	{:else if error || !profile}
-		<div role="status" class="rounded-xl border border-border bg-card p-6">
-			<h2 class="font-semibold">{error?.title ?? m.sounding_empty()}</h2>
-			<p class="mt-2 text-sm text-muted-foreground">{error?.hint ?? m.sounding_empty_hint()}</p>
-			<div class="mt-4 flex flex-wrap gap-3">
-				<button class="rounded-md border border-border px-3 py-2 text-sm" onclick={retryDay}
-					>{m.sounding_retry()}</button
-				>
-				{#if model !== 'best_match'}<button
-						class="rounded-md border border-border px-3 py-2 text-sm"
-						onclick={() => changeModel('best_match')}>{m.no_data_best_match()}</button
-					>{/if}
-				{#if suggestedCity}<a
-						class="rounded-md border border-border px-3 py-2 text-sm"
-						href={`${href('/weather/soundings/[location]', { location: suggestedCity.slug })}?${new URLSearchParams(viewParams())}`}
-						>{m.no_data_try_city({ city: suggestedCity.label })}</a
-					>{/if}
-			</div>
-			{#if error?.detail}<details class="mt-3 text-xs text-muted-foreground">
-					<summary>{m.error_technical_details()}</summary>
-					<p class="mt-2 break-words">{error.detail}</p>
-				</details>{/if}
-		</div>
-	{:else}
-		<div>
+			{m.sounding_adjusted()}
+		</p>
+	</div>
+	<div class="relative" aria-busy={loading}>
+		<div class:invisible={loading || !!error || !profile} inert={loading || !!error || !profile}>
 			<div class="flex items-center justify-between gap-2">
 				<p class="min-w-0 flex-1 text-xs text-muted-foreground">
 					{#if Number.isFinite(result?.elevation)}{m.sounding_elevation({
@@ -490,14 +479,47 @@
 			</div>
 			<SoundingChart
 				bind:this={chart}
-				{profile}
+				profile={profile ?? emptyProfile}
 				dayProfiles={profiles}
-				elevation={result!.elevation}
+				elevation={result?.elevation ?? NaN}
 				bind:topPressure
 				units={$storedUnits}
 			/>
 		</div>
-	{/if}
+		{#if loading}
+			<div
+				role="status"
+				class="absolute inset-0 flex items-center justify-center rounded-xl bg-muted/30 text-muted-foreground"
+			>
+				{m.charts_loading()}
+			</div>
+		{:else if error || !profile}
+			<div class="absolute inset-x-0 top-0">
+				<div role="status" class="rounded-xl border border-border bg-card p-6">
+					<h2 class="font-semibold">{error?.title ?? m.sounding_empty()}</h2>
+					<p class="mt-2 text-sm text-muted-foreground">{error?.hint ?? m.sounding_empty_hint()}</p>
+					<div class="mt-4 flex flex-wrap gap-3">
+						<button class="rounded-md border border-border px-3 py-2 text-sm" onclick={retryDay}
+							>{m.sounding_retry()}</button
+						>
+						{#if model !== 'best_match'}<button
+								class="rounded-md border border-border px-3 py-2 text-sm"
+								onclick={() => changeModel('best_match')}>{m.no_data_best_match()}</button
+							>{/if}
+						{#if suggestedCity}<a
+								class="rounded-md border border-border px-3 py-2 text-sm"
+								href={`${href('/weather/soundings/[location]', { location: suggestedCity.slug })}?${new URLSearchParams(viewParams())}`}
+								>{m.no_data_try_city({ city: suggestedCity.label })}</a
+							>{/if}
+					</div>
+					{#if error?.detail}<details class="mt-3 text-xs text-muted-foreground">
+							<summary>{m.error_technical_details()}</summary>
+							<p class="mt-2 break-words">{error.detail}</p>
+						</details>{/if}
+				</div>
+			</div>
+		{/if}
+	</div>
 </section>
 
 <style>

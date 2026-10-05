@@ -82,6 +82,7 @@
 	let legend = $derived([
 		{ name: m.var_temperature(), color: TRACE_COLORS.temperature, style: 'solid' },
 		{ name: m.var_dew_point(), color: TRACE_COLORS.dewpoint, style: 'solid' },
+		{ name: m.sounding_parcel_temperature(), color: 'var(--foreground)', style: 'dashed' },
 		{ name: m.sounding_dry(), color: TRACE_COLORS.dry, style: 'dashed' },
 		{ name: m.sounding_moist(), color: TRACE_COLORS.moist, style: 'solid' },
 		{ name: m.sounding_mixing(), color: TRACE_COLORS.mixing, style: 'dotted' }
@@ -310,18 +311,17 @@
 						: Math.round(parcel.cin)} J/kg</span
 				>
 			</p>
-			{#if parcelStatus}<p class="text-muted-foreground">{parcelStatus}</p>{/if}
-			{#if parcel.points.length > 1}<p class="text-muted-foreground">
-					<span class="inline-block w-4 border-t border-dashed border-foreground align-middle"
-					></span>
-					{m.sounding_parcel_temperature()}
-					{#if parcel.display.areas.some((area) => area.kind === 'subcloud')}
-						· <span class="inline-flex items-center gap-1"
-							><span class="h-2 w-2 rounded-sm" style:background={TRACE_COLORS.subcloud}
-							></span>{m.sounding_subcloud_buoyancy()}</span
-						>
-					{/if}
-				</p>{/if}
+			<div class="grid text-muted-foreground">
+				{#each [m.sounding_buoyancy_unavailable(), m.sounding_buoyancy_incomplete(), m.sounding_no_lfc()] as status (status)}
+					<p
+						class="col-start-1 row-start-1"
+						class:invisible={status !== parcelStatus}
+						aria-hidden={status !== parcelStatus}
+					>
+						{status}
+					</p>
+				{/each}
+			</div>
 		</div>
 
 		<div class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -332,14 +332,34 @@
 						style:border-top-style={item.style}
 					></span>{item.name}</span
 				>{/each}
-			<span>{m.sounding_cloud_shading()}</span>
+			<span class="inline-flex items-center gap-1"
+				><span class="h-2 w-3 bg-foreground/15"></span>{m.sounding_cloud_shading()}</span
+			>
+			<span
+				class:invisible={!parcel.display.areas.some((area) => area.kind === 'subcloud')}
+				aria-hidden={!parcel.display.areas.some((area) => area.kind === 'subcloud')}
+				class="inline-flex items-center gap-1"
+				><span class="h-2 w-3" style:background={TRACE_COLORS.subcloud}
+				></span>{m.sounding_subcloud_buoyancy()}</span
+			>
 		</div>
-		{#if layout && layout.minPressure > topPressure}
-			<p class="mt-2 text-center text-xs text-muted-foreground">
-				{m.sounding_limited({ pressure: String(layout.minPressure) })}
-			</p>
-		{/if}
-		<p class="mt-3 text-center text-xs text-muted-foreground">{m.sounding_help()}</p>
+
+		<p
+			class="mt-2 text-center text-xs text-muted-foreground"
+			class:invisible={!layout || layout.minPressure <= topPressure}
+			aria-hidden={!layout || layout.minPressure <= topPressure}
+		>
+			{m.sounding_limited({ pressure: String(layout?.minPressure ?? topPressure) })}
+		</p>
+		<p class="mt-2 text-center text-xs text-muted-foreground">
+			<span class="mouse-hint">{m.sounding_help_mouse()}</span>
+			<span class="touch-hint">{m.sounding_help_touch()}</span>
+		</p>
+		<details class="mt-2 text-xs text-muted-foreground">
+			<summary class="cursor-pointer text-center">{m.sounding_chart_help()}</summary>
+			<p class="mt-2">{m.sounding_help()}</p>
+			<p class="mt-1">{m.sounding_shading_note()}</p>
+		</details>
 		<div class="sr-only" aria-live="polite" aria-atomic="true">
 			{#if selection}
 				<p>
@@ -389,3 +409,17 @@
 		</details>
 	</div>
 </div>
+
+<style>
+	.mouse-hint {
+		display: none;
+	}
+	@media (hover: hover) and (pointer: fine) {
+		.mouse-hint {
+			display: inline;
+		}
+		.touch-hint {
+			display: none;
+		}
+	}
+</style>

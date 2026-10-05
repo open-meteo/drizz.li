@@ -130,7 +130,11 @@ npm run assets:push cities
 npm run build
 ```
 
-`npm run preview` serves the production build locally.
+`npm run preview` serves the production build locally. For unprerendered
+localized weather-location URLs, it serves `build/404.html` with status 200 so
+hard reloads boot the client router. Prerendered pages keep their own HTML;
+missing assets, API requests and unknown routes do not use this preview fallback.
+Rebuild after application changes; restart preview after Vite configuration changes.
 
 The build prerenders the static pages and the city pages listed in
 `src/routes/weather/locations/city-names100.json` (base locale only, for every
