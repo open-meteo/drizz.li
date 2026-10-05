@@ -298,17 +298,11 @@
 			<p class="font-medium tabular-nums">
 				{m.sounding_surface_parcel()} ·
 				<span class="inline-flex items-center gap-1"
-					><span class="h-2 w-2 rounded-sm" style:background={TRACE_COLORS.cape}></span>CAPE {parcel.cape ===
-					null
-						? '—'
-						: Math.round(parcel.cape)} J/kg</span
+					>CAPE {parcel.cape === null ? '—' : Math.round(parcel.cape)} J/kg</span
 				>
 				·
 				<span class="inline-flex items-center gap-1"
-					><span class="h-2 w-2 rounded-sm" style:background={TRACE_COLORS.cin}></span>CIN {parcel.cin ===
-					null
-						? '—'
-						: Math.round(parcel.cin)} J/kg</span
+					>CIN {parcel.cin === null ? '—' : Math.round(parcel.cin)} J/kg</span
 				>
 			</p>
 			<div class="grid text-muted-foreground">
@@ -332,16 +326,17 @@
 						style:border-top-style={item.style}
 					></span>{item.name}</span
 				>{/each}
-			<span class="inline-flex items-center gap-1"
-				><span class="h-2 w-3 bg-foreground/15"></span>{m.sounding_cloud_shading()}</span
-			>
-			<span
-				class:invisible={!parcel.display.areas.some((area) => area.kind === 'subcloud')}
-				aria-hidden={!parcel.display.areas.some((area) => area.kind === 'subcloud')}
-				class="inline-flex items-center gap-1"
-				><span class="h-2 w-3" style:background={TRACE_COLORS.subcloud}
-				></span>{m.sounding_subcloud_buoyancy()}</span
-			>
+		</div>
+		<div class="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+			{#each [{ name: 'CAPE', color: TRACE_COLORS.cape, visible: true }, { name: 'CIN', color: TRACE_COLORS.cin, visible: true }, { name: m.sounding_subcloud_buoyancy(), color: TRACE_COLORS.subcloud, visible: parcel.display.areas.some((area) => area.kind === 'subcloud') }, { name: m.sounding_cloud_shading(), color: 'var(--muted-foreground)', visible: true }] as area (area.name)}
+				<span
+					class="inline-flex items-center gap-1.5"
+					class:invisible={!area.visible}
+					aria-hidden={!area.visible}
+				>
+					<span class="area-swatch" style:--area-color={area.color}></span>{area.name}
+				</span>
+			{/each}
 		</div>
 
 		<p
@@ -411,6 +406,14 @@
 </div>
 
 <style>
+	.area-swatch {
+		width: 1.25rem;
+		height: 0.75rem;
+		flex-shrink: 0;
+		border: 1px solid color-mix(in srgb, var(--area-color) 65%, transparent);
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--area-color) 20%, transparent);
+	}
 	.mouse-hint {
 		display: none;
 	}

@@ -20,7 +20,7 @@ export interface ChartExportItem {
 export interface ExportLegendItem {
 	name: string;
 	color: string;
-	style?: 'point' | 'line' | 'dashed' | 'bar';
+	style?: 'point' | 'line' | 'dashed' | 'bar' | 'area';
 }
 
 export interface ChartDownloadOptions {
@@ -153,6 +153,13 @@ export async function downloadChartsPng(
 					ctx.beginPath();
 					ctx.arc(x + markerWidth / 2, y + rowHeight / 2, 3 * dpr, 0, Math.PI * 2);
 					ctx.fill();
+				} else if (item.style === 'area') {
+					ctx.globalAlpha = 0.2;
+					ctx.fillRect(x, y + rowHeight / 2 - 4 * dpr, markerWidth, 8 * dpr);
+					ctx.globalAlpha = 0.65;
+					ctx.lineWidth = dpr;
+					ctx.strokeRect(x, y + rowHeight / 2 - 4 * dpr, markerWidth, 8 * dpr);
+					ctx.globalAlpha = 1;
 				} else if (item.style === 'bar') {
 					ctx.fillRect(x + 3 * dpr, y + 5 * dpr, 6 * dpr, 12 * dpr);
 				} else {

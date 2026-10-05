@@ -104,9 +104,10 @@
 		`${m.sounding_title()} · ${location.name} · ${modelLabel}${profile ? ` · ${formatZoned(new Date(profile.time), timezone, 'yyyy-MM-dd HH:mm zzz')}` : ''}`
 	);
 	let exportLegend = $derived([
-		{ name: 'CAPE', color: TRACE_COLORS.cape },
-		{ name: m.sounding_subcloud_buoyancy(), color: TRACE_COLORS.subcloud },
-		{ name: 'CIN', color: TRACE_COLORS.cin },
+		{ name: 'CAPE', color: TRACE_COLORS.cape, style: 'area' as const },
+		{ name: 'CIN', color: TRACE_COLORS.cin, style: 'area' as const },
+		{ name: m.sounding_subcloud_buoyancy(), color: TRACE_COLORS.subcloud, style: 'area' as const },
+		{ name: m.sounding_cloud_shading(), color: '#64748b', style: 'area' as const },
 		{ name: m.sounding_parcel_temperature(), color: '#64748b', style: 'dashed' as const },
 		{ name: m.var_temperature(), color: TRACE_COLORS.temperature },
 		{ name: m.var_dew_point(), color: TRACE_COLORS.dewpoint },
