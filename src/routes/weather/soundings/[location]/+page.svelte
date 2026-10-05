@@ -239,15 +239,19 @@
 			});
 	});
 
-	$effect(() => {
-		if (!mounted || loading || !day) return;
+	function viewParams() {
 		const time =
 			selectedTime ?? fromZonedTime(`${day}T${preferredClock}:00`, location.timezone).getTime();
-		syncSearchParams({
+		return {
 			model,
 			time: new Date(time).toISOString(),
-			top: topPressure === 100 ? null : String(topPressure)
-		});
+			top: String(topPressure)
+		};
+	}
+
+	$effect(() => {
+		if (!mounted || loading || !day) return;
+		syncSearchParams({ ...viewParams(), top: topPressure === 100 ? null : String(topPressure) });
 	});
 
 	function boundDay(value: string) {
@@ -459,7 +463,7 @@
 					>{/if}
 				{#if suggestedCity}<a
 						class="rounded-md border border-border px-3 py-2 text-sm"
-						href={`${href('/weather/soundings/[location]', { location: suggestedCity.slug })}?model=${model}`}
+						href={`${href('/weather/soundings/[location]', { location: suggestedCity.slug })}?${new URLSearchParams(viewParams())}`}
 						>{m.no_data_try_city({ city: suggestedCity.label })}</a
 					>{/if}
 			</div>

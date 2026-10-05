@@ -14,9 +14,11 @@
 	// visit - the one Cloudflare derives from the request (see initialLocation)
 	onMount(() => {
 		void initialLocation().then((location) => {
-			goto(href('/weather/soundings/[location]', { location: buildLocationRoute(location) }), {
-				replaceState: true
-			});
+			goto(
+				href('/weather/soundings/[location]', { location: buildLocationRoute(location) }) +
+					window.location.search,
+				{ replaceState: true }
+			);
 		});
 	});
 </script>

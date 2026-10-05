@@ -155,7 +155,8 @@ function finishResolve(
 	// otherwise every localized URL would bounce back to English.
 	const canonicalPath = `${routePrefix}${buildLocationRoute(location)}/`;
 	if (deLocalizeHref(event.url.pathname) !== canonicalPath) {
-		throw redirect(303, localizeHref(canonicalPath));
+		// Canonicalizing the city must not discard the selected forecast view.
+		throw redirect(303, localizeHref(canonicalPath) + event.url.search);
 	}
 
 	return location;

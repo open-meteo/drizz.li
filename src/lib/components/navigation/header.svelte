@@ -41,7 +41,11 @@
 		const currentPath = routePath(get(page).url.pathname);
 
 		if (currentPath.startsWith('/weather/soundings')) {
-			goto(href('/weather/soundings/[location]', { location: locationRoute }));
+			// The address bar includes the latest shallow time/model/height changes;
+			// page.url may still contain the state from the last full navigation.
+			goto(
+				href('/weather/soundings/[location]', { location: locationRoute }) + window.location.search
+			);
 		} else if (currentPath.startsWith('/weather/compare')) {
 			goto(href('/weather/compare/[location]', { location: locationRoute }));
 		} else if (currentPath.startsWith('/weather/14-day')) {
