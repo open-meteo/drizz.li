@@ -161,6 +161,9 @@
 				if (route === observedRoute) return;
 				observedRoute = route;
 				readUrl(url);
+				// Hour-only navigation reuses the current day's profiles.
+				const scope = JSON.stringify([loc.latitude, loc.longitude, loc.timezone, model]);
+				if (!loading && scope === cacheScope && days[day]) selectResult(days[day]);
 			});
 	});
 

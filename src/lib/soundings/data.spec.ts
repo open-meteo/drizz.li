@@ -18,13 +18,17 @@ function variable(id: Variable, pressure: number, values: number[], altitude = 0
 		valuesArray: () => new Float32Array(values)
 	};
 }
-function response(variables: ReturnType<typeof variable>[], hours = 3): WeatherApiResponse {
+function response(
+	variables: ReturnType<typeof variable>[],
+	hours = 3,
+	start = 1792886400n
+): WeatherApiResponse {
 	return {
 		timezone: () => 'Europe/Berlin',
 		elevation: () => 500,
 		hourly: () => ({
-			time: () => 1792886400n,
-			timeEnd: () => 1792886400n + BigInt(hours * 3600),
+			time: () => start,
+			timeEnd: () => start + BigInt(hours * 3600),
 			interval: () => 3600,
 			variablesLength: () => variables.length,
 			variables: (i: number) => variables[i]
@@ -88,9 +92,9 @@ describe('single-day sounding request', () => {
 		expect(fetchWeatherApi).toHaveBeenCalledTimes(1);
 		const params = fetchWeatherApi.mock.calls[0][1];
 		expect(params).toMatchObject({
-			start_date: '2026-09-24',
-			end_date: '2026-09-24',
-			timezone: 'Europe/Zurich',
+			start_hour: '2026-09-23T22:00',
+			end_hour: '2026-09-24T21:00',
+			timezone: 'GMT',
 			wind_speed_unit: 'ms',
 			elevation: 'nan'
 		});
@@ -109,8 +113,8 @@ describe('single-day sounding request', () => {
 		expect(fetchWeatherApi).toHaveBeenCalledTimes(1);
 		expect(fetchWeatherApi.mock.calls[0][0]).toBe('https://api.open-meteo.com/v1/forecast');
 		expect(fetchWeatherApi.mock.calls[0][1]).toMatchObject({
-			start_date: '2026-09-16',
-			end_date: '2026-09-16',
+			start_hour: '2026-09-15T22:00',
+			end_hour: '2026-09-16T21:00',
 			models: 'icon_global'
 		});
 	});
@@ -125,11 +129,39 @@ describe('single-day sounding request', () => {
 		expect(fetchWeatherApi).toHaveBeenCalledTimes(1);
 		expect(fetchWeatherApi.mock.calls[0][0]).toBe('https://api.open-meteo.com/v1/forecast');
 		expect(fetchWeatherApi.mock.calls[0][1]).toMatchObject({
-			start_date: '2026-09-22',
-			end_date: '2026-09-22'
+			start_hour: '2026-09-21T22:00',
+			end_hour: '2026-09-22T21:00'
 		});
 	});
 
+	it.each([
+		['2026-03-29', '2026-03-28T23:00', '2026-03-29T21:00', 23],
+		['2026-10-25', '2026-10-24T22:00', '2026-10-25T22:00', 25]
+	] as const)(
+		'requests and retains exactly the local DST day %s',
+		async (date, start, last, count) => {
+			const startMs = Date.parse(start + 'Z');
+			fetchWeatherApi.mockResolvedValue([response([], count + 2, BigInt(startMs / 1000 - 3600))]);
+			const result = await fetchSoundingForecast({
+				latitude: 47,
+				longitude: 8,
+				timezone: 'Europe/Zurich',
+				model: 'icon_global',
+				date
+			});
+			expect(fetchWeatherApi).toHaveBeenCalledTimes(1);
+			expect(fetchWeatherApi.mock.calls[0][1]).toMatchObject({
+				start_hour: start,
+				end_hour: last,
+				timezone: 'GMT'
+			});
+			expect(fetchWeatherApi.mock.calls[0][1]).not.toHaveProperty('start_date');
+			expect(result.timezone).toBe('Europe/Zurich');
+			expect(result.profiles).toHaveLength(count);
+			expect(result.profiles[0].time).toBe(startMs);
+			expect(result.profiles.at(-1)!.time).toBe(Date.parse(last + 'Z'));
+		}
+	);
 	it('rejects invalid dates and unsupported models before requesting data', async () => {
 		await expect(
 			fetchSoundingForecast({ latitude: 0, longitude: 0, model: 'icon_d2', date: '2026-02-31' })

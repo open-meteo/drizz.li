@@ -273,6 +273,22 @@ describe('soundings day navigation', () => {
 		expect(syncSearchParams.mock.lastCall?.[0].time).toBe(`${first}T00:00:00.000Z`);
 	});
 
+	it('applies same-day URL hour changes without fetching again', async () => {
+		const screen = await render(Soundings, { data });
+		await expect
+			.poll(() => syncSearchParams.mock.lastCall?.[0].time)
+			.toBe(`${today}T12:00:00.000Z`);
+		for (const hour of [16, 12]) {
+			navigate(today, 'icon_global', hour);
+			await expect
+				.poll(() => syncSearchParams.mock.lastCall?.[0].time)
+				.toBe(`${today}T${hour}:00:00.000Z`);
+			await expect
+				.element(screen.getByRole('button', { name: `${hour}:00 UTC`, exact: true }))
+				.toHaveAttribute('aria-pressed', 'true');
+		}
+		expect(fetchSoundingForecast).toHaveBeenCalledTimes(1);
+	});
 	it('restores URL model/day/hour/top and clears the cache for a new model', async () => {
 		const screen = await render(Soundings, { data });
 		await expect

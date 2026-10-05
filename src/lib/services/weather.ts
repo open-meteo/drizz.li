@@ -18,6 +18,7 @@ import { type DaylightBand, buildDaylightBands } from '$lib/charts/bands';
 import * as m from '$lib/paraglide/messages';
 import { decodeSounding } from '$lib/soundings/data';
 import { SOUNDING_MODELS } from '$lib/soundings/models';
+import { soundingDayBounds } from '$lib/soundings/time';
 
 import type { SoundingForecastResult } from '$lib/soundings/profile';
 import type { VariableWithValues } from '@openmeteo/sdk/variable-with-values';
@@ -56,13 +57,15 @@ export async function fetchSoundingForecast(
 			'geopotential_height'
 		].map((field) => `${field}_${pressure}hPa`)
 	);
+	const timezone = params.timezone ?? 'UTC';
+	const { start, end } = soundingDayBounds(params.date, timezone);
 	const responses = await fetchWeatherApi(FORECAST_URL, {
 		latitude: params.latitude,
 		longitude: params.longitude,
 		models: params.model,
-		start_date: params.date,
-		end_date: params.date,
-		timezone: params.timezone ?? 'auto',
+		start_hour: new Date(start).toISOString().slice(0, 16),
+		end_hour: new Date(end - 3600000).toISOString().slice(0, 16),
+		timezone: 'GMT',
 		hourly: [...hourly, 'surface_pressure', 'temperature_2m', 'dew_point_2m'].join(','),
 		cell_selection: 'nearest',
 		elevation: 'nan',
@@ -70,7 +73,12 @@ export async function fetchSoundingForecast(
 		wind_speed_unit: 'ms'
 	});
 	if (!responses[0]) throw new Error('No data is available for this location');
-	return decodeSounding(responses[0], capability.levels, params.timezone ?? 'UTC');
+	const result = decodeSounding(responses[0], capability.levels, timezone);
+	return {
+		...result,
+		timezone,
+		profiles: result.profiles.filter((profile) => profile.time >= start && profile.time < end)
+	};
 }
 
 // ─── Core Helpers ───────────────────────────────────────────────────────────────
