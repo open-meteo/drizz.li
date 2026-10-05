@@ -19,6 +19,7 @@ import {
 } from './thermo';
 
 import type { UnitPrefs } from '$lib/stores/settings';
+import type { ParcelArea, ParcelDiagnostics } from './parcel';
 import type { SoundingProfile } from './profile';
 
 export const TRACE_COLORS = {
@@ -27,7 +28,9 @@ export const TRACE_COLORS = {
 	dry: '#87939f',
 	moist: '#718b99',
 	mixing: '#92958c',
-	parcel: '#3b82f6'
+	parcel: '#3b82f6',
+	cape: '#f59e0b',
+	cin: '#6366f1'
 };
 
 export interface PlotLayout {
@@ -242,7 +245,8 @@ export function renderSounding(
 	height: number,
 	palette: ChartPalette,
 	units: UnitPrefs,
-	labels: ChartLabels
+	labels: ChartLabels,
+	parcel?: ParcelDiagnostics
 ) {
 	ctx.fillStyle = palette.background;
 	ctx.fillRect(0, 0, width, height);
@@ -359,6 +363,7 @@ export function renderSounding(
 			);
 		ctx.restore();
 	}
+	if (parcel) renderParcel(ctx, layout, parcel, palette);
 	for (const [field, color] of [
 		['temperature', TRACE_COLORS.temperature],
 		['dewpoint', TRACE_COLORS.dewpoint]
@@ -477,6 +482,46 @@ export function renderSounding(
 				'right'
 			);
 	}
+}
+
+/** Traditional temperature shading; numerical energy uses virtual temperature. */
+export function renderParcel(
+	ctx: CanvasRenderingContext2D,
+	layout: PlotLayout,
+	parcel: ParcelDiagnostics,
+	palette: ChartPalette
+) {
+	ctx.save();
+	clip(ctx, layout);
+	const runs: ParcelArea[][] = [];
+	for (const area of parcel.display.areas) {
+		const run = runs.at(-1);
+		if (run && run[0].kind === area.kind && run.at(-1)!.top.pressure === area.bottom.pressure)
+			run.push(area);
+		else runs.push([area]);
+	}
+	ctx.globalAlpha = 0.2;
+	for (const run of runs) {
+		const points = [run[0].bottom, ...run.map((area) => area.top)];
+		const polygon = [
+			...points.map((p) => toCanvas(layout, p.environment, p.pressure)),
+			...points.toReversed().map((p) => toCanvas(layout, p.parcel, p.pressure))
+		];
+		ctx.beginPath();
+		polygon.forEach(([x, y], index) => (index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+		ctx.closePath();
+		ctx.fillStyle = TRACE_COLORS[run[0].kind];
+		ctx.fill();
+	}
+	ctx.globalAlpha = 1;
+	stroke(
+		ctx,
+		parcel.display.points.map((p) => toCanvas(layout, p.parcel, p.pressure)),
+		palette.foreground,
+		1.6,
+		[6, 3]
+	);
+	ctx.restore();
 }
 
 export function renderSelection(

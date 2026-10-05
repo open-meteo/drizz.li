@@ -246,3 +246,25 @@ carry their source and license notices. The chart extends to at least 1050 hPa,
 with a shaded, hatched region below the model surface. Supplied trace values
 remain visible and inspectable in this region. Pointer-driven parcel guides do
 not calculate CAPE or CIN.
+
+Surface-based CAPE/CIN uses a fixed parcel initialized from the model surface
+pressure and 2 m temperature/dew point, independently of pointer guides. The
+parcel follows a dry adiabat at constant mixing ratio to saturation, then a
+pseudoadiabat (liquid water, immediate condensate removal). Virtual temperature
+is used for numerical buoyancy. The traditional display shows the actual parcel
+temperature, starting at the surface temperature, and approximate shading against
+the actual environmental temperature. Its crossings and shaded regions are
+computed separately from the corrected totals; the original T/Td traces remain unchanged. Crossings are interpolated in log pressure. CAPE sums positive
+areas above the first LFC at/above saturation, while CIN sums negative areas
+below it. Negative layers above the LFC are not shaded as CIN.
+
+The calculation excludes below-ground samples and stops at missing T/Td values.
+Complete totals require a contiguous profile through 100 hPa and nonpositive
+buoyancy at the top; otherwise only the valid portion is drawn, with totals
+marked unavailable. No LFC means zero CAPE and undefined CIN, not zero CIN. These
+are approximate, model-level diagnostics, with no ice-phase or entrainment
+correction. No additional requests are made. Values and status accompany PNG
+exports; changing the displayed pressure ceiling does not change the totals.
+
+The energy integral follows the [MetPy documentation](https://unidata.github.io/MetPy/latest/api/generated/metpy.calc.cape_cin.html);
+its published reference sounding is checked within 5% for this approximation.

@@ -441,5 +441,11 @@
 	"sounding_previous_hour": "Ora precedente",
 	"sounding_next_hour": "Ora successiva",
 	"sounding_hour": "Ora di previsione",
-	"sounding_elevation": "Quota della griglia del modello: {elevation} m sul livello del mare"
+	"sounding_elevation": "Quota della griglia del modello: {elevation} m sul livello del mare",
+	"sounding_surface_parcel": "Particella di superficie",
+	"sounding_parcel_temperature": "Temperatura della particella",
+	"sounding_shading_note": "Le aree colorate usano temperature reali e sono approssimative. I valori CAPE/CIN includono la correzione per l’umidità (temperatura virtuale).",
+	"sounding_buoyancy_unavailable": "CAPE/CIN non disponibili: dati di superficie mancanti o non validi.",
+	"sounding_buoyancy_incomplete": "Profilo incompleto: totali non disponibili; curve e aree mostrano solo la colonna valida.",
+	"sounding_no_lfc": "Nessun livello di convezione libera; CIN non definita."
 }

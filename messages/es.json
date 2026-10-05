@@ -441,5 +441,11 @@
 	"sounding_previous_hour": "Hora anterior",
 	"sounding_next_hour": "Hora siguiente",
 	"sounding_hour": "Hora de previsión",
-	"sounding_elevation": "Elevación de la cuadrícula del modelo: {elevation} m sobre el nivel del mar"
+	"sounding_elevation": "Elevación de la cuadrícula del modelo: {elevation} m sobre el nivel del mar",
+	"sounding_surface_parcel": "Parcela de superficie",
+	"sounding_parcel_temperature": "Temperatura de la parcela",
+	"sounding_shading_note": "El sombreado usa temperaturas reales y es aproximado. Los valores CAPE/CIN incluyen la corrección por humedad (temperatura virtual).",
+	"sounding_buoyancy_unavailable": "CAPE/CIN no disponibles: datos de superficie ausentes o inválidos.",
+	"sounding_buoyancy_incomplete": "Perfil incompleto: totales no disponibles; curvas y áreas muestran solo la columna válida.",
+	"sounding_no_lfc": "Sin nivel de convección libre; CIN no definida."
 }

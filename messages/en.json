@@ -441,5 +441,11 @@
 	"sounding_previous_hour": "Previous hour",
 	"sounding_next_hour": "Next hour",
 	"sounding_hour": "Forecast hour",
-	"sounding_elevation": "Model grid elevation: {elevation} m above sea level"
+	"sounding_elevation": "Model grid elevation: {elevation} m above sea level",
+	"sounding_surface_parcel": "Surface parcel",
+	"sounding_parcel_temperature": "Parcel temperature",
+	"sounding_shading_note": "Shading uses actual temperatures and is approximate. CAPE/CIN totals include the humidity correction (virtual temperature).",
+	"sounding_buoyancy_unavailable": "CAPE/CIN unavailable: missing or invalid surface data.",
+	"sounding_buoyancy_incomplete": "Incomplete profile: totals unavailable; curves and shading show only the valid column.",
+	"sounding_no_lfc": "No level of free convection; CIN is undefined."
 }

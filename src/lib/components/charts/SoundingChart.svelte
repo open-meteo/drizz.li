@@ -3,6 +3,7 @@
 
 	import * as m from '$lib/paraglide/messages';
 	import { TOP_PRESSURES } from '$lib/soundings/models';
+	import { surfaceParcel } from '$lib/soundings/parcel';
 	import {
 		interpolateLevel,
 		temperatureDisplay,
@@ -64,6 +65,20 @@
 	let dragging = false;
 	let levels = $derived(profile.levels);
 	let inspected = $derived(selection ? interpolateLevel(levels, selection.pressure) : null);
+	let parcel = $derived(surfaceParcel(profile, elevation));
+	let parcelStatus = $derived(
+		parcel.status === 'unavailable'
+			? m.sounding_buoyancy_unavailable()
+			: parcel.status === 'incomplete'
+				? m.sounding_buoyancy_incomplete()
+				: parcel.lfc === null
+					? m.sounding_no_lfc()
+					: ''
+	);
+	let parcelSummary = $derived(
+		`${m.sounding_surface_parcel()} · CAPE ${parcel.cape === null ? '—' : Math.round(parcel.cape)} J/kg · CIN ${parcel.cin === null ? '—' : Math.round(parcel.cin)} J/kg${parcelStatus ? ' · ' + parcelStatus : ''} · ${m.sounding_shading_note()}`
+	);
+
 	let legend = $derived([
 		{ name: m.var_temperature(), color: TRACE_COLORS.temperature, style: 'solid' },
 		{ name: m.var_dew_point(), color: TRACE_COLORS.dewpoint, style: 'solid' },
@@ -119,12 +134,23 @@
 		const next = buildLayout(profile, elevation, topPressure, width, height, dayProfiles);
 		const ctx = context(canvas);
 		if (ctx && next)
-			renderSounding(ctx, profile, elevation, next, width, height, palette, units, {
-				wind: m.var_wind_short(),
-				surface: m.sounding_surface(),
-				temperatureUnit: temperatureUnit(units),
-				windUnit: windUnit(units)
-			});
+			renderSounding(
+				ctx,
+				profile,
+				elevation,
+				next,
+				width,
+				height,
+				palette,
+				units,
+				{
+					wind: m.var_wind_short(),
+					surface: m.sounding_surface(),
+					temperatureUnit: temperatureUnit(units),
+					windUnit: windUnit(units)
+				},
+				parcel
+			);
 		layout = next;
 		selection = null;
 		context(overlay);
@@ -191,8 +217,26 @@
 		if (!canvas || !layout) return null;
 		const image = document.createElement('canvas');
 		image.width = canvas.width;
-		image.height = canvas.height;
-		image.getContext('2d')?.drawImage(canvas, 0, 0);
+		const ctx = image.getContext('2d');
+		if (!ctx) return null;
+		const dpr = canvas.width / width;
+		ctx.font = `${12 * dpr}px system-ui, sans-serif`;
+		const lines: string[] = [];
+		let line = '';
+		for (const word of parcelSummary.split(' ')) {
+			if (line && ctx.measureText(line + ' ' + word).width > canvas.width - 16 * dpr) {
+				lines.push(line);
+				line = word;
+			} else line += (line ? ' ' : '') + word;
+		}
+		if (line) lines.push(line);
+		image.height = canvas.height + (lines.length * 18 + 12) * dpr;
+		ctx.fillStyle = palette.background;
+		ctx.fillRect(0, 0, image.width, image.height);
+		ctx.drawImage(canvas, 0, 0);
+		ctx.fillStyle = palette.foreground;
+		ctx.font = `${12 * dpr}px system-ui, sans-serif`;
+		lines.forEach((text, i) => ctx.fillText(text, 8 * dpr, canvas.height + (18 + i * 18) * dpr));
 		return image;
 	}
 </script>
@@ -245,6 +289,35 @@
 				aria-hidden="true"
 			></canvas>
 		</button>
+		<div
+			class="my-2 space-y-1 text-center text-xs"
+			aria-live="polite"
+			title={m.sounding_shading_note()}
+		>
+			<p class="font-medium tabular-nums">
+				{m.sounding_surface_parcel()} ·
+				<span class="inline-flex items-center gap-1"
+					><span class="h-2 w-2 rounded-sm" style:background={TRACE_COLORS.cape}></span>CAPE {parcel.cape ===
+					null
+						? '—'
+						: Math.round(parcel.cape)} J/kg</span
+				>
+				·
+				<span class="inline-flex items-center gap-1"
+					><span class="h-2 w-2 rounded-sm" style:background={TRACE_COLORS.cin}></span>CIN {parcel.cin ===
+					null
+						? '—'
+						: Math.round(parcel.cin)} J/kg</span
+				>
+			</p>
+			{#if parcelStatus}<p class="text-muted-foreground">{parcelStatus}</p>{/if}
+			{#if parcel.points.length > 1}<p class="text-muted-foreground">
+					<span class="inline-block w-4 border-t border-dashed border-foreground align-middle"
+					></span>
+					{m.sounding_parcel_temperature()}
+				</p>{/if}
+		</div>
+
 		<div class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
 			{#each legend as item (item.name)}<span class="inline-flex items-center gap-1"
 					><span

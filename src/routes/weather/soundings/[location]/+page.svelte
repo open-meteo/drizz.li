@@ -96,6 +96,9 @@
 		`${m.sounding_title()} · ${location.name} · ${modelLabel}${profile ? ` · ${formatZoned(new Date(profile.time), timezone, 'yyyy-MM-dd HH:mm zzz')}` : ''}`
 	);
 	let exportLegend = $derived([
+		{ name: 'CAPE', color: TRACE_COLORS.cape },
+		{ name: 'CIN', color: TRACE_COLORS.cin },
+		{ name: m.sounding_parcel_temperature(), color: '#64748b', style: 'dashed' as const },
 		{ name: m.var_temperature(), color: TRACE_COLORS.temperature },
 		{ name: m.var_dew_point(), color: TRACE_COLORS.dewpoint },
 		{ name: m.sounding_dry(), color: TRACE_COLORS.dry, style: 'dashed' as const },
