@@ -13,6 +13,8 @@ const SHELL_CACHE = `${SHELL_CACHE_PREFIX}${version}`;
 const PAGE_CACHE = `${PAGE_CACHE_PREFIX}${version}`;
 const RUNTIME_CACHE = 'drizzli-runtime-v1';
 const WEATHER_CACHE = 'drizzli-weather-v1';
+// Shared by weather views, model selections, locations, and geocoding requests.
+const WEATHER_CACHE_LIMIT = 100;
 const SPA_FALLBACK = '/404.html';
 
 const CRITICAL_FILES = new Set([
@@ -101,7 +103,7 @@ worker.addEventListener('fetch', (event) => {
 						event.waitUntil(
 							cache
 								.put(request, response.clone())
-								.then(() => trimCache(WEATHER_CACHE, 24))
+								.then(() => trimCache(WEATHER_CACHE, WEATHER_CACHE_LIMIT))
 								.catch(() => {})
 						);
 					}
