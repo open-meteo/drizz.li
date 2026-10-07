@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const environment = vi.hoisted(() => ({ dev: false }));
+vi.mock('$app/environment', () => environment);
+
 vi.mock('$service-worker', () => ({
 	build: ['/app.js'],
 	files: [],
@@ -26,6 +29,7 @@ describe('service worker', () => {
 	beforeEach(async () => {
 		vi.resetModules();
 		vi.clearAllMocks();
+		environment.dev = false;
 		cache.match.mockResolvedValue(undefined);
 		vi.stubGlobal('location', { origin: 'https://drizz.li' });
 		vi.stubGlobal(
@@ -36,6 +40,8 @@ describe('service worker', () => {
 		);
 		vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue(cache) });
 		vi.stubGlobal('fetch', vi.fn());
+		vi.stubGlobal('skipWaiting', vi.fn().mockResolvedValue(undefined));
+		vi.stubGlobal('clients', { claim: vi.fn().mockResolvedValue(undefined) });
 		await import('./service-worker');
 	});
 
@@ -105,4 +111,39 @@ describe('service worker', () => {
 		expect(await event.respondWith.mock.calls[0][0]).toBe(cached);
 		expect(fetch).not.toHaveBeenCalled();
 	});
+
+	it('installs in development without requesting the build-only fallback', () => {
+		environment.dev = true;
+		const event = fetchEvent('/');
+
+		listeners.get('install')!(event);
+
+		expect(event.waitUntil).not.toHaveBeenCalled();
+		expect(caches.open).not.toHaveBeenCalled();
+		expect(fetch).not.toHaveBeenCalled();
+	});
+
+	it('claims clients in development without touching production caches', async () => {
+		environment.dev = true;
+		const event = fetchEvent('/');
+
+		listeners.get('activate')!(event);
+
+		await expect(event.waitUntil.mock.calls[0][0]).resolves.toBeUndefined();
+		expect(caches.open).not.toHaveBeenCalled();
+	});
+
+	it.each(['/app.js', '/images/weather.png', '/data/cities.json'])(
+		'lets Vite handle %s in development',
+		(path) => {
+			environment.dev = true;
+			const event = fetchEvent(path);
+
+			listeners.get('fetch')!(event);
+
+			expect(event.respondWith).not.toHaveBeenCalled();
+			expect(event.waitUntil).not.toHaveBeenCalled();
+			expect(caches.open).not.toHaveBeenCalled();
+		}
+	);
 });
