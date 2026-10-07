@@ -4,8 +4,6 @@
 /// <reference types="@sveltejs/kit" />
 import { build, files, version } from '$service-worker';
 
-import { dev } from '$app/environment';
-
 const worker = globalThis as unknown as ServiceWorkerGlobalScope;
 const SHELL_CACHE_PREFIX = 'drizzli-shell-';
 const PAGE_CACHE_PREFIX = 'drizzli-pages-';
@@ -52,7 +50,7 @@ worker.addEventListener('install', (event) => {
 	// so the worker has no update prompt of its own.
 	void worker.skipWaiting();
 	// The static adapter generates the fallback and app shell only at build time.
-	if (dev) return;
+	if (import.meta.env.DEV) return;
 	event.waitUntil(
 		caches.open(SHELL_CACHE).then(async (cache) => {
 			await cache.addAll(SHELL);
@@ -64,7 +62,7 @@ worker.addEventListener('install', (event) => {
 });
 
 worker.addEventListener('activate', (event) => {
-	if (dev) {
+	if (import.meta.env.DEV) {
 		event.waitUntil(worker.clients.claim());
 		return;
 	}
@@ -87,7 +85,7 @@ worker.addEventListener('activate', (event) => {
 
 worker.addEventListener('fetch', (event) => {
 	// Let Vite serve fresh modules and assets during development.
-	if (dev) return;
+	if (import.meta.env.DEV) return;
 	const request = event.request;
 	if (request.method !== 'GET') return;
 

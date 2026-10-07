@@ -1,7 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-const environment = vi.hoisted(() => ({ dev: false }));
-vi.mock('$app/environment', () => environment);
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$service-worker', () => ({
 	build: ['/app.js'],
@@ -29,7 +26,7 @@ describe('service worker', () => {
 	beforeEach(async () => {
 		vi.resetModules();
 		vi.clearAllMocks();
-		environment.dev = false;
+		vi.stubEnv('DEV', false);
 		cache.match.mockResolvedValue(undefined);
 		vi.stubGlobal('location', { origin: 'https://drizz.li' });
 		vi.stubGlobal(
@@ -43,6 +40,11 @@ describe('service worker', () => {
 		vi.stubGlobal('skipWaiting', vi.fn().mockResolvedValue(undefined));
 		vi.stubGlobal('clients', { claim: vi.fn().mockResolvedValue(undefined) });
 		await import('./service-worker');
+	});
+
+	afterEach(() => {
+		vi.unstubAllEnvs();
+		vi.unstubAllGlobals();
 	});
 
 	it('keeps a background refresh alive after returning a cached response', async () => {
@@ -113,7 +115,7 @@ describe('service worker', () => {
 	});
 
 	it('installs in development without requesting the build-only fallback', () => {
-		environment.dev = true;
+		vi.stubEnv('DEV', true);
 		const event = fetchEvent('/');
 
 		listeners.get('install')!(event);
@@ -124,7 +126,7 @@ describe('service worker', () => {
 	});
 
 	it('claims clients in development without touching production caches', async () => {
-		environment.dev = true;
+		vi.stubEnv('DEV', true);
 		const event = fetchEvent('/');
 
 		listeners.get('activate')!(event);
@@ -136,7 +138,7 @@ describe('service worker', () => {
 	it.each(['/app.js', '/images/weather.png', '/data/cities.json'])(
 		'lets Vite handle %s in development',
 		(path) => {
-			environment.dev = true;
+			vi.stubEnv('DEV', true);
 			const event = fetchEvent(path);
 
 			listeners.get('fetch')!(event);
