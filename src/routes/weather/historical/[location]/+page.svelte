@@ -16,6 +16,7 @@
 	import { skeletonOut } from '$lib/utils/skeleton-fade';
 
 	import { ChartContainer } from '$lib/components/charts';
+	import LocationMetadata from '$lib/components/location-metadata.svelte';
 
 	import * as m from '$lib/paraglide/messages';
 	import {
@@ -237,10 +238,7 @@
 	</div>
 {/snippet}
 
-<svelte:head>
-	<title>Drizz.li | {m.page_historical_subtitle()}</title>
-	<meta name="description" content="Past weather and climate-normal comparisons for any location" />
-</svelte:head>
+<LocationMetadata {location} view="historical" />
 
 <DateRangeControls
 	start={startDate}

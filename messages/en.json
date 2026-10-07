@@ -413,5 +413,11 @@
 	"update_title": "Drizzli has been updated",
 	"update_message": "A newer version is available.",
 	"update_reload": "Reload page",
-	"update_dismiss": "Dismiss notification"
+	"update_dismiss": "Dismiss notification",
+	"seo_location_title": "{view} in {location} | Drizz.li",
+	"seo_week_description": "Weekly weather forecast for {location}: daily temperatures, precipitation, wind, and detailed hourly forecasts.",
+	"seo_compare_description": "Compare weather models for {location}: explore differences in temperature, precipitation, and wind forecasts.",
+	"seo_14day_description": "14-day ensemble weather forecast for {location}: explore temperature and precipitation trends and forecast uncertainty.",
+	"seo_seasonal_description": "Seasonal weather outlook for {location}: monthly temperature and precipitation trends compared with climate normals.",
+	"seo_historical_description": "Explore historical weather for {location}: past temperatures, precipitation, and comparisons with climate normals."
 }
