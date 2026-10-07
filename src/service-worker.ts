@@ -110,7 +110,7 @@ worker.addEventListener('fetch', (event) => {
 
 	if (SHELL_PATHS.has(url.pathname)) {
 		event.respondWith(
-			caches.open(SHELL_CACHE).then((cache) => cache.match(request) as Promise<Response>)
+			caches.open(SHELL_CACHE).then(async (cache) => (await cache.match(request)) ?? fetch(request))
 		);
 		return;
 	}

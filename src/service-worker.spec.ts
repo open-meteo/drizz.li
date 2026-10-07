@@ -83,4 +83,26 @@ describe('service worker', () => {
 		await expect(event.respondWith.mock.calls[0][0]).rejects.toBe(error);
 		await expect(event.waitUntil.mock.calls[0][0]).resolves.toBeUndefined();
 	});
+
+	it('fetches a shell asset when its query string does not match the cached URL', async () => {
+		const fresh = new Response('app');
+		vi.mocked(fetch).mockResolvedValue(fresh);
+		const event = fetchEvent('/app.js?v=1');
+
+		listeners.get('fetch')!(event);
+
+		expect(await event.respondWith.mock.calls[0][0]).toBe(fresh);
+		expect(fetch).toHaveBeenCalledWith(event.request);
+	});
+
+	it('serves a cached shell asset without a network request', async () => {
+		const cached = new Response('app');
+		cache.match.mockResolvedValue(cached);
+		const event = fetchEvent('/app.js');
+
+		listeners.get('fetch')!(event);
+
+		expect(await event.respondWith.mock.calls[0][0]).toBe(cached);
+		expect(fetch).not.toHaveBeenCalled();
+	});
 });
