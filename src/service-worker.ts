@@ -136,23 +136,21 @@ worker.addEventListener('fetch', (event) => {
 	}
 
 	if (url.pathname.startsWith('/images/') || url.pathname.startsWith('/data/')) {
-		event.respondWith(
-			(async () => {
-				const cache = await caches.open(RUNTIME_CACHE);
-				const cached = await cache.match(request);
-				const refresh = fetch(request).then((response) => {
-					if (response.ok) {
-						event.waitUntil(
-							cache
-								.put(request, response.clone())
-								.then(() => trimCache(RUNTIME_CACHE, 160))
-								.catch(() => {})
-						);
-					}
-					return response;
-				});
-				return cached ?? refresh;
-			})()
-		);
+		const cachePromise = caches.open(RUNTIME_CACHE);
+		const refresh = cachePromise.then(async (cache) => {
+			const response = await fetch(request);
+			if (response.ok) {
+				await cache
+					.put(request, response.clone())
+					.then(() => trimCache(RUNTIME_CACHE, 160))
+					.catch(() => {});
+			}
+			return response;
+		});
+		// Keep the whole refresh alive even when a cached response is returned.
+		// Offline refresh failures are harmless on a hit; a miss still rejects
+		// the response promise so the browser reports the failed request.
+		event.waitUntil(refresh.catch(() => {}));
+		event.respondWith(cachePromise.then(async (cache) => (await cache.match(request)) ?? refresh));
 	}
 });
