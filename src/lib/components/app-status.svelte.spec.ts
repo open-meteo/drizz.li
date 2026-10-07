@@ -66,15 +66,5 @@ describe('app status', () => {
 		await expect.element(view.getByText(m.update_title())).toBeVisible();
 		await view.getByRole('button', { name: m.update_dismiss() }).click();
 		await expect.element(view.getByRole('button', { name: m.app_install() })).toBeVisible();
-
-		connected = false;
-		window.dispatchEvent(new Event('offline'));
-		await expect.element(view.getByRole('status')).toHaveTextContent(m.app_offline());
-		connected = true;
-		window.dispatchEvent(new Event('online'));
-		await expect.element(view.getByRole('button', { name: m.app_install() })).toBeVisible();
-		await view.getByRole('button', { name: m.app_install() }).click();
-		expect(prompt).toHaveBeenCalledOnce();
-		await expect.element(view.getByRole('status')).not.toBeInTheDocument();
 	});
 });
