@@ -9,6 +9,7 @@ const SHELL_CACHE_PREFIX = 'drizzli-shell-';
 const PAGE_CACHE_PREFIX = 'drizzli-pages-';
 const SHELL_CACHE = `${SHELL_CACHE_PREFIX}${version}`;
 const PAGE_CACHE = `${PAGE_CACHE_PREFIX}${version}`;
+const PAGE_CACHE_LIMIT = 100;
 const RUNTIME_CACHE = 'drizzli-runtime-v1';
 const WEATHER_CACHE = 'drizzli-weather-v1';
 // Shared by weather views, model selections, locations, and geocoding requests.
@@ -131,7 +132,14 @@ worker.addEventListener('fetch', (event) => {
 				const cache = await caches.open(PAGE_CACHE);
 				try {
 					const response = await fetch(request);
-					if (response.ok) event.waitUntil(cache.put(request, response.clone()));
+					if (response.ok) {
+						event.waitUntil(
+							cache
+								.put(request, response.clone())
+								.then(() => trimCache(PAGE_CACHE, PAGE_CACHE_LIMIT))
+								.catch(() => {})
+						);
+					}
 					return response;
 				} catch (error) {
 					const cached = await cache.match(request);

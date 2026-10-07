@@ -100,6 +100,36 @@ describe('service worker', () => {
 		expect(fetch).toHaveBeenCalledWith(event.request);
 	});
 
+	it('evicts the oldest page when caching a navigation exceeds the page limit', async () => {
+		const oldest = 'https://drizz.li/weather/week/?view=0';
+		const pages = new Map(
+			Array.from({ length: 100 }, (_, index) => [
+				`https://drizz.li/weather/week/?view=${index}`,
+				new Response('saved page')
+			])
+		);
+		const pageCache = {
+			put: async (request: Request, response: Response) => {
+				pages.set(request.url, response);
+			},
+			keys: async () => Array.from(pages.keys(), (url) => new Request(url)),
+			delete: async (request: Request) => pages.delete(request.url)
+		};
+		vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue(pageCache) });
+		const response = new Response('new page');
+		vi.mocked(fetch).mockResolvedValue(response);
+		const event = fetchEvent('/weather/week/?view=100');
+		Object.defineProperty(event.request, 'mode', { value: 'navigate' });
+
+		listeners.get('fetch')!(event);
+		expect(await event.respondWith.mock.calls[0][0]).toBe(response);
+		await event.waitUntil.mock.calls[0][0];
+
+		expect(pages.size).toBe(100);
+		expect(pages.has(oldest)).toBe(false);
+		expect(await pages.get(event.request.url)!.text()).toBe('new page');
+	});
+
 	it('installs in development without requesting the build-only fallback', () => {
 		vi.stubEnv('DEV', true);
 		const event = fetchEvent('/');
