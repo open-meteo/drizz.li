@@ -67,4 +67,21 @@ describe('app status', () => {
 		await view.getByRole('button', { name: m.update_dismiss() }).click();
 		await expect.element(view.getByRole('button', { name: m.app_install() })).toBeVisible();
 	});
+
+	it('clears the pending prompt when installation happens through browser controls', async () => {
+		const view = await render(AppStatus);
+		const prompt = vi.fn();
+		window.dispatchEvent(
+			Object.assign(new Event('beforeinstallprompt', { cancelable: true }), {
+				prompt,
+				userChoice: Promise.resolve({ outcome: 'accepted' })
+			})
+		);
+		await expect.element(view.getByRole('button', { name: m.app_install() })).toBeVisible();
+
+		window.dispatchEvent(new Event('appinstalled'));
+
+		await expect.element(view.getByRole('status')).not.toBeInTheDocument();
+		expect(prompt).not.toHaveBeenCalled();
+	});
 });

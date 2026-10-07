@@ -43,9 +43,12 @@
 			if (returningVisit) installPrompt = prompt;
 		};
 		window.addEventListener('beforeinstallprompt', onInstallPrompt);
+		const onInstalled = () => (installPrompt = null);
+		window.addEventListener('appinstalled', onInstalled);
 
 		return () => {
 			window.removeEventListener('beforeinstallprompt', onInstallPrompt);
+			window.removeEventListener('appinstalled', onInstalled);
 		};
 	});
 
