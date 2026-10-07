@@ -46,7 +46,7 @@ worker.addEventListener('install', (event) => {
 	// to close. Shell files are matched by path, so a page still running the
 	// previous build simply gets its remaining chunks from the network; if one
 	// is gone after a deploy, SvelteKit already reloads the page. New builds
-	// are announced through the version poll (see update-notification.svelte),
+	// are announced through the version poll (see app-status.svelte),
 	// so the worker has no update prompt of its own.
 	void worker.skipWaiting();
 	// The static adapter generates the fallback and app shell only at build time.

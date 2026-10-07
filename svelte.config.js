@@ -32,7 +32,7 @@ const config = {
 		// for unknown paths automatically.
 		adapter: adapter({ fallback: '404.html' }),
 		// Poll _app/version.json so a deploy while the SPA is open surfaces the
-		// update-notification toast (see update-notification.svelte). NOTE for the
+		// update toast (see app-status.svelte). NOTE for the
 		// upcoming service worker / offline PRs: version.json must stay
 		// network-only (never cache-first), or a new deploy is never detected.
 		version: {
