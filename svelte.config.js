@@ -50,7 +50,7 @@ const config = {
 				console.warn(`prerender skipped ${path}: ${message}`);
 			},
 			entries: (() => {
-				// Locale lives in the path (see the paraglide config in vite.config.ts),
+				// Locale lives in the path (see paraglide.config.js),
 				// so a localized URL is not a route SvelteKit can discover on its own -
 				// each one has to be listed. City pages are prerendered for the base
 				// locale only; the other languages reach them through the SPA fallback,
@@ -85,9 +85,12 @@ const config = {
 					const citiesPath = path.resolve('src/routes/weather/locations/city-names100.json');
 					const raw = fs.readFileSync(citiesPath, 'utf-8');
 					const cities = JSON.parse(raw);
+					const aliases = JSON.parse(
+						fs.readFileSync('src/lib/utils/location-aliases.json', 'utf-8')
+					);
 					if (Array.isArray(cities)) {
 						const cityEntries = cities.flatMap((c) =>
-							cityRoutes.map((route) => `/en${route}/${c}`)
+							cityRoutes.flatMap((route) => [`/en${route}/${c}`, `/en${route}/${c}_${aliases[c]}`])
 						);
 						// Keep the default wildcard to include other routes
 						return ['*', ...localized, ...cityEntries];

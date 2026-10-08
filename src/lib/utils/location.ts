@@ -1,6 +1,13 @@
 import { error, redirect } from '@sveltejs/kit';
 
-import { deLocalizeHref, getLocale, localizeHref } from '$lib/paraglide/runtime';
+import {
+	deLocalizeHref,
+	extractLocaleFromUrl,
+	getLocale,
+	localizeHref
+} from '$lib/paraglide/runtime';
+
+import locationAliases from './location-aliases.json';
 
 import type { GeoLocation } from '$lib/stores/settings';
 
@@ -26,10 +33,15 @@ export function buildLocationRoute(location: RoutableLocation): string {
 		return `${location.latitude.toFixed(4)}N${location.longitude.toFixed(4)}E`;
 	}
 	const locationRoute = geoLocationNameToRoute(location.name);
-	if (location.population && location.population > 543000) {
-		return locationRoute;
-	}
 	return locationRoute + '_' + location.id;
+}
+
+// Pin existing popular-city URLs to GeoNames IDs. These aliases are migration
+// entry points; generated routes always retain the ID, regardless of population.
+export function legacyLocationId(slug: string): number | undefined {
+	return Object.hasOwn(locationAliases, slug)
+		? locationAliases[slug as keyof typeof locationAliases]
+		: undefined;
 }
 
 export const coordinateLocation = (latitude: number, longitude: number): GeoLocation => ({
@@ -77,7 +89,7 @@ interface ResolveLocationOptions {
 }
 
 /**
- * Geocoding results for a locale and route segment, kept for the life of the process.
+ * Geocoding results by locale and ID, kept for the life of the process.
  *
  * A city's coordinates do not change, and the same segment is resolved over and
  * over: once per per-location route during the prerender (five builds of the
@@ -98,24 +110,29 @@ export async function resolveLocationFromRoute({
 
 	// The canonical-path check below still has to run per call (the same city is
 	// reached under different route prefixes), so only the lookup is cached.
-	const language = getLocale();
-	const cacheKey = `${language}:${urlLocation}`;
-	const cached = resolvedLocations.get(cacheKey);
-	if (cached) return finishResolve(cached, routePrefix, event);
+	// Read the destination URL on both server and client. getLocaleForUrl skips
+	// the URL strategy during SSR and would fall back to English.
+	const language = extractLocaleFromUrl(event.url) ?? getLocale();
 
 	let urlLocationName: string;
 	let urlLocationId: string | undefined;
 
 	if (urlLocation.includes('_')) {
-		const split = urlLocation.split('_');
-		urlLocationName = split[0];
-		urlLocationId = split[1];
+		const splitAt = urlLocation.lastIndexOf('_');
+		urlLocationName = urlLocation.slice(0, splitAt);
+		urlLocationId = urlLocation.slice(splitAt + 1);
+		if (!/^\d+$/.test(urlLocationId)) error(404, 'Location not found');
 	} else if (/^\d+$/.test(urlLocation)) {
 		urlLocationName = '';
 		urlLocationId = urlLocation;
 	} else {
 		urlLocationName = urlLocation.includes('-') ? urlLocation.replace(/-/g, ' ') : urlLocation;
-		urlLocationId = undefined;
+		urlLocationId = legacyLocationId(urlLocation)?.toString();
+	}
+
+	if (urlLocationId) {
+		const cached = resolvedLocations.get(`${language}:${Number(urlLocationId)}`);
+		if (cached) return finishResolve(cached, routePrefix, event);
 	}
 
 	let location: GeoLocation;
@@ -123,25 +140,28 @@ export async function resolveLocationFromRoute({
 	// route params are attacker-controlled: ids must be numeric and names are
 	// URL-encoded so nothing can be injected into the API query string
 	if (urlLocationId && /^\d+$/.test(urlLocationId)) {
-		const res = await event.fetch(
+		const response = await event.fetch(
 			`https://geocoding-api.open-meteo.com/v1/get?id=${encodeURIComponent(urlLocationId)}&language=${encodeURIComponent(language)}`
 		);
-		if (!res.ok) error(404, 'Location not found');
-		const candidate = await res.json();
-		if (!isGeoLocation(candidate)) error(404, 'Location not found');
+		if (!response.ok) error(response.status, `Geocoding request failed (${response.status})`);
+		const candidate: unknown = await response.json();
+		if (!isGeoLocation(candidate) || candidate.id !== Number(urlLocationId)) {
+			error(404, 'Location not found');
+		}
 		location = candidate;
 	} else {
-		const res = await event.fetch(
+		const response = await event.fetch(
 			`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(urlLocationName)}&count=1&language=${encodeURIComponent(language)}&format=json`
 		);
-		if (!res.ok) error(404, 'Location not found');
-		const geocodingResponse = await res.json();
-		const candidate = geocodingResponse?.results?.[0];
+		if (!response.ok) error(response.status, `Geocoding request failed (${response.status})`);
+		const geocodingResponse: unknown = await response.json();
+		const results = (geocodingResponse as { results?: unknown[] } | null)?.results;
+		const candidate = Array.isArray(results) ? results[0] : undefined;
 		if (!isGeoLocation(candidate)) error(404, 'Location not found');
 		location = candidate;
 	}
 
-	resolvedLocations.set(cacheKey, location);
+	resolvedLocations.set(`${language}:${location.id}`, location);
 	return finishResolve(location, routePrefix, event);
 }
 
@@ -155,9 +175,18 @@ function finishResolve(
 	// never holds and the redirect loops forever. The comparison also has to
 	// ignore the locale prefix the URL carries, while the redirect keeps it -
 	// otherwise every localized URL would bounce back to English.
-	const canonicalPath = `${routePrefix}${buildLocationRoute(location)}/`;
+	// URL.pathname is percent-encoded, including characters in localized names.
+	const canonicalPath = new URL(
+		`${routePrefix}${encodeURIComponent(buildLocationRoute(location))}/`,
+		event.url
+	).pathname;
 	if (deLocalizeHref(event.url.pathname) !== canonicalPath) {
-		throw redirect(303, localizeHref(canonicalPath));
+		throw redirect(
+			303,
+			localizeHref(canonicalPath, { locale: extractLocaleFromUrl(event.url) ?? getLocale() }) +
+				event.url.search +
+				event.url.hash
+		);
 	}
 
 	return location;

@@ -9,7 +9,7 @@
 		"prebuild": "node scripts/assets.mjs pull",
 		"build": "vite build",
 		"preview": "vite preview",
-		"paraglide": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide",
+		"paraglide": "node scripts/paraglide.mjs",
 		"prepare": "svelte-kit sync && npm run paraglide || echo ''",
 		"check": "npm run paraglide && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "npm run paraglide && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
