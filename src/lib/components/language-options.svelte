@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { SvelteURL } from 'svelte/reactivity';
 
 	import { buildLocationRoute } from '$lib/utils/location';
 
