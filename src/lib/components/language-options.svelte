@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
+	import { buildLocationRoute } from '$lib/utils/location';
+
 	import { LOCALE_LABELS, LOCALE_LIST } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 	import { type Locale, getLocale, localizeHref } from '$lib/paraglide/runtime';
@@ -20,7 +22,16 @@
 
 	/** The current page, in another language. */
 	function switchTo(locale: Locale): string {
-		return localizeHref($page.url.pathname + $page.url.search, { locale });
+		const url = new SvelteURL($page.url);
+		// Older prerendered/name-only pages still carry the resolved city ID.
+		// Preserve it before changing language, rather than searching its name again.
+		if ($page.params.location && $page.data.location) {
+			url.pathname = url.pathname.replace(
+				/[^/]+\/?$/,
+				`${encodeURIComponent(buildLocationRoute($page.data.location))}/`
+			);
+		}
+		return localizeHref(url.pathname + url.search + url.hash, { locale });
 	}
 </script>
 

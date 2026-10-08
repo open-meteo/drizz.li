@@ -36,8 +36,10 @@
 	// Build from the resolved location so aliases, query options, and fragments
 	// all point at the same location page, with its language and trailing slash.
 	let canonical = $derived(
-		new URL(localizeHref(`/weather/${view}/${buildLocationRoute(location)}/`), 'https://drizz.li')
-			.href
+		new URL(
+			localizeHref(`/weather/${view}/${encodeURIComponent(buildLocationRoute(location))}/`),
+			'https://drizz.li'
+		).href
 	);
 </script>
 

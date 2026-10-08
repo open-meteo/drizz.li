@@ -14,6 +14,7 @@
 	import * as Popover from '$lib/components/ui/popover';
 
 	import * as m from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	export let label: string = 'Search location...';
 	export let placeholder: string = 'Enter city name...';
@@ -128,7 +129,7 @@
 		}
 
 		const url = 'https://geocoding-api.open-meteo.com/v1/search';
-		const fetchUrl = `${url}?${new URLSearchParams({ name: searchQuery })}`;
+		const fetchUrl = `${url}?${new URLSearchParams({ name: searchQuery, language: getLocale() })}`;
 		const result = await fetch(fetchUrl);
 
 		if (!result.ok) {

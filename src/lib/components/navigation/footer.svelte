@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { legacyLocationId } from '$lib/utils/location';
+
 	import { href } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 
@@ -123,8 +125,9 @@
 						<li>
 							<a
 								class="text-foreground/80 underline-offset-2 hover:text-foreground hover:underline"
-								href={href('/weather/week/[location]', { location: city.slug })}
-								>{m.city_weather({ city: city.label })}</a
+								href={href('/weather/week/[location]', {
+									location: `${city.slug}_${legacyLocationId(city.slug)}`
+								})}>{m.city_weather({ city: city.label })}</a
 							>
 						</li>
 					{/each}

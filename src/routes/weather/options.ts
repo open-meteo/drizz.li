@@ -1,3 +1,5 @@
+import { legacyLocationId } from '$lib/utils/location';
+
 export const defaultParameters = {
 	timeformat: 'iso8601',
 	wind_speed_unit: 'kmh',
@@ -502,9 +504,12 @@ const IN_DOMAIN_CITY: [string, { slug: string; label: string }][] = [
 ];
 
 /** Where this model definitely has data, or null for a global model. */
-export function inDomainCity(model: string): { slug: string; label: string } | null {
+export function inDomainCity(model: string): { id: number; slug: string; label: string } | null {
 	const hit = IN_DOMAIN_CITY.find(([prefix]) => model.startsWith(prefix));
-	return hit ? hit[1] : null;
+	if (!hit) return null;
+	const city = hit[1];
+	const id = legacyLocationId(city.slug);
+	return id ? { ...city, id, slug: `${city.slug}_${id}` } : null;
 }
 
 /** Reanalyses the archive API accepts (verified against archive-api.open-meteo.com). */

@@ -105,7 +105,7 @@
 	let suggestedCity = $derived.by(() => {
 		const city = inDomainCity(params.models?.[0] ?? '');
 		// pointless to offer the place we are already on
-		return city && city.slug !== locationRoute ? city : null;
+		return city && city.id !== location.id ? city : null;
 	});
 
 	let mounted = $state(false);
