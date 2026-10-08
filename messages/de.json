@@ -413,5 +413,11 @@
 	"update_title": "Drizzli wurde aktualisiert",
 	"update_message": "Eine neuere Version ist verfügbar.",
 	"update_reload": "Seite neu laden",
-	"update_dismiss": "Benachrichtigung schließen"
+	"update_dismiss": "Benachrichtigung schließen",
+	"seo_location_title": "{view} für {location} | Drizz.li",
+	"seo_week_description": "Wettervorhersage für die Woche in {location}: Tagestemperaturen, Niederschlag, Wind und detaillierte stündliche Vorhersagen.",
+	"seo_compare_description": "Wettermodelle für {location} vergleichen: Unterschiede bei Temperatur-, Niederschlags- und Windvorhersagen entdecken.",
+	"seo_14day_description": "14-Tage-Ensemblevorhersage für {location}: Temperatur- und Niederschlagstrends sowie Vorhersageunsicherheit erkunden.",
+	"seo_seasonal_description": "Saisonaler Wetterausblick für {location}: monatliche Temperatur- und Niederschlagstrends im Vergleich zu Klimanormalwerten.",
+	"seo_historical_description": "Historisches Wetter für {location}: vergangene Temperaturen, Niederschläge und Vergleiche mit Klimanormalwerten."
 }

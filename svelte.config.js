@@ -41,8 +41,7 @@ const config = {
 		},
 		// Pregenerate city pages to improve SEO during static build
 		prerender: {
-			// dynamic per-location routes (14-day, compare, unlisted cities) are
-			// served by the SPA fallback instead of being prerendered
+			// Unlisted cities and coordinate routes use the SPA fallback.
 			handleUnseenRoutes: 'ignore',
 			// a transient geocoding failure for one city should skip that page
 			// (the fallback still serves it), not abort the whole build
@@ -52,9 +51,8 @@ const config = {
 			entries: (() => {
 				// Locale lives in the path (see the paraglide config in vite.config.ts),
 				// so a localized URL is not a route SvelteKit can discover on its own -
-				// each one has to be listed. City pages are prerendered for the base
-				// locale only; the other languages reach them through the SPA fallback,
-				// which keeps the build from ballooning to cities × locales.
+				// each one has to be listed. Prerender city pages in every locale so
+				// localized canonical URLs return 200 with their translated metadata.
 				const locales = ['en', 'de', 'es', 'fr', 'it'];
 				const shared = [
 					'/weather/week',
@@ -86,8 +84,8 @@ const config = {
 					const raw = fs.readFileSync(citiesPath, 'utf-8');
 					const cities = JSON.parse(raw);
 					if (Array.isArray(cities)) {
-						const cityEntries = cities.flatMap((c) =>
-							cityRoutes.map((route) => `/en${route}/${c}`)
+						const cityEntries = locales.flatMap((locale) =>
+							cities.flatMap((c) => cityRoutes.map((route) => `/${locale}${route}/${c}`))
 						);
 						// Keep the default wildcard to include other routes
 						return ['*', ...localized, ...cityEntries];

@@ -413,5 +413,11 @@
 	"update_title": "Drizzli a été mis à jour",
 	"update_message": "Une version plus récente est disponible.",
 	"update_reload": "Recharger la page",
-	"update_dismiss": "Fermer la notification"
+	"update_dismiss": "Fermer la notification",
+	"seo_location_title": "{view} pour {location} | Drizz.li",
+	"seo_week_description": "Prévisions météo de la semaine pour {location} : températures quotidiennes, précipitations, vent et prévisions horaires détaillées.",
+	"seo_compare_description": "Comparez les modèles météo pour {location} : différences entre les prévisions de température, de précipitations et de vent.",
+	"seo_14day_description": "Prévisions météo d’ensemble à 14 jours pour {location} : tendances de température et de précipitations et incertitude des prévisions.",
+	"seo_seasonal_description": "Perspectives météo saisonnières pour {location} : tendances mensuelles de température et de précipitations comparées aux normales climatiques.",
+	"seo_historical_description": "Explorez la météo passée de {location} : températures, précipitations et comparaisons avec les normales climatiques."
 }

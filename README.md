@@ -165,6 +165,9 @@ command is `npm run build`.
 
 ### 1. SPA fallback
 
+Listed city pages are prerendered in all five locales and all five weather views,
+so their localized canonical URLs return `200` with translated metadata.
+
 Pages that are not prerendered (unlisted cities, GPS coordinate routes like
 `/weather/week/52.09N5.12E/`) are served by `404.html`, which boots the app and
 resolves the location client-side. That is what `not_found_handling:
