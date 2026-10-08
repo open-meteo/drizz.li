@@ -2,6 +2,8 @@ import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { playwright } from '@vitest/browser-playwright';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 import type { IncomingMessage, ServerResponse } from 'http';
@@ -59,9 +61,50 @@ const viteServerConfig = (): Plugin => ({
 		});
 	},
 	configurePreviewServer: (server: PreviewServer) => {
+		const buildDir = resolve(server.config.root, 'build');
+		const fallback = resolve(buildDir, '404.html');
 		server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
 			addHeaders(res);
-			if (!handleDevGeo(req, res)) next();
+			if (handleDevGeo(req, res)) return;
+			// SvelteKit preview does not serve adapter-static's SPA fallback.
+			// Serve the shell for unprerendered page requests in any route or locale.
+			// Leave assets, APIs and data requests to the regular preview handlers.
+			const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
+			let decodedPathname: string;
+			try {
+				decodedPathname = decodeURI(pathname);
+			} catch {
+				return next();
+			}
+			if (
+				!['GET', 'HEAD'].includes(req.method ?? '') ||
+				!req.headers.accept?.includes('text/html') ||
+				/^\/(api|_app)(\/|$)/.test(decodedPathname) ||
+				decodedPathname.endsWith('/__data.json') ||
+				!existsSync(fallback)
+			)
+				return next();
+			const file = resolve(buildDir, `.${decodedPathname}`);
+			if (
+				[file, resolve(file, 'index.html'), `${file}.html`].some((candidate) =>
+					statSync(candidate, { throwIfNoEntry: false })?.isFile()
+				)
+			)
+				return next();
+			// Keep trailing-slash behavior consistent with the prerendered pages.
+			if (!pathname.endsWith('/')) {
+				const url = new URL(req.url!, 'http://localhost');
+				res.writeHead(307, { location: `${pathname}/${url.search}` });
+				res.end();
+				return;
+			}
+			const html = readFileSync(fallback);
+			res.writeHead(200, {
+				'content-type': 'text/html; charset=utf-8',
+				'cache-control': 'no-store',
+				'content-length': html.byteLength
+			});
+			res.end(req.method === 'HEAD' ? undefined : html);
 		});
 	}
 });
