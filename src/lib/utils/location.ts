@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 
-import { deLocalizeHref, localizeHref } from '$lib/paraglide/runtime';
+import { deLocalizeHref, getLocale, localizeHref } from '$lib/paraglide/runtime';
 
 import type { GeoLocation } from '$lib/stores/settings';
 
@@ -77,7 +77,7 @@ interface ResolveLocationOptions {
 }
 
 /**
- * Geocoding results for a route segment, kept for the life of the process.
+ * Geocoding results for a locale and route segment, kept for the life of the process.
  *
  * A city's coordinates do not change, and the same segment is resolved over and
  * over: once per per-location route during the prerender (five builds of the
@@ -98,7 +98,9 @@ export async function resolveLocationFromRoute({
 
 	// The canonical-path check below still has to run per call (the same city is
 	// reached under different route prefixes), so only the lookup is cached.
-	const cached = resolvedLocations.get(urlLocation);
+	const language = getLocale();
+	const cacheKey = `${language}:${urlLocation}`;
+	const cached = resolvedLocations.get(cacheKey);
 	if (cached) return finishResolve(cached, routePrefix, event);
 
 	let urlLocationName: string;
@@ -122,7 +124,7 @@ export async function resolveLocationFromRoute({
 	// URL-encoded so nothing can be injected into the API query string
 	if (urlLocationId && /^\d+$/.test(urlLocationId)) {
 		const res = await event.fetch(
-			`https://geocoding-api.open-meteo.com/v1/get?id=${encodeURIComponent(urlLocationId)}`
+			`https://geocoding-api.open-meteo.com/v1/get?id=${encodeURIComponent(urlLocationId)}&language=${encodeURIComponent(language)}`
 		);
 		if (!res.ok) error(404, 'Location not found');
 		const candidate = await res.json();
@@ -130,7 +132,7 @@ export async function resolveLocationFromRoute({
 		location = candidate;
 	} else {
 		const res = await event.fetch(
-			`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(urlLocationName)}&count=1&language=en&format=json`
+			`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(urlLocationName)}&count=1&language=${encodeURIComponent(language)}&format=json`
 		);
 		if (!res.ok) error(404, 'Location not found');
 		const geocodingResponse = await res.json();
@@ -139,7 +141,7 @@ export async function resolveLocationFromRoute({
 		location = candidate;
 	}
 
-	resolvedLocations.set(urlLocation, location);
+	resolvedLocations.set(cacheKey, location);
 	return finishResolve(location, routePrefix, event);
 }
 
