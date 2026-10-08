@@ -12,6 +12,8 @@
 	import { href, routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
 
+	import { soundingIconPaths } from './sounding-icon';
+
 	interface Props {
 		onClose: () => void;
 	}
@@ -22,6 +24,12 @@
 	let locationRoute = $derived(buildLocationRoute($storedLocation));
 
 	const links = [
+		{
+			title: m.sounding_title,
+			path: '/weather/soundings',
+			href: () => href('/weather/soundings/[location]', { location: locationRoute }),
+			iconPaths: soundingIconPaths
+		},
 		{
 			title: m.nav_seasonal,
 			path: '/weather/seasonal',
@@ -57,7 +65,24 @@
 				onclick={onClose}
 				aria-current={active ? 'page' : undefined}
 			>
-				<link.icon class="h-4.5 w-5 shrink-0" strokeWidth={1.75} />
+				{#if link.iconPaths}
+					<svg
+						class="h-4.5 w-5 shrink-0"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="1.75"
+						aria-hidden="true"
+					>
+						{#each link.iconPaths as d (d)}<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								{d}
+							/>{/each}
+					</svg>
+				{:else}
+					<link.icon class="h-4.5 w-5 shrink-0" strokeWidth={1.75} />
+				{/if}
 				<span class="ml-2.5">{link.title()}</span>
 			</a>
 		{/each}

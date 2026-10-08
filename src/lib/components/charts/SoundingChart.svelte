@@ -1,0 +1,423 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+
+	import * as m from '$lib/paraglide/messages';
+	import { soundingLegend } from '$lib/soundings/legend';
+	import { TOP_PRESSURES } from '$lib/soundings/models';
+	import { surfaceParcel } from '$lib/soundings/parcel';
+	import {
+		interpolateLevel,
+		temperatureDisplay,
+		temperatureUnit,
+		valueText,
+		windDisplay,
+		windUnit
+	} from '$lib/soundings/profile';
+	import {
+		buildLayout,
+		fromCanvas,
+		renderSelection,
+		renderSounding,
+		soundingChartSize
+	} from '$lib/soundings/renderer';
+
+	import type { SoundingProfile } from '$lib/soundings/profile';
+	import type { ChartPalette, PlotLayout, Selection } from '$lib/soundings/renderer';
+	import type { UnitPrefs } from '$lib/stores/settings';
+
+	let {
+		profile,
+		dayProfiles = [],
+		elevation,
+		topPressure = $bindable(100),
+		units
+	}: {
+		profile: SoundingProfile;
+		dayProfiles?: SoundingProfile[];
+		elevation: number;
+		topPressure?: number;
+		units: UnitPrefs;
+	} = $props();
+	let container: HTMLDivElement;
+	let canvas: HTMLCanvasElement;
+	let overlay: HTMLCanvasElement;
+	let availableWidth = $state(600);
+	let chartTop = $state(300);
+	let ready = $state(false);
+	let themeVersion = $state(0);
+	let layout = $state<PlotLayout | null>(null);
+	let selection = $state<Selection | null>(null);
+	let palette: ChartPalette;
+	let viewportHeight = $state(900);
+	// Grow vertically without stretching the skew-T into a landscape chart.
+	let size = $derived(
+		soundingChartSize(availableWidth, viewportHeight - chartTop - (availableWidth < 768 ? 100 : 48))
+	);
+	let width = $derived(size.width);
+	let height = $derived(size.height);
+	function measure() {
+		if (!container) return;
+		availableWidth = container.clientWidth;
+		// Main owns scrolling: measuring in its unscrolled position keeps sizing
+		// stable when changing the hour or day while inspecting lower levels.
+		chartTop = container.getBoundingClientRect().top + (container.closest('main')?.scrollTop ?? 0);
+	}
+	let dragging = false;
+	let levels = $derived(profile.levels);
+	let inspected = $derived(selection ? interpolateLevel(levels, selection.pressure) : null);
+	let parcel = $derived(surfaceParcel(profile, elevation));
+	let parcelStatus = $derived(
+		parcel.status === 'unavailable'
+			? m.sounding_buoyancy_unavailable()
+			: parcel.status === 'incomplete'
+				? m.sounding_buoyancy_incomplete()
+				: parcel.lfc === null
+					? m.sounding_no_lfc()
+					: ''
+	);
+	let parcelSummary = $derived(
+		`${m.sounding_surface_parcel()} · CAPE ${parcel.cape === null ? '—' : Math.round(parcel.cape)} J/kg · CIN ${parcel.cin === null ? '—' : Math.round(parcel.cin)} J/kg${parcelStatus ? ' · ' + parcelStatus : ''} · ${m.sounding_shading_note()}`
+	);
+
+	let legend = $derived(soundingLegend());
+
+	function context(target: HTMLCanvasElement) {
+		const dpr = window.devicePixelRatio || 1;
+		target.width = Math.round(width * dpr);
+		target.height = Math.round(height * dpr);
+		const ctx = target.getContext('2d');
+		ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
+		return ctx;
+	}
+
+	onMount(() => {
+		measure();
+		let resizeFrame = 0;
+		const resize = new ResizeObserver(() => {
+			cancelAnimationFrame(resizeFrame);
+			resizeFrame = requestAnimationFrame(() => {
+				measure();
+			});
+		});
+		resize.observe(container);
+		const theme = new MutationObserver(() => {
+			themeVersion++;
+		});
+		theme.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class', 'style', 'data-theme']
+		});
+		ready = true;
+		return () => {
+			cancelAnimationFrame(resizeFrame);
+			resize.disconnect();
+			theme.disconnect();
+		};
+	});
+
+	$effect(() => {
+		if (!ready) return;
+		void themeVersion;
+		const style = getComputedStyle(document.documentElement);
+		palette = {
+			background: style.getPropertyValue('--background').trim() || '#fff',
+			foreground: style.getPropertyValue('--foreground').trim() || '#111',
+			grid: style.getPropertyValue('--border').trim() || '#ddd',
+			muted: style.getPropertyValue('--muted-foreground').trim() || '#777'
+		};
+		const next = buildLayout(profile, elevation, topPressure, width, height, dayProfiles);
+		const ctx = context(canvas);
+		if (ctx && next)
+			renderSounding(
+				ctx,
+				profile,
+				elevation,
+				next,
+				width,
+				height,
+				palette,
+				units,
+				{
+					wind: m.var_wind_short(),
+					surface: m.sounding_surface(),
+					temperatureUnit: temperatureUnit(units),
+					windUnit: windUnit(units)
+				},
+				parcel
+			);
+		layout = next;
+		selection = null;
+		context(overlay);
+	});
+
+	$effect(() => {
+		if (!ready || !layout) return;
+		const ctx = overlay.getContext('2d');
+		if (!ctx) return;
+		ctx.clearRect(0, 0, width, height);
+		if (selection) renderSelection(ctx, layout, selection, palette, profile, elevation, units);
+	});
+
+	function inspect(event: MouseEvent | PointerEvent) {
+		if (!layout) return;
+		const rect = canvas.getBoundingClientRect();
+		const x = ((event.clientX - rect.left) * width) / rect.width;
+		const y = ((event.clientY - rect.top) * height) / rect.height;
+		if (
+			x < layout.left ||
+			x > layout.left + layout.width ||
+			y < layout.top ||
+			y > layout.top + layout.height
+		) {
+			selection = null;
+			return;
+		}
+		selection = fromCanvas(layout, x, y);
+	}
+
+	function keydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			selection = null;
+			return;
+		}
+		if (!layout || !['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+		// Plain Left/Right belongs to the page time navigation.
+		if (['ArrowLeft', 'ArrowRight'].includes(event.key) && !event.shiftKey) return;
+		event.preventDefault();
+		const current =
+			selection ??
+			fromCanvas(layout, layout.left + layout.width / 2, layout.top + layout.height / 2);
+		selection = {
+			pressure: Math.min(
+				layout.maxPressure,
+				Math.max(
+					layout.minPressure,
+					current.pressure *
+						Math.exp(event.key === 'ArrowUp' ? -0.03 : event.key === 'ArrowDown' ? 0.03 : 0)
+				)
+			),
+			temperature: Math.min(
+				60,
+				Math.max(
+					-120,
+					current.temperature +
+						(event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0)
+				)
+			)
+		};
+	}
+
+	export async function getExportImage(): Promise<HTMLCanvasElement | null> {
+		if (!canvas || !layout) return null;
+		const image = document.createElement('canvas');
+		image.width = canvas.width;
+		const ctx = image.getContext('2d');
+		if (!ctx) return null;
+		const dpr = canvas.width / width;
+		ctx.font = `${12 * dpr}px system-ui, sans-serif`;
+		const lines: string[] = [];
+		let line = '';
+		for (const word of parcelSummary.split(' ')) {
+			if (line && ctx.measureText(line + ' ' + word).width > canvas.width - 16 * dpr) {
+				lines.push(line);
+				line = word;
+			} else line += (line ? ' ' : '') + word;
+		}
+		if (line) lines.push(line);
+		image.height = canvas.height + (lines.length * 18 + 12) * dpr;
+		ctx.fillStyle = palette.background;
+		ctx.fillRect(0, 0, image.width, image.height);
+		ctx.drawImage(canvas, 0, 0);
+		ctx.fillStyle = palette.foreground;
+		ctx.font = `${12 * dpr}px system-ui, sans-serif`;
+		lines.forEach((text, i) => ctx.fillText(text, 8 * dpr, canvas.height + (18 + i * 18) * dpr));
+		return image;
+	}
+</script>
+
+<svelte:window bind:innerHeight={viewportHeight} onresize={measure} />
+
+<div class="w-full min-w-0" bind:this={container}>
+	<div class="relative mx-auto max-w-full" style:width="{width}px">
+		<select
+			aria-label={m.sounding_top()}
+			title={m.sounding_top()}
+			bind:value={topPressure}
+			class="absolute top-2 left-2 z-10 h-8 cursor-pointer rounded-md border border-border/50 bg-background/95 px-1 text-xs text-muted-foreground hover:border-border focus-visible:outline-2 focus-visible:outline-primary"
+		>
+			{#each TOP_PRESSURES as pressure (pressure)}<option value={pressure}>{pressure} hPa</option
+				>{/each}
+		</select>
+		<button
+			type="button"
+			aria-label={m.sounding_chart_aria()}
+			class="relative block w-full touch-none rounded-lg outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary"
+			onpointermove={(event) => {
+				if (event.pointerType !== 'touch' || dragging) inspect(event);
+			}}
+			onpointerdown={(event) => {
+				dragging = true;
+				event.currentTarget.setPointerCapture(event.pointerId);
+				inspect(event);
+			}}
+			onpointerup={() => {
+				dragging = false;
+			}}
+			onclick={inspect}
+			onkeydown={keydown}
+			onpointerleave={(event) => {
+				if (event.pointerType === 'mouse') selection = null;
+			}}
+			onpointercancel={() => {
+				dragging = false;
+				selection = null;
+			}}
+			onblur={() => (selection = null)}
+		>
+			<canvas bind:this={canvas} style:height="{height}px" class="block w-full" aria-hidden="true"
+			></canvas>
+			<canvas
+				bind:this={overlay}
+				style:height="{height}px"
+				class="pointer-events-none absolute inset-0 w-full"
+				aria-hidden="true"
+			></canvas>
+		</button>
+		<div
+			class="my-2 space-y-1 text-center text-xs"
+			aria-live="polite"
+			title={m.sounding_shading_note()}
+		>
+			<p class="font-medium tabular-nums">
+				{m.sounding_surface_parcel()} ·
+				<span class="inline-flex items-center gap-1"
+					>CAPE {parcel.cape === null ? '—' : Math.round(parcel.cape)} J/kg</span
+				>
+				·
+				<span class="inline-flex items-center gap-1"
+					>CIN {parcel.cin === null ? '—' : Math.round(parcel.cin)} J/kg</span
+				>
+			</p>
+			<div class="grid text-muted-foreground">
+				{#each [m.sounding_buoyancy_unavailable(), m.sounding_buoyancy_incomplete(), m.sounding_no_lfc()] as status (status)}
+					<p
+						class="col-start-1 row-start-1"
+						class:invisible={status !== parcelStatus}
+						aria-hidden={status !== parcelStatus}
+					>
+						{status}
+					</p>
+				{/each}
+			</div>
+		</div>
+
+		<div class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+			{#each legend.lines as item (item.name)}<span class="inline-flex items-center gap-1"
+					><span
+						class="w-4 border-t-2"
+						style:border-color={item.color}
+						style:border-top-style={item.style}
+					></span>{item.name}</span
+				>{/each}
+		</div>
+		<div class="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+			{#each legend.areas as area (area.name)}
+				<span
+					class="inline-flex items-center gap-1.5"
+					class:invisible={area.key === 'subcloud' &&
+						!parcel.display.areas.some((a) => a.kind === 'subcloud')}
+					aria-hidden={area.key === 'subcloud' &&
+						!parcel.display.areas.some((a) => a.kind === 'subcloud')}
+				>
+					<span class="area-swatch" style:--area-color={area.color}></span>{area.name}
+				</span>
+			{/each}
+		</div>
+
+		<p
+			class="mt-2 text-center text-xs text-muted-foreground"
+			class:invisible={!layout || layout.minPressure <= topPressure}
+			aria-hidden={!layout || layout.minPressure <= topPressure}
+		>
+			{m.sounding_limited({ pressure: String(layout?.minPressure ?? topPressure) })}
+		</p>
+		<p class="mt-2 text-center text-xs text-muted-foreground">
+			<span class="mouse-hint">{m.sounding_help_mouse()}</span>
+			<span class="touch-hint">{m.sounding_help_touch()}</span>
+		</p>
+		<details class="mt-2 text-xs text-muted-foreground">
+			<summary class="cursor-pointer text-center">{m.sounding_chart_help()}</summary>
+			<p class="mt-2">{m.sounding_help()}</p>
+			<p class="mt-1">{m.sounding_shading_note()}</p>
+		</details>
+		<div class="sr-only" aria-live="polite" aria-atomic="true">
+			{#if selection}
+				<p>
+					{m.sounding_parcel()}: {valueText(temperatureDisplay(selection.temperature, units))}
+					{temperatureUnit(units)} · {valueText(selection.pressure, 0)} hPa
+				</p>
+				{#if inspected}
+					<p>
+						{m.var_temperature()}: {valueText(temperatureDisplay(inspected.temperature, units))}
+						{temperatureUnit(units)} · {m.var_dew_point()}: {valueText(
+							temperatureDisplay(inspected.dewpoint, units)
+						)}
+						{temperatureUnit(units)} · {m.var_wind_short()}: {valueText(
+							windDisplay(inspected.windSpeed, units)
+						)}
+						{windUnit(units)} / {valueText(inspected.windDirection, 0)}° · {m.sounding_height()}: {valueText(
+							inspected.height,
+							0
+						)} m · {m.var_cloud()}: {valueText(inspected.cloudCover, 0)}%
+					</p>
+				{/if}
+			{:else}<p>{m.sounding_inspect()}</p>{/if}
+		</div>
+		<details class="mt-4 rounded-lg border border-border p-3">
+			<summary class="cursor-pointer text-sm font-medium">{m.sounding_table()}</summary>
+			<div class="mt-3 overflow-x-auto">
+				<table class="w-full text-right text-xs tabular-nums">
+					<caption class="sr-only">{m.sounding_table()}</caption>
+					<thead
+						><tr>
+							{#each [m.sounding_pressure() + ' (hPa)', m.sounding_height() + ' (m)', m.var_temperature() + ' (' + temperatureUnit(units) + ')', m.var_dew_point() + ' (' + temperatureUnit(units) + ')', m.var_wind() + ' (' + windUnit(units) + ')', m.var_wind_dir() + ' (°)', m.var_cloud() + ' (%)'] as heading (heading)}<th
+									scope="col"
+									class="px-2 py-2">{heading}</th
+								>{/each}
+						</tr></thead
+					>
+					<tbody
+						>{#each levels as level (level.pressure)}<tr class="border-t border-border">
+								<th scope="row" class="px-2 py-1.5">{level.pressure}</th>
+								{#each [valueText(level.height, 0), valueText(temperatureDisplay(level.temperature, units)), valueText(temperatureDisplay(level.dewpoint, units)), valueText(windDisplay(level.windSpeed, units)), valueText(level.windDirection, 0), valueText(level.cloudCover, 0)] as value, i (i)}<td
+										class="px-2 py-1.5">{value}</td
+									>{/each}
+							</tr>{/each}</tbody
+					>
+				</table>
+			</div>
+		</details>
+	</div>
+</div>
+
+<style>
+	.area-swatch {
+		width: 1.25rem;
+		height: 0.75rem;
+		flex-shrink: 0;
+		border: 1px solid color-mix(in srgb, var(--area-color) 65%, transparent);
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--area-color) 20%, transparent);
+	}
+	.mouse-hint {
+		display: none;
+	}
+	@media (hover: hover) and (pointer: fine) {
+		.mouse-hint {
+			display: inline;
+		}
+		.touch-hint {
+			display: none;
+		}
+	}
+</style>

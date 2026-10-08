@@ -16,7 +16,11 @@ import { fetchWeatherApi } from 'openmeteo';
 
 import { type DaylightBand, buildDaylightBands } from '$lib/charts/bands';
 import * as m from '$lib/paraglide/messages';
+import { decodeSounding } from '$lib/soundings/data';
+import { SOUNDING_MODELS } from '$lib/soundings/models';
+import { soundingDayBounds } from '$lib/soundings/time';
 
+import type { SoundingForecastResult } from '$lib/soundings/profile';
 import type { VariableWithValues } from '@openmeteo/sdk/variable-with-values';
 import type { VariablesWithTime } from '@openmeteo/sdk/variables-with-time';
 
@@ -26,6 +30,56 @@ const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const ENSEMBLE_URL = 'https://ensemble-api.open-meteo.com/v1/ensemble';
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive';
 const SEASONAL_URL = 'https://seasonal-api.open-meteo.com/v1/seasonal';
+
+export interface SoundingForecastParams extends WeatherLocation {
+	model: string;
+	/** Calendar date in the location's timezone, YYYY-MM-DD. */
+	date: string;
+}
+
+export async function fetchSoundingForecast(
+	params: SoundingForecastParams
+): Promise<SoundingForecastResult> {
+	const capability = Object.hasOwn(SOUNDING_MODELS, params.model)
+		? SOUNDING_MODELS[params.model]
+		: undefined;
+	if (!capability) throw new Error('Invalid sounding model');
+	const date = new Date(`${params.date}T12:00:00Z`);
+	if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== params.date)
+		throw new Error('Invalid sounding date');
+	const hourly = capability.levels.flatMap((pressure) =>
+		[
+			'temperature',
+			'dew_point',
+			'wind_speed',
+			'wind_direction',
+			'cloud_cover',
+			'geopotential_height'
+		].map((field) => `${field}_${pressure}hPa`)
+	);
+	const timezone = params.timezone ?? 'UTC';
+	const { start, end } = soundingDayBounds(params.date, timezone);
+	const responses = await fetchWeatherApi(FORECAST_URL, {
+		latitude: params.latitude,
+		longitude: params.longitude,
+		models: params.model,
+		start_hour: new Date(start).toISOString().slice(0, 16),
+		end_hour: new Date(end - 3600000).toISOString().slice(0, 16),
+		timezone: 'GMT',
+		hourly: [...hourly, 'surface_pressure', 'temperature_2m', 'dew_point_2m'].join(','),
+		cell_selection: 'nearest',
+		elevation: 'nan',
+		temperature_unit: 'celsius',
+		wind_speed_unit: 'ms'
+	});
+	if (!responses[0]) throw new Error('No data is available for this location');
+	const result = decodeSounding(responses[0], capability.levels, timezone);
+	return {
+		...result,
+		timezone,
+		profiles: result.profiles.filter((profile) => profile.time >= start && profile.time < end)
+	};
+}
 
 // ─── Core Helpers ───────────────────────────────────────────────────────────────
 

@@ -61,6 +61,7 @@ const config = {
 					'/weather/compare',
 					'/weather/14-day',
 					'/weather/seasonal',
+					'/weather/soundings',
 					'/weather/historical',
 					'/weather/maps',
 					'/about',
@@ -78,6 +79,7 @@ const config = {
 					'/weather/compare',
 					'/weather/14-day',
 					'/weather/seasonal',
+					'/weather/soundings',
 					'/weather/historical'
 				];
 
