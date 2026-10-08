@@ -15,6 +15,7 @@
 	} = $props();
 
 	let locationName = $derived([location.name, location.country_code].filter(Boolean).join(', '));
+	let isCoordinateLocation = $derived(location.feature_code === 'COORD' || !location.id);
 	let viewTitle = $derived(
 		{
 			week: m.page_week_subtitle,
@@ -44,5 +45,8 @@
 <svelte:head>
 	<title>{m.seo_location_title({ view: viewTitle, location: locationName })}</title>
 	<meta name="description" content={description} />
+	{#if isCoordinateLocation}
+		<meta name="robots" content="noindex" />
+	{/if}
 	<link rel="canonical" href={canonical} />
 </svelte:head>
