@@ -22,12 +22,12 @@
 
 	import * as Dialog from '$lib/components/ui/dialog';
 
+	import AppStatus from '$lib/components/app-status.svelte';
 	import Footer from '$lib/components/navigation/footer.svelte';
 	import Header from '$lib/components/navigation/header.svelte';
 	import MobileBottomNav from '$lib/components/navigation/mobile-bottom-nav.svelte';
 	import MobileMoreSheet from '$lib/components/navigation/mobile-more-sheet.svelte';
 	import WeatherNav from '$lib/components/navigation/weather-nav.svelte';
-	import UpdateNotification from '$lib/components/update-notification.svelte';
 
 	import { routePath } from '$lib/i18n';
 	import * as m from '$lib/paraglide/messages';
@@ -383,6 +383,8 @@
 	</div>
 {/if}
 
+<AppStatus />
+
 <div class="app-frame flex h-screen overflow-hidden bg-background text-foreground">
 	<!-- Desktop sidebar -->
 	<div class="sidebar-region hidden h-full shrink-0 md:block">
@@ -429,8 +431,6 @@
 		</Dialog.Root>
 	</div>
 </div>
-
-<UpdateNotification />
 
 <style>
 	@media (max-width: 767px) {

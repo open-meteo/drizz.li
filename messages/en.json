@@ -10,6 +10,8 @@
 	"nav_seasonal": "Seasonal",
 	"nav_historical": "Historical",
 	"nav_maps": "Maps",
+	"app_offline": "Offline — showing saved data where available",
+	"app_install": "Install Drizz.li",
 	"nav_forecast": "Forecast",
 	"nav_14day_short": "14 days",
 	"nav_compare_short": "Compare",

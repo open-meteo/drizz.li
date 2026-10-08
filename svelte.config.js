@@ -31,10 +31,9 @@ const config = {
 		// resolves the location client-side. Most static hosts serve 404.html
 		// for unknown paths automatically.
 		adapter: adapter({ fallback: '404.html' }),
-		// Poll _app/version.json so a deploy while the SPA is open surfaces the
-		// update-notification toast (see update-notification.svelte). NOTE for the
-		// upcoming service worker / offline PRs: version.json must stay
-		// network-only (never cache-first), or a new deploy is never detected.
+		// Poll _app/version.json to detect deployments while the app is open.
+		// app-status.svelte displays the update notification. The service worker
+		// must leave version.json network-only so new deployments are detected.
 		version: {
 			name: buildVersion(),
 			pollInterval: 2 * 60 * 1000 // 2 mins
