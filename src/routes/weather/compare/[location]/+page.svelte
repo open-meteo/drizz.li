@@ -18,6 +18,7 @@
 		type ExportLegendItem,
 		type ExportableChart
 	} from '$lib/components/charts';
+	import LocationMetadata from '$lib/components/location-metadata.svelte';
 
 	import {
 		CHART_COLORS,
@@ -601,11 +602,7 @@
 	);
 </script>
 
-<svelte:head>
-	<title>Drizz.li | {m.page_compare_title()}</title>
-	<link rel="canonical" href="https://drizz.li/weather/compare" />
-	<meta name="description" content={m.page_compare_description()} />
-</svelte:head>
+<LocationMetadata {location} view="compare" />
 
 {#snippet rangeControls(compact = false)}
 	<div class="flex min-w-max items-center gap-2" role="group" aria-label={m.range_group_aria()}>
