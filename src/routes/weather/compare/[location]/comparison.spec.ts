@@ -9,7 +9,7 @@ import {
 	validDirectionValues
 } from './comparison';
 
-import type { ModelSeriesData } from '$lib/services/weather';
+import type { ModelSeriesData } from '#lib/services/weather.js';
 
 const models: ModelSeriesData[] = [
 	{

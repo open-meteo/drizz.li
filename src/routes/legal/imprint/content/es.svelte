@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProsePage from '$lib/components/prose-page.svelte';
+	import ProsePage from '#lib/components/prose-page.svelte';
 </script>
 
 <ProsePage title="Aviso legal" subtitle="Identificación del prestador del servicio.">

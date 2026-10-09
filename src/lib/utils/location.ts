@@ -1,8 +1,8 @@
 import { error, redirect } from '@sveltejs/kit';
 
-import { deLocalizeHref, localizeHref } from '$lib/paraglide/runtime';
+import { deLocalizeHref, localizeHref } from '#lib/paraglide/runtime.js';
 
-import type { GeoLocation } from '$lib/stores/settings';
+import type { GeoLocation } from '#lib/stores/settings.js';
 
 export const geoLocationNameToRoute = (name: string) => {
 	const lowerCase = name.toLowerCase().replaceAll(' ', '-');

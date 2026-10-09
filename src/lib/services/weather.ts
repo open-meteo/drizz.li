@@ -14,8 +14,8 @@ import { Model } from '@openmeteo/sdk/model';
 import { Unit } from '@openmeteo/sdk/unit';
 import { fetchWeatherApi } from 'openmeteo';
 
-import { type DaylightBand, buildDaylightBands } from '$lib/charts/bands';
-import * as m from '$lib/paraglide/messages';
+import { type DaylightBand, buildDaylightBands } from '#lib/charts/bands.js';
+import * as m from '#lib/paraglide/messages.js';
 
 import type { VariableWithValues } from '@openmeteo/sdk/variable-with-values';
 import type { VariablesWithTime } from '@openmeteo/sdk/variables-with-time';

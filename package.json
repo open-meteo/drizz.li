@@ -26,8 +26,9 @@
 		"@inlang/paraglide-js": "^2.25.0",
 		"@internationalized/date": "^3.12.2",
 		"@lucide/svelte": "^1.49.0",
-		"@sveltejs/adapter-static": "^3.0.10",
-		"@sveltejs/kit": "^2.70.1",
+		"@sveltejs/adapter-static": "^4.0.0",
+		"@sveltejs/kit": "^3.0.0",
+		"@sveltejs/load-config": "^0.2.2",
 		"@sveltejs/vite-plugin-svelte": "^7.3.0",
 		"@tailwindcss/vite": "^4.3.3",
 		"@trivago/prettier-plugin-sort-imports": "^6.0.0",
@@ -48,8 +49,8 @@
 		"prettier": "^3.9.5",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.1",
-		"svelte": "^5.57.0",
-		"svelte-check": "^4.7.3",
+		"svelte": "^5.57.1",
+		"svelte-check": "^4.7.5",
 		"svelte-persisted-store": "^0.12.0",
 		"tailwind-merge": "^3.7.0",
 		"tailwind-variants": "^3.3.1",
@@ -65,5 +66,9 @@
 		"@trivago/prettier-plugin-sort-imports": {
 			"prettier-plugin-svelte": "$prettier-plugin-svelte"
 		}
+	},
+	"imports": {
+		"#lib": "./src/lib/index.js",
+		"#lib/*": "./src/lib/*"
 	}
 }

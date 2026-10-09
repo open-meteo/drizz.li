@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { LOCALE_LABELS, LOCALE_LIST } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
-	import { type Locale, getLocale, localizeHref } from '$lib/paraglide/runtime';
+	import { LOCALE_LABELS, LOCALE_LIST } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { type Locale, getLocale, localizeHref } from '#lib/paraglide/runtime.js';
 
 	interface Props {
 		/** Called after a language is picked (used to close the menu around it). */
@@ -14,13 +14,13 @@
 
 	let current = $derived.by(() => {
 		// re-read on navigation: the URL is what decides the locale
-		void $page.url.pathname;
+		void page.url.pathname;
 		return getLocale();
 	});
 
 	/** The current page, in another language. */
 	function switchTo(locale: Locale): string {
-		return localizeHref($page.url.pathname + $page.url.search, { locale });
+		return localizeHref(page.url.pathname + page.url.search, { locale });
 	}
 </script>
 

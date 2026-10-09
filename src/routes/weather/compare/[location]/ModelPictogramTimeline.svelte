@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 
-	import { formatZoned } from '$lib/utils/date';
+	import { formatZoned } from '#lib/utils/date.js';
 
 	import {
 		groupHover,
@@ -9,13 +9,13 @@
 		registerGroupMember,
 		setGroupHover,
 		setGroupRange
-	} from '$lib/charts';
-	import * as m from '$lib/paraglide/messages';
+	} from '#lib/charts/index.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { getWeatherIconName, hasWeatherIcon } from '../../utils/weather-codes';
 	import { modelColor, modelLabel } from './comparison';
 
-	import type { ModelSeriesData } from '$lib/services/weather';
+	import type { ModelSeriesData } from '#lib/services/weather.js';
 
 	interface Props {
 		timestamps: number[];

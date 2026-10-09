@@ -1,4 +1,4 @@
-import { resolveLocationFromRoute } from '$lib/utils/location';
+import { resolveLocationFromRoute } from '#lib/utils/location.js';
 
 import type { PageLoad } from './$types';
 

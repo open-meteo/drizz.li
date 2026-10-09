@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import { formatZoned, getRelativeDayLabel, isSameDayInZone } from '$lib/utils/date';
+	import { formatZoned, getRelativeDayLabel, isSameDayInZone } from '#lib/utils/date.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { getTempStyle } from '../../utils/colors';
 	import { getWeatherDescription, getWeatherIconName } from '../../utils/weather-codes';

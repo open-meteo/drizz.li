@@ -7,9 +7,9 @@
 		defaultChartLayout,
 		storedChartLayout,
 		storedChartRange
-	} from '$lib/stores/settings';
+	} from '#lib/stores/settings.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { CHART_VARIABLES, VARIABLE_BY_KEY } from './variables';
 

@@ -2,12 +2,12 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	import { formatZoned, getRelativeDayLabel, isSameDayInZone } from '$lib/utils/date';
+	import { formatZoned, getRelativeDayLabel, isSameDayInZone } from '#lib/utils/date.js';
 
-	import * as Popover from '$lib/components/ui/popover';
+	import * as Popover from '#lib/components/ui/popover/index.js';
 
-	import { href } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
+	import { href } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { getTempStyle } from '../../utils/colors';
 	import { getWeatherDescription, getWeatherIconName } from '../../utils/weather-codes';

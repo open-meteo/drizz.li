@@ -3,21 +3,21 @@
 	import { get } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { markPageReady, reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { setActiveLocation, storedModel, storedUnits } from '$lib/stores/settings';
+	import { markPageReady, reportPageReady } from '#lib/stores/page-transition.svelte.js';
+	import { setActiveLocation, storedModel, storedUnits } from '#lib/stores/settings.js';
 
-	import { formatZoned } from '$lib/utils/date';
-	import { skeletonOut } from '$lib/utils/skeleton-fade';
-	import { listUnlessDefault, readList, syncSearchParams } from '$lib/utils/url-state';
+	import { formatZoned } from '#lib/utils/date.js';
+	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
+	import { listUnlessDefault, readList, syncSearchParams } from '#lib/utils/url-state.js';
 
 	import {
 		ChartContainer,
 		ChartToolbar,
 		type ExportLegendItem,
 		type ExportableChart
-	} from '$lib/components/charts';
+	} from '#lib/components/charts/index.js';
 
 	import {
 		CHART_COLORS,
@@ -27,14 +27,14 @@
 		groupRange,
 		isColumnUnit,
 		setGroupRange
-	} from '$lib/charts';
-	import * as m from '$lib/paraglide/messages';
+	} from '#lib/charts/index.js';
+	import * as m from '#lib/paraglide/messages.js';
 	import {
 		type FriendlyWeatherError,
 		type ModelCompareResult,
 		fetchModelComparison,
 		humanizeWeatherError
-	} from '$lib/services/weather';
+	} from '#lib/services/weather.js';
 
 	import { defaultParameters, hourly, modelGroups, models as modelOptions } from '../../options';
 	import ComparisonSelectionPanel from './ComparisonSelectionPanel.svelte';
@@ -193,7 +193,7 @@
 	});
 
 	onMount(() => {
-		const url = get(page).url;
+		const url = page.url;
 		const urlModels = sanitizeList(readList(url, 'models'), MODEL_IDS);
 		const urlVars = sanitizeList(readList(url, 'vars'), VARIABLE_IDS);
 		if (urlModels) params.models = orderModels(urlModels);

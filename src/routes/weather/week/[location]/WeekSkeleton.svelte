@@ -15,11 +15,11 @@
 	 */
 	import { MediaQuery } from 'svelte/reactivity';
 
-	import { storedChartLayout, storedVariablePrefs } from '$lib/stores/settings';
+	import { storedChartLayout, storedVariablePrefs } from '#lib/stores/settings.js';
 
-	import { skeletonOut } from '$lib/utils/skeleton-fade';
+	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
 
-	import { ChartContainer } from '$lib/components/charts';
+	import { ChartContainer } from '#lib/components/charts/index.js';
 
 	let { part }: { part: 'table' | 'summary' | 'charts' } = $props();
 

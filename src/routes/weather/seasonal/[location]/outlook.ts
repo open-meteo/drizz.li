@@ -8,7 +8,7 @@ import {
 	type ClimateNormals,
 	type SeasonalForecastResult,
 	monthDayToOrdinal
-} from '$lib/services/weather';
+} from '#lib/services/weather.js';
 
 export interface MonthOutlook {
 	/** `YYYY-MM` in the location's local calendar. */

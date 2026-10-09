@@ -4,26 +4,26 @@
 	import { get } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 
-	import { reportPageReady } from '$lib/stores/page-transition.svelte';
+	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
 	import {
 		setActiveLocation,
 		storedArchiveModel,
 		storedChartLayout,
 		storedUnits,
 		storedVariablePrefs
-	} from '$lib/stores/settings';
+	} from '#lib/stores/settings.js';
 
-	import { skeletonOut } from '$lib/utils/skeleton-fade';
+	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
 
-	import { ChartContainer } from '$lib/components/charts';
+	import { ChartContainer } from '#lib/components/charts/index.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 	import {
 		type ClimateNormals,
 		type HistoricalForecastResult,
 		fetchClimateNormals,
 		fetchHistoricalWeather
-	} from '$lib/services/weather';
+	} from '#lib/services/weather.js';
 
 	import { useHeroActions } from '../../hero.svelte';
 	import { archiveModelGroups, defaultParameters } from '../../options';

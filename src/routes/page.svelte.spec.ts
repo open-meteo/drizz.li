@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 
-import { localizeHref } from '$lib/paraglide/runtime';
+import { localizeHref } from '#lib/paraglide/runtime.js';
 
 import Page from './+page.svelte';
 
@@ -14,6 +14,6 @@ describe('/+page.svelte', () => {
 	it('redirects to the localized week page', async () => {
 		render(Page);
 
-		expect(goto).toHaveBeenCalledWith(localizeHref('/weather/week/'), { replaceState: true });
+		expect(goto).toHaveBeenCalledWith(localizeHref('/weather/week/'), { replace: true });
 	});
 });

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { type UnitPrefs, storedUnits } from '$lib/stores/settings';
+	import { type UnitPrefs, storedUnits } from '#lib/stores/settings.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	// each group maps a stored unit key to its selectable options
 	const UNIT_GROUPS: {
