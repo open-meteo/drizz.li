@@ -3,26 +3,26 @@
 	import { get } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { setActiveLocation, storedEnsembleModel, storedUnits } from '$lib/stores/settings';
+	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
+	import { setActiveLocation, storedEnsembleModel, storedUnits } from '#lib/stores/settings.js';
 
-	import { skeletonOut } from '$lib/utils/skeleton-fade';
-	import { syncSearchParams, unlessDefault } from '$lib/utils/url-state';
+	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
+	import { syncSearchParams, unlessDefault } from '#lib/utils/url-state.js';
 
-	import { Label } from '$lib/components/ui/label';
-	import { Switch } from '$lib/components/ui/switch';
+	import { Label } from '#lib/components/ui/label/index.js';
+	import { Switch } from '#lib/components/ui/switch/index.js';
 
-	import { ChartContainer, ChartToolbar } from '$lib/components/charts';
+	import { ChartContainer, ChartToolbar } from '#lib/components/charts/index.js';
 
-	import { CHART_COLORS, CanvasChart, type ChartSeries, isColumnUnit } from '$lib/charts';
-	import * as m from '$lib/paraglide/messages';
+	import { CHART_COLORS, CanvasChart, type ChartSeries, isColumnUnit } from '#lib/charts/index.js';
+	import * as m from '#lib/paraglide/messages.js';
 	import {
 		type DaylightBand,
 		type EnsembleForecastResult,
 		fetchEnsembleForecast
-	} from '$lib/services/weather';
+	} from '#lib/services/weather.js';
 
 	import { useHeroActions } from '../../hero.svelte';
 	import { defaultParameters, ensembleModelGroups } from '../../options';
@@ -90,7 +90,7 @@
 
 	onMount(() => {
 		// a shared link carries its model; otherwise fall back to the stored choice
-		const fromUrl = get(page).url.searchParams.get('model');
+		const fromUrl = page.url.searchParams.get('model');
 		params.models = [fromUrl || get(storedEnsembleModel)];
 		mounted = true;
 	});

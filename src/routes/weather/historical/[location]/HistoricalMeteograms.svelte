@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import { type ChartPanel, storedChartLayout } from '$lib/stores/settings';
+	import { type ChartPanel, storedChartLayout } from '#lib/stores/settings.js';
 
-	import { formatZoned } from '$lib/utils/date';
+	import { formatZoned } from '#lib/utils/date.js';
 
-	import { ChartContainer, downloadChartsPng } from '$lib/components/charts';
+	import { ChartContainer, downloadChartsPng } from '#lib/components/charts/index.js';
 
-	import { CanvasChart, groupRange } from '$lib/charts';
-	import * as m from '$lib/paraglide/messages';
+	import { CanvasChart, groupRange } from '#lib/charts/index.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { getWeatherIconName } from '../../utils/weather-codes';
 	import { type FetchedHourly, type WeatherUnits } from '../../week/[location]/types';

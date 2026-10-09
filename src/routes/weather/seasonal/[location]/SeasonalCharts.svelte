@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { ChartContainer } from '$lib/components/charts';
+	import { ChartContainer } from '#lib/components/charts/index.js';
 
-	import { CHART_COLORS, CanvasChart, type ChartSeries } from '$lib/charts';
+	import { CHART_COLORS, CanvasChart, type ChartSeries } from '#lib/charts/index.js';
 	import {
 		type ClimateNormals,
 		type SeasonalForecastResult,
 		monthDayToOrdinal
-	} from '$lib/services/weather';
+	} from '#lib/services/weather.js';
 
 	import { type WeatherUnits, getPrecipUnit, getTempUnit } from '../../week/[location]/types';
 	import { rollingMean, rollingSum } from './outlook';

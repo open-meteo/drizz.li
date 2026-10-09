@@ -1,9 +1,9 @@
 <script lang="ts">
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 
-	import * as Popover from '$lib/components/ui/popover';
+	import * as Popover from '#lib/components/ui/popover/index.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import SettingsContent from './settings-content.svelte';
 

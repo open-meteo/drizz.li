@@ -1,4 +1,4 @@
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 
 // Icon family per code, restricted to the codes open-meteo actually emits: the
 // WMO 4677 subset in the WeatherCode enum of

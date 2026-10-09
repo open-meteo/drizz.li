@@ -1,22 +1,20 @@
 <script lang="ts">
-	import { get } from 'svelte/store';
-
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	import {
 		type GeoLocation,
 		locationKnown,
 		setActiveLocation,
 		storedLocation
-	} from '$lib/stores/settings';
+	} from '#lib/stores/settings.js';
 
-	import { buildLocationRoute } from '$lib/utils/location';
+	import { buildLocationRoute } from '#lib/utils/location.js';
 
-	import LocationSearch from '$lib/components/location/location-search.svelte';
+	import LocationSearch from '#lib/components/location/location-search.svelte';
 
-	import { href, routePath } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
+	import { href, routePath } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import LogoMark from './logo-mark.svelte';
 	import SettingsMenu from './settings-menu.svelte';
@@ -28,7 +26,7 @@
 	// one thing prerendered HTML could never get right: a German flag greeting
 	// every first-time visitor, wherever they are.
 	let location: GeoLocation | null = $derived(
-		$page.data.location ?? ($locationKnown ? $storedLocation : null)
+		page.data.location ?? ($locationKnown ? $storedLocation : null)
 	);
 	let homeLocationRoute = $derived(buildLocationRoute(location ?? $storedLocation));
 
@@ -38,7 +36,7 @@
 	function navigateToLocation(newLocation: GeoLocation) {
 		setActiveLocation(newLocation);
 		const locationRoute = buildLocationRoute(newLocation);
-		const currentPath = routePath(get(page).url.pathname);
+		const currentPath = routePath(page.url.pathname);
 
 		if (currentPath.startsWith('/weather/compare')) {
 			goto(href('/weather/compare/[location]', { location: locationRoute }));

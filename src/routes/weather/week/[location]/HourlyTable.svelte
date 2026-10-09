@@ -7,13 +7,13 @@
 		storedHourlyInterval,
 		storedTableRowOrder,
 		storedVariablePrefs
-	} from '$lib/stores/settings';
+	} from '#lib/stores/settings.js';
 
-	import { formatUtcOffset, formatZoned, getZonedHour, isSameDayInZone } from '$lib/utils/date';
-	import { useNow } from '$lib/utils/now.svelte';
+	import { formatUtcOffset, formatZoned, getZonedHour, isSameDayInZone } from '#lib/utils/date.js';
+	import { useNow } from '#lib/utils/now.svelte.js';
 
-	import { groupHover, setGroupHover } from '$lib/charts';
-	import * as m from '$lib/paraglide/messages';
+	import { groupHover, setGroupHover } from '#lib/charts/index.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { getTempStyle } from '../../utils/colors';
 	import { getWeatherDescription, getWeatherIconName } from '../../utils/weather-codes';

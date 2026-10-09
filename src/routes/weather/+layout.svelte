@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { type GeoLocation, locationKnown, storedLocation } from '$lib/stores/settings';
+	import { type GeoLocation, locationKnown, storedLocation } from '#lib/stores/settings.js';
 
-	import { routePath } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
+	import { routePath } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import type { Snippet } from 'svelte';
 
@@ -16,7 +16,7 @@
 
 	let { children }: Props = $props();
 	let location: GeoLocation | null = $derived(
-		$page.data.location ?? ($locationKnown ? $storedLocation : null)
+		page.data.location ?? ($locationKnown ? $storedLocation : null)
 	);
 
 	let actions = $state<Snippet | null>(null);
@@ -33,9 +33,9 @@
 		['/weather/seasonal', m.page_seasonal_subtitle],
 		['/weather/historical', m.page_historical_subtitle]
 	];
-	let hasModelSelector = $derived(!routePath($page.url.pathname).startsWith('/weather/compare'));
+	let hasModelSelector = $derived(!routePath(page.url.pathname).startsWith('/weather/compare'));
 	let title = $derived(
-		TITLES.find(([prefix]) => routePath($page.url.pathname).startsWith(prefix))?.[1]?.() ?? null
+		TITLES.find(([prefix]) => routePath(page.url.pathname).startsWith(prefix))?.[1]?.() ?? null
 	);
 </script>
 

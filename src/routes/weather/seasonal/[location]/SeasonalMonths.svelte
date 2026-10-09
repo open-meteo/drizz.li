@@ -1,10 +1,10 @@
 <script lang="ts">
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { getColor } from '../../utils/colors';
 	import { type WeatherUnits, getPrecipUnit, getTempUnit } from '../../week/[location]/types';
 
-	import type { ClimateNormals } from '$lib/services/weather';
+	import type { ClimateNormals } from '#lib/services/weather.js';
 	import type { MonthOutlook } from './outlook';
 
 	interface Props {

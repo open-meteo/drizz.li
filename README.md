@@ -89,7 +89,7 @@ npm run test       # vitest, single run
 
 Strings live in `messages/<locale>.json` and are compiled into
 `src/lib/paraglide/` (generated, gitignored) by the Paraglide Vite plugin.
-Add a key to every locale file; `import * as m from '$lib/paraglide/messages'`
+Add a key to every locale file; `import * as m from '#lib/paraglide/messages.js'`
 then exposes it as `m.your_key()`.
 
 Long-form pages (about, imprint, privacy) are not message keys but one Svelte

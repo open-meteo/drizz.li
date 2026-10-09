@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { formatZoned, getRelativeDayLabel } from '$lib/utils/date';
+	import { formatZoned, getRelativeDayLabel } from '#lib/utils/date.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import {
 		buildDayNarrative,

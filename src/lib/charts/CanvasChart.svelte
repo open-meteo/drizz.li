@@ -18,7 +18,7 @@
     />
 -->
 <script module lang="ts">
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	export interface ChartSeries {
 		/** Series display name (used in legend and tooltip) */
@@ -164,8 +164,8 @@
 	import { onDestroy, onMount, untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
-	import { formatZoned, getZonedHour } from '$lib/utils/date';
-	import { useNow } from '$lib/utils/now.svelte';
+	import { formatZoned, getZonedHour } from '#lib/utils/date.js';
+	import { useNow } from '#lib/utils/now.svelte.js';
 
 	import { CHART_COLORS } from './data';
 

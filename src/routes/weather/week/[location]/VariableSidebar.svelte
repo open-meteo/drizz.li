@@ -7,12 +7,12 @@
 		mergeTableRowOrder,
 		storedTableRowOrder,
 		storedVariablePrefs
-	} from '$lib/stores/settings';
+	} from '#lib/stores/settings.js';
 
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Label } from '$lib/components/ui/label';
+	import { Checkbox } from '#lib/components/ui/checkbox/index.js';
+	import { Label } from '#lib/components/ui/label/index.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	interface Props {
 		open: boolean;
