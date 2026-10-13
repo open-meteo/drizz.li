@@ -8,9 +8,9 @@
  * fragments: word order, prepositions and agreement differ per language, so
  * each locale owns its full sentence and only receives the values.
  */
-import { formatZoned } from '$lib/utils/date';
+import { formatZoned } from '#lib/utils/date.js';
 
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 
 import {
 	type WeatherUnits,
@@ -20,7 +20,7 @@ import {
 	getWindUnit
 } from './types';
 
-import type { WeekDailyData, WeekHourlyData } from '$lib/services/weather';
+import type { WeekDailyData, WeekHourlyData } from '#lib/services/weather.js';
 
 /** Broad condition families, ordered from calmest to most disruptive. */
 type Category = 'clear' | 'fair' | 'cloudy' | 'fog' | 'drizzle' | 'rain' | 'snow' | 'thunder';

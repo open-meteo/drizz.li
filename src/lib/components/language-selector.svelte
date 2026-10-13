@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import * as Popover from '$lib/components/ui/popover';
+	import * as Popover from '#lib/components/ui/popover/index.js';
 
-	import LanguageOptions from '$lib/components/language-options.svelte';
+	import LanguageOptions from '#lib/components/language-options.svelte';
 
-	import * as m from '$lib/paraglide/messages';
-	import { getLocale } from '$lib/paraglide/runtime';
+	import * as m from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
 
 	// the URL decides the locale, so re-read it on navigation
 	let current = $derived.by(() => {
-		void $page.url.pathname;
+		void page.url.pathname;
 		return getLocale();
 	});
 

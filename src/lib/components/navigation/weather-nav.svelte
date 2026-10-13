@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { storedLocation } from '$lib/stores/settings';
+	import { storedLocation } from '#lib/stores/settings.js';
 
-	import { buildLocationRoute } from '$lib/utils/location';
+	import { buildLocationRoute } from '#lib/utils/location.js';
 
-	import { href, routePath } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
+	import { href, routePath } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import LogoMark from './logo-mark.svelte';
 
@@ -66,7 +66,7 @@
 	];
 
 	// the URL carries a locale prefix; compare the neutral path behind it
-	let currentPath = $derived(routePath($page.url.pathname));
+	let currentPath = $derived(routePath(page.url.pathname));
 
 	// Link straight to the location page instead of the bare redirect route: it
 	// saves a navigation, and the page cross-fade can then wait for the real

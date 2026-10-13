@@ -1,6 +1,6 @@
 import { findModel, models as modelOptions } from '../../options';
 
-import type { ModelSeriesData } from '$lib/services/weather';
+import type { ModelSeriesData } from '#lib/services/weather.js';
 
 const MODEL_COLORS = [
 	'#0072b2',

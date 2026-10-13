@@ -5,12 +5,16 @@ updates:
     schedule:
       interval: weekly
       time: '13:00'
+    assignees:
+      - vincentvdwal
     open-pull-requests-limit: 10
     allow:
       - dependency-type: direct
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-patch']
+      - dependency-name: 'conventional-changelog-conventionalcommits'
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: 'chore(deps): '
     cooldown:
@@ -25,6 +29,8 @@ updates:
     schedule:
       interval: weekly
       time: '10:00'
+    assignees:
+      - vincentvdwal
     commit-message:
       prefix: 'chore(deps): '
     cooldown:

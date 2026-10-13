@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { storedLocation } from '$lib/stores/settings';
+	import { storedLocation } from '#lib/stores/settings.js';
 
-	import { buildLocationRoute } from '$lib/utils/location';
+	import { buildLocationRoute } from '#lib/utils/location.js';
 
-	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Dialog from '#lib/components/ui/dialog/index.js';
 
-	import { href, routePath } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
+	import { href, routePath } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	interface Props {
 		moreOpen?: boolean;
@@ -43,7 +43,7 @@
 		}
 	];
 
-	let currentPath = $derived(routePath($page.url.pathname));
+	let currentPath = $derived(routePath(page.url.pathname));
 	let locationRoute = $derived(buildLocationRoute($storedLocation));
 	const isActive = (url: string) => currentPath === url || currentPath.startsWith(`${url}/`);
 	let moreActive = $derived(

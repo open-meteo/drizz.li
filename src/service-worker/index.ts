@@ -1,8 +1,5 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="esnext" />
-/// <reference lib="webworker" />
-/// <reference types="@sveltejs/kit" />
-import { build, files, version } from '$service-worker';
+import { version } from '$app/env';
+import { assets, immutable } from '$app/manifest';
 
 const worker = globalThis as unknown as ServiceWorkerGlobalScope;
 const SHELL_CACHE_PREFIX = 'drizzli-shell-';
@@ -24,7 +21,10 @@ const CRITICAL_FILES = new Set([
 	'/icons/icon-512.png',
 	'/icons/icon-maskable-512.png'
 ]);
-const SHELL = [...build, ...files.filter((file) => CRITICAL_FILES.has(file))];
+const SHELL = [
+	...immutable.map(({ path }) => path),
+	...assets.map(({ path }) => path).filter((file) => CRITICAL_FILES.has(file))
+];
 const SHELL_PATHS = new Set(SHELL);
 const WEATHER_HOSTS = new Set([
 	'api.open-meteo.com',

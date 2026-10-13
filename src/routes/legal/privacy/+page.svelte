@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LocalizedContent from '$lib/components/localized-content.svelte';
+	import LocalizedContent from '#lib/components/localized-content.svelte';
 
 	import de from './content/de.svelte';
 	import en from './content/en.svelte';

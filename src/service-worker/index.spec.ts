@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('$service-worker', () => ({
-	build: ['/app.js'],
-	files: [],
-	version: 'test'
+vi.mock('$app/env', () => ({ version: 'test' }));
+vi.mock('$app/manifest', () => ({
+	immutable: [{ path: '/app.js' }],
+	assets: []
 }));
 
 function fetchEvent(path: string) {
@@ -37,7 +37,7 @@ describe('service worker', () => {
 		vi.stubGlobal('caches', { open: vi.fn().mockResolvedValue(cache) });
 		vi.stubGlobal('fetch', vi.fn());
 		vi.stubGlobal('skipWaiting', vi.fn().mockResolvedValue(undefined));
-		await import('./service-worker');
+		await import('./index.js');
 	});
 
 	afterEach(() => {

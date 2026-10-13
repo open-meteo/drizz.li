@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { href } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
+	import { href } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import LogoMark from './logo-mark.svelte';
 

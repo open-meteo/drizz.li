@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
-	import { formatZoned, getRelativeDayLabel, isSameDayInZone } from '$lib/utils/date';
+	import { formatZoned, getRelativeDayLabel, isSameDayInZone } from '#lib/utils/date.js';
 
-	import * as Popover from '$lib/components/ui/popover';
+	import * as Popover from '#lib/components/ui/popover/index.js';
 
-	import { href } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
+	import { href } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { getTempStyle } from '../../utils/colors';
 	import { getWeatherDescription, getWeatherIconName } from '../../utils/weather-codes';
@@ -122,10 +123,68 @@
 	// group has min-width:100%, so the row always overflows by exactly the past
 	// button — this works at every viewport size. Runs once per dataset.
 	let scrolledForRef: FetchedDaily | null = null;
+
+	// Nudge users towards the parked past button: a small chevron on the first
+	// day's left edge that goes away once they have moved the strip - panned
+	// left past the first day (revealed at least half of the button) or
+	// scrolled on to later days - and returns with each new dataset. `restLeft`
+	// is the parked scroll offset; 0 is the button in view.
+	let restLeft: number | null = null;
+	let hintDismissed = $state(false);
+	// Scrolling on only counts once it is clearly deliberate: the collapse can
+	// nudge the parked offset by a few pixels on its own.
+	const HINT_SCROLL_ON_PX = 16;
+	function onRowScroll() {
+		if (hintDismissed || restLeft === null || !stripScrollEl) return;
+		const { scrollLeft } = stripScrollEl;
+		if (scrollLeft < restLeft / 2 || scrollLeft > restLeft + HINT_SCROLL_ON_PX)
+			hintDismissed = true;
+	}
+
+	// Mouse drag-to-scroll: touch and trackpads pan the row natively, but a
+	// plain mouse can't, so horizontal mouse drags are translated into
+	// scrollLeft. A small threshold separates a click from a drag. Pointer
+	// capture is only taken once that threshold is crossed: capturing on
+	// pointerdown would retarget the release click to the row and break plain
+	// cell clicks. Once it is a drag, the click fired on release is swallowed so
+	// the cell under the cursor isn't selected.
+	let dragging = $state(false);
+	let dragMoved = false;
+	let dragStartX = 0;
+	let dragStartLeft = 0;
+	function onPointerDown(e: PointerEvent) {
+		dragMoved = false;
+		if (e.pointerType !== 'mouse' || e.button !== 0 || !stripScrollEl) return;
+		dragging = true;
+		dragStartX = e.clientX;
+		dragStartLeft = stripScrollEl.scrollLeft;
+	}
+	function onPointerMove(e: PointerEvent) {
+		if (!dragging || !stripScrollEl) return;
+		const dx = e.clientX - dragStartX;
+		if (!dragMoved) {
+			if (Math.abs(dx) < 4) return;
+			dragMoved = true;
+			stripScrollEl.setPointerCapture(e.pointerId);
+		}
+		stripScrollEl.scrollLeft = dragStartLeft - dx;
+	}
+	function onPointerUp() {
+		dragging = false;
+	}
+	function onClickCapture(e: MouseEvent) {
+		if (!dragMoved) return;
+		dragMoved = false;
+		e.stopPropagation();
+		e.preventDefault();
+	}
+
 	$effect(() => {
 		const d = daily;
 		if (!d || !stripScrollEl || !daysWrapEl || scrolledForRef === d) return;
 		scrolledForRef = d;
+		restLeft = null;
+		hintDismissed = false;
 		const scroll = stripScrollEl;
 		const wrap = daysWrapEl;
 		if (!canExtendPast) {
@@ -142,6 +201,9 @@
 			const firstCell = wrap.querySelector('.strip-cell') ?? wrap;
 			scroll.scrollLeft +=
 				firstCell.getBoundingClientRect().left - scroll.getBoundingClientRect().left - padLeft;
+			restLeft = scroll.scrollLeft;
+			// nothing parked to the left → nothing to hint at
+			if (restLeft <= 0) hintDismissed = true;
 		};
 		requestAnimationFrame(() => {
 			apply();
@@ -164,7 +226,20 @@
 	class:compact
 	class:stuck
 >
-	<div class="strip-row flex overflow-x-auto px-3 lg:px-8" bind:this={stripScrollEl}>
+	<!-- the pointer handlers only add mouse drag-panning; the cells inside are
+	     the interactive elements, so the row itself needs no role -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="strip-row flex cursor-grab overflow-x-auto px-3 lg:px-8"
+		class:dragging
+		bind:this={stripScrollEl}
+		onscroll={onRowScroll}
+		onpointerdown={onPointerDown}
+		onpointermove={onPointerMove}
+		onpointerup={onPointerUp}
+		onpointercancel={onPointerUp}
+		onclickcapture={onClickCapture}
+	>
 		{#if daily}
 			{#if canExtendPast && onExtendPast}
 				<!-- starts scrolled out of view (revealed by scrolling left); styled to
@@ -195,10 +270,21 @@
 				     is the archive, so the button hands over to it -->
 				<a
 					href={href('/weather/historical/[location]', { location: locationRoute })}
-					class="strip-side flex shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border border-dashed border-primary/50 bg-primary/5 text-primary transition-colors hover:border-primary hover:bg-primary/10"
+					class="strip-side relative flex shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
 					aria-label={m.strip_history_aria()}
 					title={m.strip_history_title()}
 				>
+					<!-- corner arrow: this is a link to another page, unlike the dashed
+					     load buttons that extend the strip in place -->
+					<svg
+						class="absolute top-1 right-1 h-2.5 w-2.5 opacity-70"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="2.5"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M9 7h8v8" />
+					</svg>
 					<svg
 						class="h-4 w-4"
 						fill="none"
@@ -218,6 +304,33 @@
 			{/if}
 
 			<div class="strip-days flex" bind:this={daysWrapEl}>
+				<!-- Pan-left hint: a small chevron on the first day's left edge, pointing
+				     at the parked past button. It lives inside the scroller so it rides
+				     along with that day while it fades: panning left carries it towards
+				     the button, scrolling on to later days slides it away with the first
+				     day, instead of leaving it pinned to the row's edge. Clicking it is
+				     a shortcut for the button: it loads the past days straight away
+				     (which also retires the hint, since the button is then gone). -->
+				{#if canExtendPast && onExtendPast && !hintDismissed}
+					<button
+						type="button"
+						transition:fade={{ duration: 200 }}
+						class="pan-hint absolute z-20 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border border-border/70 bg-background/90 text-muted-foreground shadow-xs transition-colors hover:border-primary/50 hover:text-primary"
+						onclick={onExtendPast}
+						aria-label={m.strip_past_aria()}
+						title={m.strip_past_aria()}
+					>
+						<svg
+							class="h-3 w-3"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							stroke-width="2.5"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M15 5l-7 7 7 7" />
+						</svg>
+					</button>
+				{/if}
 				{#each daily.dailyDates as time, index (index)}
 					{@const selected = isSameDayInZone(time, selectedDay, daily.timezone)}
 					{@const tempMax = daily.daily.temperature_2m_max[index]}
@@ -494,10 +607,21 @@
 					     seasonal outlook, so the button hands over to it -->
 					<a
 						href={href('/weather/seasonal/[location]', { location: locationRoute })}
-						class="strip-side flex shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border border-dashed border-primary/50 bg-primary/5 text-primary transition-colors hover:border-primary hover:bg-primary/10"
+						class="strip-side relative flex shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
 						aria-label={m.strip_seasonal_aria()}
 						title={m.strip_seasonal_title()}
 					>
+						<!-- corner arrow: this is a link to another page, unlike the dashed
+					     load buttons that extend the strip in place -->
+						<svg
+							class="absolute top-1 right-1 h-2.5 w-2.5 opacity-70"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							stroke-width="2.5"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M9 7h8v8" />
+						</svg>
 						<svg
 							class="h-4 w-4"
 							fill="none"
@@ -778,6 +902,8 @@
 	}
 
 	.strip-days {
+		/* anchors the pan hint to the first day */
+		position: relative;
 		gap: var(--gap);
 		/* fill the row so it overflows by exactly the past button, which starts
 		   scrolled out of view and is revealed by scrolling left — even when the
@@ -793,11 +919,12 @@
 	   max-scroll so the button parks fully beyond the clip edge. The history
 	   link that replaces it is never parked, so it keeps the normal gap. */
 	.strip-park + .strip-days {
-		padding-left: calc(12px - var(--gap-min));
+		--park-pad: calc(12px - var(--gap-min));
+		padding-left: var(--park-pad);
 	}
 	@media (min-width: 1024px) {
 		.strip-park + .strip-days {
-			padding-left: calc(32px - var(--gap-min));
+			--park-pad: calc(32px - var(--gap-min));
 		}
 	}
 	.strip-cell,
@@ -965,5 +1092,22 @@
 
 	.daystrip :global(.overflow-x-auto) {
 		scrollbar-width: none;
+	}
+
+	/* While a mouse drag pans the row, the whole row (cells included, which
+	   otherwise show a pointer) reads as grabbed. */
+	.strip-row.dragging,
+	.strip-row.dragging :global(*) {
+		cursor: grabbing;
+	}
+
+	/* Pan-left hint: centred on the first day's left edge (the days group's
+	   content edge, past its parking padding), halfway up the cells, so it
+	   tracks them through the collapse. At rest its outer half sits in the
+	   row's horizontal padding, inside the scroller's clip edge. */
+	.pan-hint {
+		left: var(--park-pad, 0px);
+		top: calc(var(--cell-h) / 2);
+		translate: -50% -50%;
 	}
 </style>
