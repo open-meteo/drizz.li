@@ -24,7 +24,7 @@ function response(
 	start = 1792886400n
 ): WeatherApiResponse {
 	return {
-		timezone: () => 'Europe/Berlin',
+		timezone: () => 'GMT',
 		elevation: () => 500,
 		hourly: () => ({
 			time: () => start,
@@ -46,8 +46,7 @@ describe('sounding decoding', () => {
 				variable(Variable.temperature, 700, [-5, -4, -3]),
 				variable(Variable.surface_pressure, 0, [950, 949, 948])
 			]),
-			[900, 700, 500],
-			'UTC'
+			[900, 700, 500]
 		);
 		expect(result.profiles).toHaveLength(3);
 		expect(result.profiles[0].levels.map((l) => l.pressure)).toEqual([900, 700, 500]);
@@ -62,7 +61,7 @@ describe('sounding decoding', () => {
 	it('returns an empty profile collection when the hourly block is absent', () => {
 		const empty = response([]);
 		empty.hourly = () => null;
-		expect(decodeSounding(empty, [500], 'UTC').profiles).toEqual([]);
+		expect(decodeSounding(empty, [500]).profiles).toEqual([]);
 	});
 });
 
@@ -139,6 +138,15 @@ describe('single-day sounding request', () => {
 			expect(result.profiles.at(-1)!.time).toBe(Date.parse(last + 'Z'));
 		}
 	);
+	it('defaults the display timezone to UTC when no location timezone is supplied', async () => {
+		const result = await fetchSoundingForecast({
+			latitude: 47,
+			longitude: 8,
+			model: 'icon_global',
+			date: '2026-09-24'
+		});
+		expect(result.timezone).toBe('UTC');
+	});
 	it('rejects invalid dates and unsupported models before requesting data', async () => {
 		await expect(
 			fetchSoundingForecast({ latitude: 0, longitude: 0, model: 'icon_d2', date: '2026-02-31' })

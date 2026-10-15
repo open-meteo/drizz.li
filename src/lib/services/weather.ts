@@ -73,9 +73,10 @@ export async function fetchSoundingForecast(
 		wind_speed_unit: 'ms'
 	});
 	if (!responses[0]) throw new Error('No data is available for this location');
-	const result = decodeSounding(responses[0], capability.levels, timezone);
+	const result = decodeSounding(responses[0], capability.levels);
 	return {
 		...result,
+		// The request uses GMT; display and day bounds use the location timezone.
 		timezone,
 		profiles: result.profiles.filter((profile) => profile.time >= start && profile.time < end)
 	};

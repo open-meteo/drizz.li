@@ -12,14 +12,14 @@ const FIELDS: Partial<Record<Variable, keyof Omit<SoundingLevel, 'pressure'>>> =
 	[Variable.geopotential_height]: 'height'
 };
 
+type DecodedSounding = Omit<SoundingForecastResult, 'timezone'>;
+
 export function decodeSounding(
 	response: WeatherApiResponse,
-	requestedLevels: readonly number[],
-	timezone: string
-): SoundingForecastResult {
+	requestedLevels: readonly number[]
+): DecodedSounding {
 	const hourly = response.hourly();
-	const result: SoundingForecastResult = {
-		timezone: response.timezone() || timezone,
+	const result: DecodedSounding = {
 		elevation: response.elevation(),
 		profiles: []
 	};
