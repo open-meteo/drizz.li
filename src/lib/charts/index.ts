@@ -2,7 +2,7 @@
  * Canvas Charts — Barrel Export
  *
  * Usage:
- *   import { CanvasChart, buildDaylightBands, SERIES_COLORS } from '$lib/charts';
+ *   import { CanvasChart, buildDaylightBands, SERIES_COLORS } from '#lib/charts/index.js';
  */
 
 export {

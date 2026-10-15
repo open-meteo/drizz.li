@@ -18,7 +18,7 @@ import {
 	saturationVaporPressure
 } from './thermo';
 
-import type { UnitPrefs } from '$lib/stores/settings';
+import type { UnitPrefs } from '#lib/stores/settings.js';
 import type { ParcelDiagnostics, ParcelDisplayArea } from './parcel';
 import type { SoundingProfile } from './profile';
 

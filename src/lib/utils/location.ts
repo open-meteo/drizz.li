@@ -1,8 +1,10 @@
 import { error, redirect } from '@sveltejs/kit';
 
-import { deLocalizeHref, localizeHref } from '$lib/paraglide/runtime';
+import { building } from '$app/env';
 
-import type { GeoLocation } from '$lib/stores/settings';
+import { deLocalizeHref, localizeHref } from '#lib/paraglide/runtime.js';
+
+import type { GeoLocation } from '#lib/stores/settings.js';
 
 export const geoLocationNameToRoute = (name: string) => {
 	const lowerCase = name.toLowerCase().replaceAll(' ', '-');
@@ -156,7 +158,7 @@ function finishResolve(
 	const canonicalPath = `${routePrefix}${buildLocationRoute(location)}/`;
 	if (deLocalizeHref(event.url.pathname) !== canonicalPath) {
 		// Canonicalizing the city must not discard the selected forecast view.
-		throw redirect(303, localizeHref(canonicalPath) + event.url.search);
+		throw redirect(303, localizeHref(canonicalPath) + (building ? '' : event.url.search));
 	}
 
 	return location;

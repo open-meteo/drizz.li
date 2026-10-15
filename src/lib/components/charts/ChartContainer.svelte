@@ -18,7 +18,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import type { Snippet } from 'svelte';
 

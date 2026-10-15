@@ -14,13 +14,13 @@ import { Model } from '@openmeteo/sdk/model';
 import { Unit } from '@openmeteo/sdk/unit';
 import { fetchWeatherApi } from 'openmeteo';
 
-import { type DaylightBand, buildDaylightBands } from '$lib/charts/bands';
-import * as m from '$lib/paraglide/messages';
-import { decodeSounding } from '$lib/soundings/data';
-import { SOUNDING_MODELS } from '$lib/soundings/models';
-import { soundingDayBounds } from '$lib/soundings/time';
+import { type DaylightBand, buildDaylightBands } from '#lib/charts/bands.js';
+import * as m from '#lib/paraglide/messages.js';
+import { decodeSounding } from '#lib/soundings/data.js';
+import { SOUNDING_MODELS } from '#lib/soundings/models.js';
+import { soundingDayBounds } from '#lib/soundings/time.js';
 
-import type { SoundingForecastResult } from '$lib/soundings/profile';
+import type { SoundingForecastResult } from '#lib/soundings/profile.js';
 import type { VariableWithValues } from '@openmeteo/sdk/variable-with-values';
 import type { VariablesWithTime } from '@openmeteo/sdk/variables-with-time';
 

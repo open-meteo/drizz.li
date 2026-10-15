@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { defaultUnits } from '$lib/stores/settings';
+import { defaultUnits } from '#lib/stores/settings.js';
 
 import { models } from '../../routes/weather/options';
 import { SOUNDING_MODELS, SURFACE_ONLY_MODELS, soundingModel } from './models';

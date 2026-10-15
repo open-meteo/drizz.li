@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { getLocale } from '$lib/paraglide/runtime';
+	import { getLocale } from '#lib/paraglide/runtime.js';
 
 	import type { Component } from 'svelte';
 
@@ -21,7 +21,7 @@
 
 	let Content = $derived.by(() => {
 		// the URL decides the locale, so re-resolve on navigation
-		void $page.url.pathname;
+		void page.url.pathname;
 		return variants[getLocale()] ?? variants.en;
 	});
 </script>

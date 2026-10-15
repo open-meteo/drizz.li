@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import * as m from '$lib/paraglide/messages';
-	import { soundingLegend } from '$lib/soundings/legend';
-	import { TOP_PRESSURES } from '$lib/soundings/models';
-	import { surfaceParcel } from '$lib/soundings/parcel';
+	import * as m from '#lib/paraglide/messages.js';
+	import { soundingLegend } from '#lib/soundings/legend.js';
+	import { TOP_PRESSURES } from '#lib/soundings/models.js';
+	import { surfaceParcel } from '#lib/soundings/parcel.js';
 	import {
 		interpolateLevel,
 		temperatureDisplay,
@@ -12,18 +12,18 @@
 		valueText,
 		windDisplay,
 		windUnit
-	} from '$lib/soundings/profile';
+	} from '#lib/soundings/profile.js';
 	import {
 		buildLayout,
 		fromCanvas,
 		renderSelection,
 		renderSounding,
 		soundingChartSize
-	} from '$lib/soundings/renderer';
+	} from '#lib/soundings/renderer.js';
 
-	import type { SoundingProfile } from '$lib/soundings/profile';
-	import type { ChartPalette, PlotLayout, Selection } from '$lib/soundings/renderer';
-	import type { UnitPrefs } from '$lib/stores/settings';
+	import type { SoundingProfile } from '#lib/soundings/profile.js';
+	import type { ChartPalette, PlotLayout, Selection } from '#lib/soundings/renderer.js';
+	import type { UnitPrefs } from '#lib/stores/settings.js';
 
 	let {
 		profile,

@@ -1,37 +1,51 @@
-import { type Writable, get } from 'svelte/store';
-
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 
-import { page as routePage } from '$app/stores';
+import { page as routePage } from '$app/state';
 
-import { defaultLocation, defaultUnits, storedModel, storedUnits } from '$lib/stores/settings';
+import { defaultLocation, defaultUnits, storedModel, storedUnits } from '#lib/stores/settings.js';
 
-import { formatZoned } from '$lib/utils/date';
+import { formatZoned } from '#lib/utils/date.js';
 
-import * as m from '$lib/paraglide/messages';
-import { addDays } from '$lib/soundings/profile';
+import * as m from '#lib/paraglide/messages.js';
+import { addDays } from '#lib/soundings/profile.js';
 
 import '../../../layout.css';
 import Soundings from './+page.svelte';
 
-import type { SoundingForecastParams } from '$lib/services/weather';
-import type { SoundingForecastResult } from '$lib/soundings/profile';
+import type { SoundingForecastParams } from '#lib/services/weather.js';
+import type { SoundingForecastResult } from '#lib/soundings/profile.js';
 import type { PageData } from './$types';
 
 const { fetchSoundingForecast, syncSearchParams } = vi.hoisted(() => ({
 	fetchSoundingForecast: vi.fn(),
 	syncSearchParams: vi.fn()
 }));
-vi.mock('$lib/services/weather', () => ({
+vi.mock('#lib/services/weather.js', () => ({
 	fetchSoundingForecast,
 	humanizeWeatherError: () => ({ title: 'Network error', hint: 'Try again' })
 }));
-vi.mock('$lib/utils/url-state', () => ({ syncSearchParams }));
+vi.mock('#lib/utils/url-state.js', () => ({ syncSearchParams }));
 vi.mock('../../hero.svelte', () => ({ useHeroActions: () => {} }));
-vi.mock('$app/stores', async () => {
-	const { writable } = await import('svelte/store');
-	return { page: writable({ url: new URL('http://localhost/') }) };
+vi.mock('$app/state', async () => {
+	const { createSubscriber } = await import('svelte/reactivity');
+	let url = new URL('http://localhost/');
+	let notify = () => {};
+	const subscribe = createSubscriber((update) => {
+		notify = update;
+	});
+	return {
+		page: {
+			get url() {
+				subscribe();
+				return url;
+			},
+			set url(value: URL) {
+				url = value;
+				notify();
+			}
+		}
+	};
 });
 
 const today = new Date().toISOString().slice(0, 10);
@@ -39,12 +53,9 @@ const tomorrow = addDays(today, 1);
 const data = { location: { ...defaultLocation, timezone: 'UTC' } } as PageData;
 
 function navigate(date = today, model = 'icon_global', hour = 12, top = 100) {
-	(routePage as unknown as Writable<{ url: URL }>).set({
-		...get(routePage),
-		url: new URL(
-			`http://localhost/en/weather/soundings/berlin/?model=${model}&time=${date}T${String(hour).padStart(2, '0')}:00:00Z&top=${top}`
-		)
-	});
+	(routePage as unknown as { url: URL }).url = new URL(
+		`http://localhost/en/weather/soundings/berlin/?model=${model}&time=${date}T${String(hour).padStart(2, '0')}:00:00Z&top=${top}`
+	);
 }
 
 function forecast(date: string): SoundingForecastResult {
@@ -101,9 +112,9 @@ describe('soundings day navigation', () => {
 			forecast(params.date)
 		);
 		syncSearchParams.mockReset();
-		// SvelteKit shallow writes notify page subscribers with the old route URL.
+		// Simulate a route notification retaining the current URL after a shallow write.
 		syncSearchParams.mockImplementation(() => {
-			(routePage as unknown as Writable<{ url: URL }>).update((page) => ({ ...page }));
+			(routePage as unknown as { url: URL }).url = new URL(routePage.url.href);
 		});
 		storedModel.set('icon_global');
 		storedUnits.set(defaultUnits);
@@ -111,10 +122,10 @@ describe('soundings day navigation', () => {
 	});
 
 	it('defaults to 100 hPa without a URL height and writes changes to the URL', async () => {
-		const route = get(routePage);
-		const url = new URL(route.url);
+		const route = routePage;
+		const url = new URL(route.url.href);
 		url.searchParams.delete('top');
-		(routePage as unknown as Writable<{ url: URL }>).set({ ...route, url });
+		(routePage as unknown as { url: URL }).url = url;
 		const screen = await render(Soundings, { data });
 		const selector = screen.getByRole('combobox', { name: m.sounding_top() });
 		await expect.element(selector).toHaveValue('100');

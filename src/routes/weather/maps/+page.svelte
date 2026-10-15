@@ -2,12 +2,12 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	import { mapTransitionCover, reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { storedLocation, storedModel, storedTheme } from '$lib/stores/settings';
+	import { mapTransitionCover, reportPageReady } from '#lib/stores/page-transition.svelte.js';
+	import { storedLocation, storedModel, storedTheme } from '#lib/stores/settings.js';
 
-	import { mapsDomainForModel } from '$lib/utils/maps-domain';
+	import { mapsDomainForModel } from '#lib/utils/maps-domain.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	// Hash piping, both directions:
 	// - inbound: a #zoom/lat/lng(/bearing/pitch) hash on OUR url seeds the

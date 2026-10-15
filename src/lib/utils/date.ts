@@ -2,8 +2,8 @@ import { isSameDay as isSameDayDateFns } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import { de, enGB, es, fr, it } from 'date-fns/locale';
 
-import * as m from '$lib/paraglide/messages';
-import { getLocale } from '$lib/paraglide/runtime';
+import * as m from '#lib/paraglide/messages.js';
+import { getLocale } from '#lib/paraglide/runtime.js';
 
 import type { Locale as DateFnsLocale } from 'date-fns';
 

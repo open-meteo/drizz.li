@@ -1,7 +1,7 @@
 import { Variable } from '@openmeteo/sdk/variable';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchSoundingForecast } from '$lib/services/weather';
+import { fetchSoundingForecast } from '#lib/services/weather.js';
 
 import { decodeSounding } from './data';
 

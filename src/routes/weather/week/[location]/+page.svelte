@@ -3,30 +3,30 @@
 	import { MediaQuery, SvelteDate } from 'svelte/reactivity';
 	import { get } from 'svelte/store';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { reportPageReady } from '$lib/stores/page-transition.svelte';
+	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
 	import {
 		setActiveLocation,
 		storedChartLayout,
 		storedModel,
 		storedUnits,
 		storedVariablePrefs
-	} from '$lib/stores/settings';
+	} from '#lib/stores/settings.js';
 
-	import { formatZoned } from '$lib/utils/date';
-	import { daySwap, runDayTransition } from '$lib/utils/day-swap';
-	import { buildLocationRoute } from '$lib/utils/location';
-	import { syncSearchParams, unlessDefault } from '$lib/utils/url-state';
+	import { formatZoned } from '#lib/utils/date.js';
+	import { daySwap, runDayTransition } from '#lib/utils/day-swap.js';
+	import { buildLocationRoute } from '#lib/utils/location.js';
+	import { syncSearchParams, unlessDefault } from '#lib/utils/url-state.js';
 
-	import { href } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
+	import { href } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
 	import {
 		type FriendlyWeatherError,
 		type WeekForecastResult,
 		fetchWeekForecast,
 		humanizeWeatherError
-	} from '$lib/services/weather';
+	} from '#lib/services/weather.js';
 
 	import { useHeroActions } from '../../hero.svelte';
 	import { defaultParameters, inDomainCity } from '../../options';
@@ -193,7 +193,7 @@
 	onMount(() => {
 		// the URL wins over the persisted choice, so a shared link opens on the
 		// same model the sender was looking at
-		const fromUrl = get(page).url.searchParams.get('model');
+		const fromUrl = page.url.searchParams.get('model');
 		params.models = [fromUrl || get(storedModel)];
 		mounted = true;
 	});
@@ -207,7 +207,7 @@
 	// today and making the visitor click.
 	let wantedDay: string | null = $state(null);
 	onMount(() => {
-		const param = get(page).url.searchParams.get('day');
+		const param = page.url.searchParams.get('day');
 		if (!param || !/^\d{4}-\d{2}-\d{2}$/.test(param)) return;
 
 		const target = Date.parse(`${param}T12:00:00Z`);

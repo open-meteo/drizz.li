@@ -4,37 +4,37 @@
 
 	import { fromZonedTime } from 'date-fns-tz';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	import { reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { setActiveLocation, storedModel, storedUnits } from '$lib/stores/settings';
+	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
+	import { setActiveLocation, storedModel, storedUnits } from '#lib/stores/settings.js';
 
-	import { formatZoned } from '$lib/utils/date';
-	import { syncSearchParams } from '$lib/utils/url-state';
+	import { formatZoned } from '#lib/utils/date.js';
+	import { syncSearchParams } from '#lib/utils/url-state.js';
 
-	import { ChartToolbar } from '$lib/components/charts';
-	import SoundingChart from '$lib/components/charts/SoundingChart.svelte';
+	import SoundingChart from '#lib/components/charts/SoundingChart.svelte';
+	import { ChartToolbar } from '#lib/components/charts/index.js';
 
-	import { href } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
-	import { fetchSoundingForecast, humanizeWeatherError } from '$lib/services/weather';
-	import { soundingLegend } from '$lib/soundings/legend';
+	import { href } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { fetchSoundingForecast, humanizeWeatherError } from '#lib/services/weather.js';
+	import { soundingLegend } from '#lib/soundings/legend.js';
 	import {
 		SOUNDING_MODELS,
 		SOUNDING_PAST_DAYS,
 		TOP_PRESSURES,
 		soundingModel,
 		soundingModelGroups
-	} from '$lib/soundings/models';
-	import { addDays, isPlottable } from '$lib/soundings/profile';
-	import { soundingHours } from '$lib/soundings/time';
+	} from '#lib/soundings/models.js';
+	import { addDays, isPlottable } from '#lib/soundings/profile.js';
+	import { soundingHours } from '#lib/soundings/time.js';
 
 	import { useHeroActions } from '../../hero.svelte';
 	import { findModel, inDomainCity } from '../../options';
 	import ModelSelector from '../../week/[location]/ModelSelector.svelte';
 
-	import type { FriendlyWeatherError } from '$lib/services/weather';
-	import type { SoundingForecastResult, SoundingProfile } from '$lib/soundings/profile';
+	import type { FriendlyWeatherError } from '#lib/services/weather.js';
+	import type { SoundingForecastResult, SoundingProfile } from '#lib/soundings/profile.js';
 	import type { PageData } from './$types';
 
 	const emptyProfile: SoundingProfile = {
@@ -122,7 +122,7 @@
 		};
 	});
 
-	function readUrl(url: URL) {
+	function readUrl(url: { searchParams: Pick<URLSearchParams, 'get'> }) {
 		const chosenModel = url.searchParams.get('model') ?? get(storedModel);
 		model = soundingModel(chosenModel);
 		adjusted = chosenModel !== model;
@@ -143,7 +143,7 @@
 	}
 
 	$effect(() => {
-		const url = $page.url;
+		const url = page.url;
 		const loc = location;
 		if (mounted && loc)
 			untrack(() => {

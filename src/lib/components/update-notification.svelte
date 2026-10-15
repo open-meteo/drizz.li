@@ -7,9 +7,9 @@
 
 	import { updated } from '$app/state';
 
-	import { Button } from '$lib/components/ui/button';
+	import { Button } from '#lib/components/ui/button/index.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	let dismissed = $state(false);
 

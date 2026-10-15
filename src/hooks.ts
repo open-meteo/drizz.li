@@ -1,6 +1,6 @@
-import { deLocalizeUrl } from '$lib/paraglide/runtime';
+import { deLocalizeUrl } from '#lib/paraglide/runtime.js';
 
-import type { Reroute } from '@sveltejs/kit';
+import type { Reroute } from '@sveltejs/kit/hooks';
 
 /**
  * The locale lives in the URL (`/de/weather/week/`), but the routes on disk are

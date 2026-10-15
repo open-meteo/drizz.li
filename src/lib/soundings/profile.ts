@@ -1,4 +1,4 @@
-import type { UnitPrefs } from '$lib/stores/settings';
+import type { UnitPrefs } from '#lib/stores/settings.js';
 
 export interface SoundingLevel {
 	pressure: number;

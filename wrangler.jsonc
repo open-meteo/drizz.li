@@ -6,7 +6,7 @@
 	// The site itself is static: the Worker below only answers /api/*, and
 	// "run_worker_first" keeps it off the path of every other request, which is
 	// served from the asset store directly (no Worker invocation, no cold start).
-	// 404.html is the SPA fallback (see svelte.config.js) — "404-page" serves
+	// 404.html is the SPA fallback (see vite.config.ts) — "404-page" serves
 	// it for unknown paths, which is exactly the behavior the fallback expects.
 	"main": "./worker/index.ts",
 	"assets": {
