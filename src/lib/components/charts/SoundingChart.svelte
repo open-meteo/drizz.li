@@ -49,9 +49,9 @@
 	let selection = $state<Selection | null>(null);
 	let palette: ChartPalette;
 	let viewportHeight = $state(900);
-	// Grow vertically without stretching the skew-T into a landscape chart.
+	// Reserve space for mobile navigation, with just 16px of clearance on desktop.
 	let size = $derived(
-		soundingChartSize(availableWidth, viewportHeight - chartTop - (availableWidth < 768 ? 100 : 48))
+		soundingChartSize(availableWidth, viewportHeight - chartTop - (availableWidth < 768 ? 100 : 16))
 	);
 	let width = $derived(size.width);
 	let height = $derived(size.height);

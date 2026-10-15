@@ -63,8 +63,9 @@ export interface ChartLabels {
 
 const INSET = 8;
 const BOTTOM = 45;
-// Preserve the plot proportions of the previous 600 × 600 chart.
-const PLOT_ASPECT = 484 / 511;
+// Target a square plotting area, excluding the insets and bottom axis labels.
+// On narrow screens, the minimum chart height takes priority for readability.
+const PLOT_ASPECT = 1;
 
 export function soundingChartSize(availableWidth: number, availableHeight: number) {
 	const width = Math.min(

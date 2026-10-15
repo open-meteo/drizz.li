@@ -446,19 +446,16 @@
 			{/if}
 		</div>
 	</div>
-	<div class="space-y-1">
-		<p class="text-xs text-muted-foreground" class:invisible={!combined} aria-hidden={!combined}>
-			{m.sounding_combined()}
-		</p>
-		<p
-			role="status"
-			class="text-sm text-muted-foreground"
-			class:invisible={!adjusted}
-			aria-hidden={!adjusted}
-		>
-			{m.sounding_adjusted()}
-		</p>
-	</div>
+	{#if combined || adjusted}
+		<div class="space-y-1">
+			{#if combined}
+				<p class="text-xs text-muted-foreground">{m.sounding_combined()}</p>
+			{/if}
+			{#if adjusted}
+				<p role="status" class="text-sm text-muted-foreground">{m.sounding_adjusted()}</p>
+			{/if}
+		</div>
+	{/if}
 	<div class="relative" aria-busy={loading}>
 		<div class:invisible={loading || !!error || !profile} inert={loading || !!error || !profile}>
 			<div class="flex items-center justify-between gap-2">

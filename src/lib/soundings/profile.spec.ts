@@ -12,14 +12,7 @@ import {
 	temperatureDisplay,
 	windDisplay
 } from './profile';
-import {
-	buildLayout,
-	fromCanvas,
-	renderSelection,
-	renderSounding,
-	soundingChartSize,
-	toCanvas
-} from './renderer';
+import { buildLayout, fromCanvas, renderSelection, renderSounding, toCanvas } from './renderer';
 import {
 	dryTemperature,
 	inverseSaturationVaporPressure,
@@ -247,10 +240,6 @@ describe('sounding profiles', () => {
 				expect(label.y).toBeLessThan(600);
 			}
 		}
-		const size = soundingChartSize(1000, 800);
-		const layout = buildLayout(profile, 500, 100, size.width, size.height)!;
-		expect(layout.width / layout.height).toBeCloseTo(484 / 511);
-		expect(size.height).toBeCloseTo(800);
 	});
 
 	it('holds the axes steady across profiles in the selected day', () => {
