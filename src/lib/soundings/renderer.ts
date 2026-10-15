@@ -430,50 +430,48 @@ export function renderSounding(
 	if (wind.showSpeed) {
 		insetLabel(ctx, labels.wind, right - 3, top + 15, palette.muted, palette, 'right');
 		insetLabel(ctx, labels.windUnit, right - 3, top + 30, palette.muted, palette, 'right');
-	}
 
-	let lastWindY = Infinity;
-	for (const level of wind.showSpeed ? levels : []) {
-		const y = point(0, level.pressure)[1];
-		if (
-			y < top + (wind.showSpeed ? 44 : 12) ||
-			y > bottom - 10 ||
-			lastWindY - y < 26 ||
-			!Number.isFinite(level.windSpeed) ||
-			!Number.isFinite(level.windDirection)
-		)
-			continue;
-		lastWindY = y;
-		const x = right - wind.width + 13;
-		ctx.save();
-		ctx.fillStyle = palette.background;
-		ctx.globalAlpha = 0.85;
-		ctx.fillRect(right - wind.width, y - 11, wind.width, 22);
-		ctx.restore();
-		ctx.save();
-		ctx.translate(x, y);
-		ctx.rotate(((level.windDirection - 180) * Math.PI) / 180);
-		stroke(
-			ctx,
-			[
-				[0, 9],
-				[0, -9],
-				[4, -3]
-			],
-			palette.foreground,
-			1.4
-		);
-		stroke(
-			ctx,
-			[
-				[0, -9],
-				[-4, -3]
-			],
-			palette.foreground,
-			1.4
-		);
-		ctx.restore();
-		if (wind.showSpeed)
+		let lastWindY = Infinity;
+		for (const level of levels) {
+			const y = point(0, level.pressure)[1];
+			if (
+				y < top + 44 ||
+				y > bottom - 10 ||
+				lastWindY - y < 26 ||
+				!Number.isFinite(level.windSpeed) ||
+				!Number.isFinite(level.windDirection)
+			)
+				continue;
+			lastWindY = y;
+			const x = right - wind.width + 13;
+			ctx.save();
+			ctx.fillStyle = palette.background;
+			ctx.globalAlpha = 0.85;
+			ctx.fillRect(right - wind.width, y - 11, wind.width, 22);
+			ctx.restore();
+			ctx.save();
+			ctx.translate(x, y);
+			ctx.rotate(((level.windDirection - 180) * Math.PI) / 180);
+			stroke(
+				ctx,
+				[
+					[0, 9],
+					[0, -9],
+					[4, -3]
+				],
+				palette.foreground,
+				1.4
+			);
+			stroke(
+				ctx,
+				[
+					[0, -9],
+					[-4, -3]
+				],
+				palette.foreground,
+				1.4
+			);
+			ctx.restore();
 			label(
 				ctx,
 				valueText(windDisplay(level.windSpeed, units), 0),
@@ -482,6 +480,7 @@ export function renderSounding(
 				palette.foreground,
 				'right'
 			);
+		}
 	}
 }
 
