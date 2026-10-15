@@ -180,7 +180,7 @@ describe('sounding profiles', () => {
 		expect(labels).toContain('T 0.0°C');
 	});
 
-	it('keeps inset labels inside the canvas and reveals narrow-chart wind values on inspection', () => {
+	it('shows stacked wind readings at every width and keeps inset labels inside the canvas', () => {
 		const sample = {
 			...profile,
 			levels: profile.levels.map((level) => ({ ...level, windSpeed: 7.25 }))
@@ -190,13 +190,15 @@ describe('sounding profiles', () => {
 			const labels: Array<{ text: string; x: number; y: number; align: string }> = [];
 			const state: Record<string | symbol, unknown> = {};
 			let windArrows = 0;
+			let windArrowY = 0;
 			const ctx = new Proxy(
 				{},
 				{
 					get: (_, key) =>
 						key === 'translate'
-							? () => {
+							? (_x: number, y: number) => {
 									windArrows++;
+									windArrowY = y;
 								}
 							: key === 'measureText'
 								? (text: string) => ({ width: text.length * 6 })
@@ -217,8 +219,11 @@ describe('sounding profiles', () => {
 				temperatureUnit: '°C',
 				windUnit: 'km/h'
 			});
-			expect(labels.some((label) => label.text === '26')).toBe(width >= 496);
-			expect(windArrows > 0).toBe(width >= 496);
+			expect(labels.some((label) => label.text === '26')).toBe(true);
+			expect(labels.some((label) => label.text === 'km/h')).toBe(true);
+			expect(windArrows).toBeGreaterThan(0);
+			expect(windArrowY).toBeGreaterThan(labels.findLast((label) => label.text === '26')!.y);
+			windArrows = 0;
 			renderSelection(
 				ctx,
 				layout,
@@ -228,7 +233,11 @@ describe('sounding profiles', () => {
 				500,
 				defaultUnits
 			);
-			expect(labels.some((label) => label.text === '26.1 km/h')).toBe(true);
+			const speedLabel = labels.find((label) => label.text === '26.1');
+			expect(speedLabel).toBeDefined();
+			expect(windArrowY).toBeGreaterThan(speedLabel!.y);
+			expect(windArrows).toBe(1);
+			expect(labels.some((label) => /^\d+°$/.test(label.text))).toBe(false);
 			for (const label of labels) {
 				const textWidth = label.text.length * 6;
 				const left =
