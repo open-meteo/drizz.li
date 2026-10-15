@@ -506,7 +506,10 @@ export function renderParcel(
 		const points = [run[0].bottom, ...run.map((area) => area.top)];
 		const polygon = [
 			...points.map((p) => toCanvas(layout, p.environment, p.pressure)),
-			...points.toReversed().map((p) => toCanvas(layout, p.parcel, p.pressure))
+			...points
+				.slice()
+				.reverse()
+				.map((p) => toCanvas(layout, p.parcel, p.pressure))
 		];
 		ctx.beginPath();
 		polygon.forEach(([x, y], index) => (index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));

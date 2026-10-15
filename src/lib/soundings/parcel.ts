@@ -88,7 +88,7 @@ export function surfaceParcel(profile: SoundingProfile, elevation: number): Parc
 				level.pressure < p0 &&
 				!(Number.isFinite(elevation) && Number.isFinite(level.height) && level.height < elevation)
 		)
-		.toSorted((a, b) => b.pressure - a.pressure);
+		.sort((a, b) => b.pressure - a.pressure);
 	const points: ParcelPoint[] = [
 		{
 			pressure: p0,
