@@ -28,24 +28,8 @@ vi.mock('#lib/services/weather.js', () => ({
 vi.mock('#lib/utils/url-state.js', () => ({ syncSearchParams }));
 vi.mock('../../hero.svelte', () => ({ useHeroActions: () => {} }));
 vi.mock('$app/state', async () => {
-	const { createSubscriber } = await import('svelte/reactivity');
-	let url = new URL('http://localhost/');
-	let notify = () => {};
-	const subscribe = createSubscriber((update) => {
-		notify = update;
-	});
-	return {
-		page: {
-			get url() {
-				subscribe();
-				return url;
-			},
-			set url(value: URL) {
-				url = value;
-				notify();
-			}
-		}
-	};
+	const { mockPage } = await import('./page-state.svelte.js');
+	return { page: mockPage };
 });
 
 const today = new Date().toISOString().slice(0, 10);
@@ -112,10 +96,6 @@ describe('soundings day navigation', () => {
 			forecast(params.date)
 		);
 		syncSearchParams.mockReset();
-		// Simulate a route notification retaining the current URL after a shallow write.
-		syncSearchParams.mockImplementation(() => {
-			(routePage as unknown as { url: URL }).url = new URL(routePage.url.href);
-		});
 		storedModel.set('icon_global');
 		storedUnits.set(defaultUnits);
 		navigate();
