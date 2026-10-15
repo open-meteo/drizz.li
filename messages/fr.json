@@ -449,7 +449,8 @@
 	"sounding_buoyancy_unavailable": "CAPE/CIN indisponibles : données de surface invalides.",
 	"sounding_buoyancy_incomplete": "Profil incomplet — CAPE/CIN indisponibles.",
 	"sounding_no_lfc": "Pas de convection libre — CIN indéfinie.",
-	"sounding_help_mouse": "Survoler pour lire · ←/→ changer d’heure",
-	"sounding_help_touch": "Toucher ou glisser pour lire",
+	"sounding_help_mouse": "Survoler pour lire · Cliquer pour fixer · ←/→ changer d’heure",
+	"sounding_help_touch": "Toucher ou glisser pour fixer",
+	"sounding_help_pinned": "Sélection fixée · Cliquer ou toucher à nouveau pour libérer · Échap effacer",
 	"sounding_chart_help": "Aide du diagramme"
 }

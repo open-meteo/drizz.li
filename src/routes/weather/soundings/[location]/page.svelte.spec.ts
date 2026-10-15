@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
+import { userEvent } from 'vitest/browser';
 
 import { page as routePage } from '$app/state';
 
@@ -181,6 +182,36 @@ describe('soundings day navigation', () => {
 			.poll(() => syncSearchParams.mock.lastCall?.[0].time)
 			.toBe(`${today}T14:00:00.000Z`);
 		expect(fetchSoundingForecast).toHaveBeenCalledTimes(1);
+	});
+
+	it('pins inspection until released or the forecast changes', async () => {
+		const screen = await render(Soundings, { data });
+		const surface = screen.getByRole('group', { name: m.sounding_chart_aria(), exact: true });
+		await surface.click();
+		const chart = document.querySelector('canvas')!.parentElement!;
+		const announcement = chart.parentElement!.querySelector('.sr-only[aria-live]')!;
+		await expect.element(screen.getByText(m.sounding_help_pinned(), { exact: true })).toBeVisible();
+		await surface.click();
+		await expect.poll(() => announcement.textContent).toContain(m.sounding_inspect());
+
+		await userEvent.keyboard('{ArrowUp}');
+		await expect.poll(() => announcement.textContent).toContain(m.sounding_parcel());
+		const selection = announcement.textContent;
+		chart.dispatchEvent(new PointerEvent('pointermove', { pointerType: 'mouse', bubbles: true }));
+		await userEvent.keyboard('{Enter} ');
+		expect(announcement.textContent).toBe(selection);
+
+		storedUnits.set({ ...defaultUnits, temperature_unit: 'fahrenheit' });
+		await expect.poll(() => announcement.textContent).toContain('°F');
+		storedUnits.set(defaultUnits);
+		await expect.poll(() => announcement.textContent).toBe(selection);
+
+		await userEvent.keyboard('{Escape}');
+		await expect.poll(() => announcement.textContent).toContain(m.sounding_inspect());
+		await surface.click();
+		await expect.poll(() => announcement.textContent).toContain(m.sounding_parcel());
+		await screen.getByRole('button', { name: m.sounding_next_hour() }).click();
+		await expect.poll(() => announcement.textContent).toContain(m.sounding_inspect());
 	});
 
 	it('uses arrow keys across midnight into history and back without refetching cached days', async () => {

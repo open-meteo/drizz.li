@@ -449,7 +449,8 @@
 	"sounding_buoyancy_unavailable": "CAPE/CIN nicht verfügbar: ungültige Bodendaten.",
 	"sounding_buoyancy_incomplete": "Unvollständiges Profil — CAPE/CIN nicht verfügbar.",
 	"sounding_no_lfc": "Keine freie Konvektion — CIN undefiniert.",
-	"sounding_help_mouse": "Maus bewegen zum Ablesen · ←/→ Stunde wechseln",
-	"sounding_help_touch": "Tippen oder ziehen zum Ablesen",
+	"sounding_help_mouse": "Maus bewegen zum Ablesen · Klicken zum Fixieren · ←/→ Stunde wechseln",
+	"sounding_help_touch": "Tippen oder ziehen zum Fixieren",
+	"sounding_help_pinned": "Fixiert · Erneut klicken oder tippen zum Lösen · Esc zurücksetzen",
 	"sounding_chart_help": "Diagrammhilfe"
 }

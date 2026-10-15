@@ -47,6 +47,7 @@
 	let themeVersion = $state(0);
 	let layout = $state<PlotLayout | null>(null);
 	let selection = $state<Selection | null>(null);
+	let pinned = $state(false);
 	let palette: ChartPalette;
 	let viewportHeight = $state(900);
 	// Reserve space for mobile navigation, with just 16px of clearance on desktop.
@@ -116,6 +117,13 @@
 	});
 
 	$effect(() => {
+		// Only a new forecast resets inspection; cosmetic redraws preserve it.
+		void profile;
+		selection = null;
+		pinned = false;
+	});
+
+	$effect(() => {
 		if (!ready) return;
 		void themeVersion;
 		const style = getComputedStyle(document.documentElement);
@@ -146,7 +154,6 @@
 				parcel
 			);
 		layout = next;
-		selection = null;
 		context(overlay);
 	});
 
@@ -158,7 +165,7 @@
 		if (selection) renderSelection(ctx, layout, selection, palette, profile, elevation, units);
 	});
 
-	function inspect(event: MouseEvent | PointerEvent) {
+	function inspect(event: PointerEvent) {
 		if (!layout) return;
 		const rect = canvas.getBoundingClientRect();
 		const x = ((event.clientX - rect.left) * width) / rect.width;
@@ -177,6 +184,7 @@
 
 	function keydown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
+			pinned = false;
 			selection = null;
 			return;
 		}
@@ -205,6 +213,7 @@
 				)
 			)
 		};
+		pinned = true;
 	}
 
 	export async function getExportImage(): Promise<HTMLCanvasElement | null> {
@@ -248,31 +257,43 @@
 			{#each TOP_PRESSURES as pressure (pressure)}<option value={pressure}>{pressure} hPa</option
 				>{/each}
 		</select>
-		<button
-			type="button"
+		<!-- This custom chart surface supports focus and keyboard exploration without button activation. -->
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+		<div
+			role="group"
+			tabindex="0"
 			aria-label={m.sounding_chart_aria()}
-			class="relative block w-full touch-none rounded-lg outline-offset-4 focus-visible:outline-2 focus-visible:outline-primary"
+			class="relative block w-full touch-none rounded-lg outline-none outline-offset-4 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-primary"
 			onpointermove={(event) => {
-				if (event.pointerType !== 'touch' || dragging) inspect(event);
+				if (!pinned && (event.pointerType !== 'touch' || dragging)) inspect(event);
 			}}
 			onpointerdown={(event) => {
+				if (!event.isPrimary || event.button !== 0) return;
+				if (pinned) {
+					pinned = false;
+					selection = null;
+					return;
+				}
 				dragging = true;
 				event.currentTarget.setPointerCapture(event.pointerId);
 				inspect(event);
 			}}
 			onpointerup={() => {
+				if (!dragging) return;
 				dragging = false;
+				pinned = selection !== null;
 			}}
-			onclick={inspect}
 			onkeydown={keydown}
 			onpointerleave={(event) => {
-				if (event.pointerType === 'mouse') selection = null;
+				if (event.pointerType === 'mouse' && !pinned && !dragging) selection = null;
 			}}
 			onpointercancel={() => {
 				dragging = false;
-				selection = null;
+				if (!pinned) selection = null;
 			}}
-			onblur={() => (selection = null)}
+			onblur={() => {
+				if (!pinned) selection = null;
+			}}
 		>
 			<canvas bind:this={canvas} style:height="{height}px" class="block w-full" aria-hidden="true"
 			></canvas>
@@ -282,7 +303,7 @@
 				class="pointer-events-none absolute inset-0 w-full"
 				aria-hidden="true"
 			></canvas>
-		</button>
+		</div>
 		<div
 			class="my-2 space-y-1 text-center text-xs"
 			aria-live="polite"
@@ -342,8 +363,12 @@
 			{m.sounding_limited({ pressure: String(layout?.minPressure ?? topPressure) })}
 		</p>
 		<p class="mt-2 text-center text-xs text-muted-foreground">
-			<span class="mouse-hint">{m.sounding_help_mouse()}</span>
-			<span class="touch-hint">{m.sounding_help_touch()}</span>
+			{#if pinned}
+				{m.sounding_help_pinned()}
+			{:else}
+				<span class="mouse-hint">{m.sounding_help_mouse()}</span>
+				<span class="touch-hint">{m.sounding_help_touch()}</span>
+			{/if}
 		</p>
 		<details class="mt-2 text-xs text-muted-foreground">
 			<summary class="cursor-pointer text-center">{m.sounding_chart_help()}</summary>
