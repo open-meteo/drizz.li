@@ -190,6 +190,7 @@ export default defineConfig({
 						'/weather/compare',
 						'/weather/14-day',
 						'/weather/seasonal',
+						'/weather/soundings',
 						'/weather/historical',
 						'/weather/maps',
 						'/about',
@@ -209,6 +210,7 @@ export default defineConfig({
 						'/weather/compare',
 						'/weather/14-day',
 						'/weather/seasonal',
+						'/weather/soundings',
 						'/weather/historical'
 					];
 

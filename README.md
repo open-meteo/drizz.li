@@ -16,14 +16,15 @@ derived from the request, so a first visit opens on the right city.
 
 ## Pages
 
-| Route                            | What it shows                                                    |
-| -------------------------------- | ---------------------------------------------------------------- |
-| `/weather/week/[location]`       | 7-day forecast: daily cards, hourly table, meteograms            |
-| `/weather/compare/[location]`    | The same forecast across models, side by side                    |
-| `/weather/14-day/[location]`     | 14-day ensemble outlook                                          |
-| `/weather/seasonal/[location]`   | Monthly outlook for the months ahead, against the climate normal |
-| `/weather/historical/[location]` | Reanalysis archive back to 1940, with climate-normal comparison  |
-| `/weather/maps/`                 | The Open-Meteo map viewer (`maps.open-meteo.com`) in an iframe   |
+| Route                            | What it shows                                                             |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `/weather/week/[location]`       | 7-day forecast: daily cards, hourly table, meteograms                     |
+| `/weather/soundings/[location]`  | Interactive forecast skew-T soundings, fetched one selected day at a time |
+| `/weather/compare/[location]`    | The same forecast across models, side by side                             |
+| `/weather/14-day/[location]`     | 14-day ensemble outlook                                                   |
+| `/weather/seasonal/[location]`   | Monthly outlook for the months ahead, against the climate normal          |
+| `/weather/historical/[location]` | Reanalysis archive back to 1940, with climate-normal comparison           |
+| `/weather/maps/`                 | The Open-Meteo map viewer (`maps.open-meteo.com`) in an iframe            |
 
 Locations come from Open-Meteo's geocoding API. A location is encoded in the
 path either as a city slug or as a coordinate pair (`52.09N5.12E`).
@@ -129,7 +130,11 @@ npm run assets:push cities
 npm run build
 ```
 
-`npm run preview` serves the production build locally.
+`npm run preview` serves the production build locally. For unprerendered
+localized weather-location URLs, it serves `build/404.html` with status 200 so
+hard reloads boot the client router. Prerendered pages keep their own HTML;
+missing assets, API requests and unknown routes do not use this preview fallback.
+Rebuild after application changes; restart preview after Vite configuration changes.
 
 The build prerenders the static pages and the city pages listed in
 `src/routes/weather/locations/city-names100.json` (base locale only, for every
@@ -220,3 +225,57 @@ here.)
 Drizz.li is open-source under the GNU Affero General Public Licence Version 3
 (AGPLv3) or any later version. You can [find the licence here](LICENSE).
 Exceptions are third party source-code with individual licensing in each file.
+
+### Soundings
+
+The soundings page uses hardcoded model pressure levels and forecast limits in
+`src/lib/soundings/models.ts`. Each forecast request covers only the selected local
+calendar day; visited days are cached for the active location/model. Surface-only
+models are excluded, and missing profile fields remain optional. Calculations use
+Celsius, hPa, metres and m/s internally. Surface values use the nearest model grid
+cell without elevation downscaling. The normal forecast endpoint serves both forecasts and the preceding 7 days
+of history. Older dates are not selectable. The rolling day strip
+and Left/Right keys navigate across historical and forecast days without a
+calendar picker. Day and hour controls retain gaps and repeated
+DST hours; stepping across midnight loads only the newly selected day. Chart axes
+stay fixed across the selected day. Hover, touch dragging and keyboard inspection
+label trace intersections without interpolating across missing values. Each finite
+trace sample has a point marker. The pressure ceiling and pressure labels sit inside the plot; wind arrows and numeric speeds use a
+compact inset band on wider charts. Narrow charts show wind only on inspection. The near-square plot
+scales to the available vertical space.
+
+Skew-T geometry and thermodynamic helpers are adapted from
+[meteo-fly](https://github.com/terraputix/meteo-fly), under GPL-3.0; the adapted files
+carry their source and license notices. The chart extends to at least 1050 hPa,
+with a shaded, hatched region below the model surface. Supplied trace values
+remain visible and inspectable in this region. Pointer-driven parcel guides do
+not calculate CAPE or CIN.
+
+Surface-based CAPE/CIN uses a fixed parcel initialized from the model surface
+pressure and 2 m temperature/dew point, independently of pointer guides. The
+parcel follows a dry adiabat at constant mixing ratio to saturation, then a
+pseudoadiabat (liquid water, immediate condensate removal). Virtual temperature
+is used for numerical buoyancy. The traditional display shows the actual parcel
+temperature, starting at the surface temperature, and approximate shading against
+the actual environmental temperature. Its crossings and shaded regions are
+computed separately from the corrected totals; the original T/Td traces remain unchanged. Crossings are interpolated in log pressure. CAPE sums positive
+areas above the first LFC at/above saturation, while CIN sums negative areas
+below it. Negative layers above the LFC are not shaded as CIN. Positive
+actual-temperature areas between the model surface and cloud base receive a
+lighter warm fill labelled sub-cloud positive buoyancy, even without a moist
+LFC. This display-only shading does not contribute to the CAPE/CIN totals. Its
+environmental boundary follows the plotted pressure-level temperature trace,
+including interpolation to the model surface where covered, rather than an
+invented connection to the separate 2 m temperature marker. No shading is drawn
+where that trace is unavailable or below the model surface.
+
+The calculation excludes below-ground samples and stops at missing T/Td values.
+Complete totals require a contiguous profile through 100 hPa and nonpositive
+buoyancy at the top; otherwise only the valid portion is drawn, with totals
+marked unavailable. No LFC means zero CAPE and undefined CIN, not zero CIN. These
+are approximate, model-level diagnostics, with no ice-phase or entrainment
+correction. No additional requests are made. Values and status accompany PNG
+exports; changing the displayed pressure ceiling does not change the totals.
+
+The energy integral follows the [MetPy documentation](https://unidata.github.io/MetPy/latest/api/generated/metpy.calc.cape_cin.html);
+its published reference sounding is checked within 5% for this approximation.

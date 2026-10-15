@@ -20,7 +20,7 @@ export interface ChartExportItem {
 export interface ExportLegendItem {
 	name: string;
 	color: string;
-	style?: 'point' | 'line' | 'dashed' | 'bar';
+	style?: 'point' | 'line' | 'solid' | 'dashed' | 'dotted' | 'bar' | 'area';
 }
 
 export interface ChartDownloadOptions {
@@ -145,14 +145,30 @@ export async function downloadChartsPng(
 			let x = padding;
 			for (const item of row) {
 				const markerWidth = 12 * dpr;
-				ctx.strokeStyle = item.color;
-				ctx.fillStyle = item.color;
+				const color = item.color.startsWith('var(')
+					? styles.getPropertyValue(item.color.slice(4, -1)).trim()
+					: item.color;
+				ctx.strokeStyle = color;
+				ctx.fillStyle = color;
 				ctx.lineWidth = 2 * dpr;
-				ctx.setLineDash(item.style === 'dashed' ? [4 * dpr, 3 * dpr] : []);
+				ctx.setLineDash(
+					item.style === 'dashed'
+						? [4 * dpr, 3 * dpr]
+						: item.style === 'dotted'
+							? [dpr, 3 * dpr]
+							: []
+				);
 				if (item.style === 'point') {
 					ctx.beginPath();
 					ctx.arc(x + markerWidth / 2, y + rowHeight / 2, 3 * dpr, 0, Math.PI * 2);
 					ctx.fill();
+				} else if (item.style === 'area') {
+					ctx.globalAlpha = 0.2;
+					ctx.fillRect(x, y + rowHeight / 2 - 4 * dpr, markerWidth, 8 * dpr);
+					ctx.globalAlpha = 0.65;
+					ctx.lineWidth = dpr;
+					ctx.strokeRect(x, y + rowHeight / 2 - 4 * dpr, markerWidth, 8 * dpr);
+					ctx.globalAlpha = 1;
 				} else if (item.style === 'bar') {
 					ctx.fillRect(x + 3 * dpr, y + 5 * dpr, 6 * dpr, 12 * dpr);
 				} else {

@@ -181,12 +181,14 @@
 		'/weather/14-day',
 		'/weather/compare',
 		'/weather/seasonal',
+		'/weather/soundings',
 		'/weather/historical',
 		'/weather/maps',
 		'/weather/week/[location]',
 		'/weather/14-day/[location]',
 		'/weather/compare/[location]',
 		'/weather/seasonal/[location]',
+		'/weather/soundings/[location]',
 		'/weather/historical/[location]'
 	]);
 
@@ -216,6 +218,7 @@
 		'/weather/14-day',
 		'/weather/compare',
 		'/weather/seasonal',
+		'/weather/soundings',
 		'/weather/historical'
 	]);
 
