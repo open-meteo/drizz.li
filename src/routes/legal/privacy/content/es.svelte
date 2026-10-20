@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProsePage from '$lib/components/prose-page.svelte';
+	import ProsePage from '#lib/components/prose-page.svelte';
 </script>
 
 <ProsePage title="Política de privacidad" subtitle="Última actualización: 14 de agosto de 2026">

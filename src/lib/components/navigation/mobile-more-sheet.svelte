@@ -4,9 +4,9 @@
 	import XIcon from '@lucide/svelte/icons/x';
 	import { Dialog as DialogPrimitive } from 'bits-ui';
 
-	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Dialog from '#lib/components/ui/dialog/index.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import MobileMoreMenu from './mobile-more-menu.svelte';
 

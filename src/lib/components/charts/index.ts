@@ -4,7 +4,7 @@
  * Re-exports all chart-related Svelte components from a single entry point.
  *
  * Usage:
- *   import { ChartContainer, ChartToolbar } from '$lib/components/charts';
+ *   import { ChartContainer, ChartToolbar } from '#lib/components/charts/index.js';
  */
 
 export { default as ChartContainer } from './ChartContainer.svelte';

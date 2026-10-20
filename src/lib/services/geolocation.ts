@@ -7,11 +7,11 @@ import {
 	locationKnown,
 	setActiveLocation,
 	storedLocation
-} from '$lib/stores/settings';
+} from '#lib/stores/settings.js';
 
-import { coordinateLocation } from '$lib/utils/location';
+import { coordinateLocation } from '#lib/utils/location.js';
 
-import { getLocale } from '$lib/paraglide/runtime';
+import { getLocale } from '#lib/paraglide/runtime.js';
 
 /** What `/api/geo` answers with (see worker/index.ts). */
 export interface EdgeGeo {

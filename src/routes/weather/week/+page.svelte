@@ -3,12 +3,12 @@
 
 	import { goto } from '$app/navigation';
 
-	import { storedUnits } from '$lib/stores/settings';
+	import { storedUnits } from '#lib/stores/settings.js';
 
-	import { buildLocationRoute } from '$lib/utils/location';
+	import { buildLocationRoute } from '#lib/utils/location.js';
 
-	import { href } from '$lib/i18n';
-	import { initialLocation } from '$lib/services/geolocation';
+	import { href } from '#lib/i18n.js';
+	import { initialLocation } from '#lib/services/geolocation.js';
 
 	import DailyStripSticky from './[location]/DailyStripSticky.svelte';
 	import WeekSkeleton from './[location]/WeekSkeleton.svelte';
@@ -20,7 +20,7 @@
 	onMount(() => {
 		void initialLocation().then((location) => {
 			goto(href('/weather/week/[location]', { location: buildLocationRoute(location) }), {
-				replaceState: true
+				replace: true
 			});
 		});
 	});

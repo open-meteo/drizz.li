@@ -7,8 +7,6 @@
  * into 10x10 degree tiles (see scripts/build-cities.mjs). Looking somewhere up
  * costs one small tile fetch, which the browser then caches.
  */
-import { base } from '$app/paths';
-
 /** [geonames id, name, country code, latitude, longitude, population/1000] */
 type CityRow = [number, string, string, number, number, number];
 
@@ -45,7 +43,10 @@ const tileCache = new Map<string, Promise<CityRow[]>>();
 let indexPromise: Promise<Set<string>> | null = null;
 
 async function fetchJson<T>(path: string): Promise<T> {
-	const res = await fetch(`${base}/data/cities/${path}`);
+	// A plain root-relative URL: the site has no base path, and the tiles are
+	// pulled from the asset store at build time rather than kept in static/, so
+	// SvelteKit's typed `asset()` does not know them.
+	const res = await fetch(`/data/cities/${path}`);
 	if (!res.ok) throw new Error(`${path}: ${res.status}`);
 	return res.json() as Promise<T>;
 }

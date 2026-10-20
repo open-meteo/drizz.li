@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { formatZoned, isSameDayInZone } from '$lib/utils/date';
+	import { formatZoned, isSameDayInZone } from '#lib/utils/date.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 	import {
 		type ClimateNormals,
 		type HistoricalDailyData,
 		monthDayToOrdinal
-	} from '$lib/services/weather';
+	} from '#lib/services/weather.js';
 
 	import { getColor, getTempStyle } from '../../utils/colors';
 	import { getWeatherDescription, getWeatherIconName } from '../../utils/weather-codes';

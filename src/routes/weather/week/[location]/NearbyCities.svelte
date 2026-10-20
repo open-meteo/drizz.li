@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import { storedNearbyOpen } from '$lib/stores/settings';
+	import { storedNearbyOpen } from '#lib/stores/settings.js';
 
-	import { buildLocationRoute } from '$lib/utils/location';
-	import { skeletonOut } from '$lib/utils/skeleton-fade';
-	import { warmWeatherIcon, weatherIconHref, weatherIconReady } from '$lib/utils/weather-icon';
+	import { buildLocationRoute } from '#lib/utils/location.js';
+	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
+	import { warmWeatherIcon, weatherIconHref, weatherIconReady } from '#lib/utils/weather-icon.js';
 
-	import { href } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { type NearbyCity, findNearbyCities } from '$lib/services/nearby-cities';
-	import { type NearbyDaily, fetchNearbyDaily } from '$lib/services/weather';
+	import { href } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { type NearbyCity, findNearbyCities } from '#lib/services/nearby-cities.js';
+	import { type NearbyDaily, fetchNearbyDaily } from '#lib/services/weather.js';
 
 	import { getWeatherDescription, getWeatherIconName } from '../../utils/weather-codes';
 
-	import type { UnitPrefs } from '$lib/stores/settings';
+	import type { UnitPrefs } from '#lib/stores/settings.js';
 
 	interface Props {
 		latitude: number;

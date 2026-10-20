@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Theme } from '$lib/stores/settings';
+	import type { Theme } from '#lib/stores/settings.js';
 
 	interface Props {
 		theme: Theme;

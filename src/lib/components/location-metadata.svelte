@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { buildLocationRoute } from '$lib/utils/location';
+	import { buildLocationRoute } from '#lib/utils/location.js';
 
-	import * as m from '$lib/paraglide/messages';
-	import { locales, localizeHref } from '$lib/paraglide/runtime';
+	import * as m from '#lib/paraglide/messages.js';
+	import { locales, localizeHref } from '#lib/paraglide/runtime.js';
 
-	import type { GeoLocation } from '$lib/stores/settings';
+	import type { GeoLocation } from '#lib/stores/settings.js';
 
 	let {
 		location,

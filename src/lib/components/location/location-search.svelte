@@ -6,14 +6,14 @@
 		locationKey,
 		storedFavoriteLocations,
 		storedRecentLocations
-	} from '$lib/stores/settings';
+	} from '#lib/stores/settings.js';
 
-	import * as Alert from '$lib/components/ui/alert';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import * as Popover from '$lib/components/ui/popover';
+	import * as Alert from '#lib/components/ui/alert/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import * as Popover from '#lib/components/ui/popover/index.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	export let label: string = 'Search location...';
 	export let placeholder: string = 'Enter city name...';
