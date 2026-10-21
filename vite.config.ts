@@ -170,8 +170,7 @@ export default defineConfig({
 			},
 			// Pregenerate city pages to improve SEO during static build
 			prerender: {
-				// dynamic per-location routes (14-day, compare, unlisted cities) are
-				// served by the SPA fallback instead of being prerendered
+				// Unlisted cities and coordinate routes use the SPA fallback.
 				handleUnseenRoutes: 'ignore',
 				// a transient geocoding failure for one city should skip that page
 				// (the fallback still serves it), not abort the whole build
@@ -181,9 +180,8 @@ export default defineConfig({
 				entries: ((): Array<'*' | `/${string}`> => {
 					// Locale lives in the path (see `urlPatterns` above), so a localized URL
 					// is not a route SvelteKit can discover on its own - each one has to be
-					// listed. City pages are prerendered for the base locale only; the other
-					// languages reach them through the SPA fallback, which keeps the build
-					// from ballooning to cities × locales.
+					// listed. Prerender city pages in every locale so localized canonical
+					// URLs return 200 with their translated metadata.
 					const locales = ['en', 'de', 'es', 'fr', 'it'];
 					const shared = [
 						'/weather/week',
@@ -217,8 +215,10 @@ export default defineConfig({
 						const raw = readFileSync(citiesPath, 'utf-8');
 						const cities = JSON.parse(raw);
 						if (Array.isArray(cities)) {
-							const cityEntries = cities.flatMap((c) =>
-								cityRoutes.map((route): `/${string}` => `/en${route}/${c}`)
+							const cityEntries = locales.flatMap((locale) =>
+								cities.flatMap((c) =>
+									cityRoutes.map((route): `/${string}` => `/${locale}${route}/${c}`)
+								)
 							);
 							// Keep the default wildcard to include other routes
 							return ['*', ...localized, ...cityEntries];

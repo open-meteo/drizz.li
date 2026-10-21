@@ -12,6 +12,7 @@
 	import { Switch } from '#lib/components/ui/switch/index.js';
 
 	import { ChartContainer, ChartToolbar } from '#lib/components/charts/index.js';
+	import LocationMetadata from '#lib/components/location-metadata.svelte';
 
 	import * as m from '#lib/paraglide/messages.js';
 	import {
@@ -181,13 +182,7 @@
 	);
 </script>
 
-<svelte:head>
-	<title>Drizz.li | {m.page_seasonal_subtitle()}</title>
-	<meta
-		name="description"
-		content="Multi-month seasonal outlook: monthly temperature and precipitation trends against the 1991-2020 climate normal"
-	/>
-</svelte:head>
+<LocationMetadata {location} view="seasonal" />
 
 <!-- Only model selection belongs beside the forecast title. -->
 {#snippet heroActions()}
