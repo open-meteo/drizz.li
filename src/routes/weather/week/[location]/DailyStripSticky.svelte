@@ -354,7 +354,7 @@
 					{@const lowPrecip = !precipIsSignificant(precipSum, String(units.precipitation_unit))}
 					{@const lowWind = !windIsSignificant(windMax, gustMax, String(units.wind_speed_unit))}
 					{@const relLabel = getRelativeDayLabel(time, daily.timezone)}
-					{@const isToday = relLabel === 'Today'}
+					{@const isToday = relLabel === m.day_today()}
 					{@const warning = getDayWarning({
 						tempMax,
 						tempMin,

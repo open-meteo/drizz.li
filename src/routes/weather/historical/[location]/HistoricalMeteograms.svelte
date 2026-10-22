@@ -3,7 +3,7 @@
 
 	import { type ChartPanel, storedChartLayout } from '#lib/stores/settings.js';
 
-	import { formatZoned } from '#lib/utils/date.js';
+	import { localDaySpan } from '#lib/utils/date.js';
 
 	import { ChartContainer, downloadChartsPng } from '#lib/components/charts/index.js';
 
@@ -24,7 +24,6 @@
 	let { data, units, loading, selectedDay }: Props = $props();
 
 	const CHART_GROUP = 'historical-meteogram';
-	const SECONDS_PER_DAY = 24 * 3600;
 	const CHART_HEIGHT = 300;
 
 	let downloadingPng = $state(false);
@@ -38,18 +37,11 @@
 
 	let timestampsSec = $derived(data.timestamps.map((t) => t / 1000));
 
-	function dayStartSec(day: Date): number | null {
-		const targetDayStr = formatZoned(day, data.timezone, 'yyyy-MM-dd');
-		const idx = data.hourlyDates.findIndex(
-			(d) => formatZoned(d, data.timezone, 'yyyy-MM-dd') === targetDayStr
-		);
-		return idx === -1 ? null : data.timestamps[idx] / 1000;
-	}
-
-	// Soft band marking the day currently open in the hourly table below.
+	// Soft band marking the day currently open in the hourly table below, read off
+	// the hours that fall on it: a day the clocks change on runs 23 or 25 hours.
 	let selectedDayHighlight = $derived.by(() => {
-		const start = dayStartSec(selectedDay);
-		return start == null ? undefined : { start, end: start + SECONDS_PER_DAY };
+		const span = localDaySpan(data.hourlyDates, selectedDay, 1, data.timezone);
+		return span ? { start: span.start / 1000, end: span.end / 1000 } : undefined;
 	});
 
 	function isDaytime(tSec: number): boolean {
