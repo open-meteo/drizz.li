@@ -431,10 +431,14 @@ function weekHourlyFromByName(byName: Record<string, number[]>): WeekHourlyData 
 
 /**
  * Hours fetched beyond the requested days, on either side. The API lays its
- * hours out on its single utc offset (see `localDayDates`), so past a DST change
- * the first local day would start late or the last one end early. The extra
- * hours cover any such change; `hoursOnDays` then cuts the series back to the
- * local days.
+ * hours out on a single utc offset, today's (see `localDayDates`), so on days
+ * with another offset the first local day would start late or the last one end
+ * early. `hoursOnDays` then cuts the series back to the local days.
+ *
+ * One hour covers a DST change (Antarctica/Troll jumps two). Three are for the
+ * archive, where today's offset also applies to past decades: since 1940 one
+ * hour covers 331 of 418 zones and three cover 404; the remaining polar stations
+ * and Pacific islands are off by four hours up to a day.
  */
 const EDGE_HOURS = 3;
 
@@ -478,8 +482,9 @@ export async function fetchWeekForecast(params: WeekForecastParams): Promise<Wee
 		precipitation_unit: params.precipitation_unit ?? 'mm',
 		forecast_days: forecastDays,
 		past_days: pastDays,
-		// hourly counts from today's midnight in the API's offset, EDGE_HOURS
-		// wider on both sides (within the forecast API's 16 days)
+		// the hourly range, set apart from the daily *_days above: counts from
+		// today's midnight in the API's offset, EDGE_HOURS wider on both sides
+		// (within the forecast API's 16 days)
 		initial_hours: 0,
 		past_hours: pastDays * 24 + EDGE_HOURS,
 		forecast_hours: Math.min(forecastDays * 24 + EDGE_HOURS, 16 * 24),
@@ -928,10 +933,12 @@ const HISTORICAL_DAILY_VARS = [
 // ─── Historical (Archive) Fetch ─────────────────────────────────────────────
 
 /**
- * `start_hour` / `end_hour` of an archive request: the requested days plus
- * EDGE_HOURS on either side, kept within what the archive serves (from 1940 to
- * the end of the current UTC day). The hours are local wall time in the API's
- * offset, built here as UTC strings.
+ * `start_hour` / `end_hour` of an archive request: the hourly range, set apart
+ * from the daily `start_date` / `end_date` so it reaches EDGE_HOURS past the
+ * requested days on either side. The API reads them as wall time in its offset,
+ * so the dates are parsed as UTC only to step whole hours. The archive rejects
+ * hours before 1940 instead of clipping them; the end needs no such guard, as
+ * the historical page keeps the end date days behind today.
  */
 function archiveHours(startDate: string, endDate: string): Record<string, string> {
 	const start = Date.parse(`${startDate}T00:00Z`);
@@ -941,11 +948,11 @@ function archiveHours(startDate: string, endDate: string): Record<string, string
 
 	const hour = 3_600_000;
 	const firstServed = Date.UTC(1940, 0, 1);
-	const lastServed = Date.parse(`${new Date().toISOString().slice(0, 10)}T23:00Z`);
 	const iso = (ms: number) => new Date(ms).toISOString().slice(0, 16);
 	return {
 		start_hour: iso(Math.max(start - EDGE_HOURS * hour, firstServed)),
-		end_hour: iso(Math.min(end + (23 + EDGE_HOURS) * hour, lastServed))
+		// inclusive: the last day's 23:00 plus the margin
+		end_hour: iso(end + (23 + EDGE_HOURS) * hour)
 	};
 }
 
