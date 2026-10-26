@@ -8,7 +8,12 @@
 		storedChartRange
 	} from '#lib/stores/settings.js';
 
-	import { formatZoned, getRelativeDayLabel, isSameDayInZone } from '#lib/utils/date.js';
+	import {
+		formatZoned,
+		getRelativeDayLabel,
+		isSameDayInZone,
+		localDaySpan
+	} from '#lib/utils/date.js';
 
 	import { ChartContainer, downloadChartsPng } from '#lib/components/charts/index.js';
 
@@ -33,7 +38,6 @@
 	let { data, selectedDay, units, loading, chartHeight = 300, onResetZoom }: Props = $props();
 
 	const CHART_GROUP = 'week-meteogram';
-	const SECONDS_PER_DAY = 24 * 3600;
 
 	let customizerOpen = $state(false);
 	let downloadingPng = $state(false);
@@ -76,21 +80,18 @@
 	// Timestamps from the service are in milliseconds; CanvasChart uses seconds.
 	let timestampsSec = $derived(data.timestamps.slice(0, validLength).map((t) => t / 1000));
 
-	function dayStartSec(day: Date): number | null {
-		if (!data) return null;
-		const tz = data.timezone;
-		const targetDayStr = formatZoned(day, tz, 'yyyy-MM-dd');
-		const firstHourIdx = data.hourlyDates.findIndex(
-			(d) => formatZoned(d, tz, 'yyyy-MM-dd') === targetDayStr
-		);
-		return firstHourIdx === -1 ? null : data.timestamps[firstHourIdx] / 1000;
+	// Local days on the time axis, in epoch seconds, read off the hours that fall
+	// on them: a day the clocks change on runs 23 or 25 hours.
+	function daySpanSec(from: Date, days: number): { start: number; end: number } | null {
+		const span = localDaySpan(data.hourlyDates, from, days, data.timezone);
+		return span && { start: span.start / 1000, end: span.end / 1000 };
 	}
 
 	function setRangeDays(from: Date, days: number): void {
-		const start = dayStartSec(from);
-		if (start == null || liveCharts.length === 0) return;
+		const span = daySpanSec(from, days);
+		if (span == null || liveCharts.length === 0) return;
 		// Charts share the group, so setting the range on one syncs all of them
-		liveCharts[0].setRange(start, start + days * SECONDS_PER_DAY);
+		liveCharts[0].setRange(span.start, span.end);
 	}
 
 	/** Drop any zoom and show the whole forecast. */
@@ -150,10 +151,7 @@
 	});
 
 	// Soft band drawn on every chart marking the currently selected day
-	let selectedDayHighlight = $derived.by(() => {
-		const start = dayStartSec(selectedDay);
-		return start == null ? undefined : { start, end: start + SECONDS_PER_DAY };
-	});
+	let selectedDayHighlight = $derived(daySpanSec(selectedDay, 1) ?? undefined);
 
 	// ─── Pictograms (weather icons across the top) ──────────────────────────────
 
@@ -191,13 +189,13 @@
 	let defaultRange = $derived.by((): { start: number; end: number } | null => {
 		const days = rangeDaysFor($storedChartRange);
 		if (days == null || timestampsSec.length === 0) return null;
-		const start = dayStartSec(new Date());
-		if (start == null) return null;
+		const range = daySpanSec(new Date(), days);
+		if (range == null) return null;
 		const tMin = timestampsSec[0];
 		const tMax = timestampsSec[timestampsSec.length - 1];
-		const span = Math.min(days * SECONDS_PER_DAY, tMax - tMin);
+		const span = Math.min(range.end - range.start, tMax - tMin);
 		if (span >= tMax - tMin) return null;
-		const s = Math.max(tMin, Math.min(start, tMax - span));
+		const s = Math.max(tMin, Math.min(range.start, tMax - span));
 		return { start: s, end: s + span };
 	});
 
