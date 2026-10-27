@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$app/env', () => ({ version: 'test' }));
 vi.mock('$app/manifest', () => ({
-	immutable: [{ path: '/app.js' }],
-	assets: []
+	immutable: [{ path: 'app.js' }, { path: '_app/immutable/assets/app.css' }],
+	assets: [{ path: 'app.webmanifest' }, { path: '/favicon.svg' }, { path: 'other.txt' }]
 }));
 
 function fetchEvent(path: string) {
@@ -17,6 +17,8 @@ function fetchEvent(path: string) {
 describe('service worker', () => {
 	const listeners = new Map<string, (event: ReturnType<typeof fetchEvent>) => void>();
 	const cache = {
+		addAll: vi.fn().mockResolvedValue(undefined),
+		add: vi.fn().mockResolvedValue(undefined),
 		match: vi.fn(),
 		put: vi.fn().mockResolvedValue(undefined),
 		keys: vi.fn().mockResolvedValue([])

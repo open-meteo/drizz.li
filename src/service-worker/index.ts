@@ -21,9 +21,11 @@ const CRITICAL_FILES = new Set([
 	'/icons/icon-512.png',
 	'/icons/icon-maskable-512.png'
 ]);
+// Manifest paths are relative; cache keys and request pathnames are root-relative.
+const normalizePath = ({ path }: { path: string }) => (path.startsWith('/') ? path : `/${path}`);
 const SHELL = [
-	...immutable.map(({ path }) => path),
-	...assets.map(({ path }) => path).filter((file) => CRITICAL_FILES.has(file))
+	...immutable.map(normalizePath),
+	...assets.map(normalizePath).filter((file) => CRITICAL_FILES.has(file))
 ];
 const SHELL_PATHS = new Set(SHELL);
 const WEATHER_HOSTS = new Set([
