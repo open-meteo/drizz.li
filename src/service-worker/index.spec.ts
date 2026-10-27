@@ -8,7 +8,7 @@ vi.mock('$app/manifest', () => ({
 
 function fetchEvent(path: string) {
 	return {
-		request: new Request(`https://drizz.li${path}`),
+		request: new Request(new URL(path, 'https://drizz.li')),
 		respondWith: vi.fn<(response: Promise<Response>) => void>(),
 		waitUntil: vi.fn<(work: Promise<unknown>) => void>()
 	};
@@ -130,6 +130,71 @@ describe('service worker', () => {
 		expect(pages.size).toBe(100);
 		expect(pages.has(oldest)).toBe(false);
 		expect(await pages.get(event.request.url)!.text()).toBe('new page');
+	});
+
+	it('reuses fixed historical ranges for 30 days without fetching', async () => {
+		const cached = new Response('history', {
+			headers: { 'x-drizzli-cached-at': String(Date.now() - 29 * 86400000) }
+		});
+		cache.match.mockResolvedValue(cached);
+		const event = fetchEvent(
+			'https://archive-api.open-meteo.com/v1/archive?start_date=2020-01-01&end_date=2020-01-31'
+		);
+		listeners.get('fetch')!(event);
+		expect(await event.respondWith.mock.calls[0][0]).toBe(cached);
+		expect(fetch).not.toHaveBeenCalled();
+		expect(caches.open).toHaveBeenCalledWith('drizzli-history-v1');
+	});
+
+	it.each([undefined, String(Date.now() - 30 * 86400000)])(
+		'refreshes historical entries with an expired or missing timestamp (%s)',
+		async (timestamp) => {
+			cache.match.mockResolvedValue(
+				new Response('old', {
+					headers: timestamp ? { 'x-drizzli-cached-at': timestamp } : {}
+				})
+			);
+			const fresh = new Response('fresh history');
+			vi.mocked(fetch).mockResolvedValue(fresh);
+			const event = fetchEvent(
+				'https://archive-api.open-meteo.com/v1/archive?start_date=2020-01-01&end_date=2020-01-31'
+			);
+			listeners.get('fetch')!(event);
+			expect(await event.respondWith.mock.calls[0][0]).toBe(fresh);
+			await Promise.all(event.waitUntil.mock.calls.map(([work]) => work));
+			const stored = cache.put.mock.calls[0][1] as Response;
+			expect(Number(stored.headers.get('x-drizzli-cached-at'))).toBeGreaterThan(0);
+			expect(await stored.text()).toBe('fresh history');
+		}
+	);
+
+	it('serves expired historical data when offline', async () => {
+		const cached = new Response('saved history');
+		cache.match.mockResolvedValue(cached);
+		vi.mocked(fetch).mockRejectedValue(new TypeError('offline'));
+		const event = fetchEvent(
+			'https://archive-api.open-meteo.com/v1/archive?start_date=2020-01-01&end_date=2020-01-31'
+		);
+		listeners.get('fetch')!(event);
+		expect(await event.respondWith.mock.calls[0][0]).toBe(cached);
+		expect(fetch).toHaveBeenCalledOnce();
+	});
+
+	it.each([
+		'https://api.open-meteo.com/v1/forecast?start_date=2020-01-01&end_date=2020-01-31',
+		'https://archive-api.open-meteo.com/v1/archive?start_date=2020-01-01',
+		'https://archive-api.open-meteo.com/v1/archive?start_date=2020-02-30&end_date=2020-03-01',
+		'https://archive-api.open-meteo.com/v1/archive?start_date=2020-02-01&end_date=2020-01-01',
+		`https://archive-api.open-meteo.com/v1/archive?start_date=2020-01-01&end_date=${new Date().toISOString().slice(0, 10)}`
+	])('keeps nonhistorical or invalid ranges network-first: %s', async (url) => {
+		cache.match.mockResolvedValue(new Response('cached'));
+		const fresh = new Response('fresh');
+		vi.mocked(fetch).mockResolvedValue(fresh);
+		const event = fetchEvent(url);
+		listeners.get('fetch')!(event);
+		expect(await event.respondWith.mock.calls[0][0]).toBe(fresh);
+		expect(caches.open).toHaveBeenCalledWith('drizzli-weather-v1');
+		await Promise.all(event.waitUntil.mock.calls.map(([work]) => work));
 	});
 
 	it('installs in development without requesting the build-only fallback', () => {

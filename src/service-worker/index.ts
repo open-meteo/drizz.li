@@ -11,6 +11,33 @@ const RUNTIME_CACHE = 'drizzli-runtime-v1';
 const WEATHER_CACHE = 'drizzli-weather-v1';
 // Shared by weather views, model selections, locations, and geocoding requests.
 const WEATHER_CACHE_LIMIT = 100;
+const HISTORY_CACHE = 'drizzli-history-v1';
+const HISTORY_CACHE_LIMIT = 100;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const HISTORY_MAX_AGE = 30 * DAY_MS;
+const CACHED_AT = 'x-drizzli-cached-at';
+
+// Keep recent ranges network-first; fixed older ranges can be reused for a month.
+function isHistoricalRange(url: URL): boolean {
+	if (url.hostname !== 'archive-api.open-meteo.com' || url.pathname !== '/v1/archive') return false;
+	const start = url.searchParams.get('start_date') ?? '';
+	const end = url.searchParams.get('end_date') ?? '';
+	const validDate = (value: string) => {
+		const time = Date.parse(value);
+		return (
+			/^\d{4}-\d{2}-\d{2}$/.test(value) &&
+			Number.isFinite(time) &&
+			new Date(time).toISOString().slice(0, 10) === value
+		);
+	};
+	return (
+		validDate(start) &&
+		validDate(end) &&
+		start <= end &&
+		Date.parse(end) + DAY_MS <= Date.now() - 7 * DAY_MS
+	);
+}
+
 const SPA_FALLBACK = '/404.html';
 
 const CRITICAL_FILES = new Set([
@@ -97,14 +124,34 @@ worker.addEventListener('fetch', (event) => {
 	if (WEATHER_HOSTS.has(url.hostname)) {
 		event.respondWith(
 			(async () => {
-				const cache = await caches.open(WEATHER_CACHE);
+				const historical = isHistoricalRange(url);
+				const cacheName = historical ? HISTORY_CACHE : WEATHER_CACHE;
+				const cache = await caches.open(cacheName);
+				if (historical) {
+					const cached = await cache.match(request);
+					const cachedAt = Number(cached?.headers.get(CACHED_AT));
+					const age = Date.now() - cachedAt;
+					if (cached && cachedAt > 0 && age >= 0 && age < HISTORY_MAX_AGE) return cached;
+				}
 				try {
 					const response = await fetch(request);
 					if (response.ok) {
+						const copy = response.clone();
+						const headers = new Headers(copy.headers);
+						if (historical) headers.set(CACHED_AT, String(Date.now()));
+						const stored = historical
+							? new Response(copy.body, {
+									status: copy.status,
+									statusText: copy.statusText,
+									headers
+								})
+							: copy;
 						event.waitUntil(
 							cache
-								.put(request, response.clone())
-								.then(() => trimCache(WEATHER_CACHE, WEATHER_CACHE_LIMIT))
+								.put(request, stored)
+								.then(() =>
+									trimCache(cacheName, historical ? HISTORY_CACHE_LIMIT : WEATHER_CACHE_LIMIT)
+								)
 								.catch(() => {})
 						);
 					}
