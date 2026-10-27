@@ -74,7 +74,7 @@
 			{#if status === 'offline'}
 				<span class="relative flex h-2.5 w-2.5 shrink-0">
 					<span
-						class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60"
+						class="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60 motion-safe:animate-ping"
 					></span>
 					<span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
 				</span>
