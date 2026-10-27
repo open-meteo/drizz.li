@@ -2,12 +2,18 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
-	import { mapTransitionCover, reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { storedLocation, storedModel, storedTheme } from '$lib/stores/settings';
+	import { mapTransitionCover, reportPageReady } from '#lib/stores/page-transition.svelte.js';
+	import {
+		type GeoLocation,
+		locationKey,
+		storedLocation,
+		storedModel,
+		storedTheme
+	} from '#lib/stores/settings.js';
 
-	import { mapsDomainForModel } from '$lib/utils/maps-domain';
+	import { mapsDomainForModel } from '#lib/utils/maps-domain.js';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	// Hash piping, both directions:
 	// - inbound: a #zoom/lat/lng(/bearing/pitch) hash on OUR url seeds the
@@ -19,6 +25,11 @@
 	let iframeEl = $state<HTMLIFrameElement | null>(null);
 	let mapReady = $state(false);
 	let frameLoaded = $state(false);
+
+	// Read once: the location travels in the iframe src only at boot, later
+	// picks are posted to the map (see syncLocation), so the src never changes
+	// underneath a running map
+	const initialLocation = $storedLocation;
 
 	// The map is a cross-origin iframe: until it has loaded there is nothing here
 	// but an empty panel, and a page transition that ends before then cross-fades
@@ -47,6 +58,19 @@
 
 	const MAP_HASH_RE = /^#\d+(\.\d+)?\/-?\d+(\.\d+)?\/-?\d+(\.\d+)?/;
 
+	// Location the map shows as far as this page told it: seeded by the src,
+	// then by every posted pick, so the same place is never posted twice
+	let mapLocationKey = locationKey(initialLocation);
+
+	const syncLocation = (location: GeoLocation) => {
+		// A bookmarked view is what the visitor came for: no flight away from it
+		if (hashOverride) return;
+		const key = locationKey(location);
+		if (key === mapLocationKey) return;
+		mapLocationKey = key;
+		postToMap({ type: 'om-maps:set', lat: location.latitude, lon: location.longitude });
+	};
+
 	onMount(() => {
 		const initialHash = window.location.hash;
 		hashOverride = MAP_HASH_RE.test(initialHash) ? initialHash : null;
@@ -69,21 +93,31 @@
 				mapReady = true;
 				const domain = mapsDomainForModel($storedModel, new Set(domains));
 				postToMap({ type: 'om-maps:set', ...(domain && { domain }), theme: $storedTheme });
+				// A reloaded iframe booted from the src again, so a location
+				// picked since then has to be sent once more
+				mapLocationKey = locationKey(initialLocation);
+				syncLocation($storedLocation);
 			}
 		};
 		window.addEventListener('message', onMessage);
 		return () => window.removeEventListener('message', onMessage);
 	});
 
-	// the embedded map understands maplibre's #zoom/lat/lng hash, so the iframe
-	// opens focused on the selected location (zoomed out to regional scale);
-	// picking a new location while on this page recenters the map
+	// The map's `lat`/`lon` params mark the selected location with a dot and
+	// open on it at the map's own location zoom; a bookmarked hash view takes
+	// precedence over the position but keeps the dot
 	const iframeSrc = $derived(
-		`${MAPS_ORIGIN}/${
-			hashOverride ??
-			`#6/${$storedLocation.latitude.toFixed(3)}/${$storedLocation.longitude.toFixed(3)}`
-		}`
+		`${MAPS_ORIGIN}/?lat=${initialLocation.latitude.toFixed(4)}&lon=${initialLocation.longitude.toFixed(4)}${hashOverride ?? ''}`
 	);
+
+	// A location change while the map is open (first-visit detection, a pick in
+	// another tab): posted, so the map flies there instead of booting a fresh
+	// iframe
+	$effect(() => {
+		const location = $storedLocation;
+		if (!mapReady) return;
+		syncLocation(location);
+	});
 
 	// forward theme switches live; the initial theme travels with the
 	// ready response above (the map ignores no-op updates)

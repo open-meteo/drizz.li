@@ -7,13 +7,19 @@
 		storedHourlyInterval,
 		storedTableRowOrder,
 		storedVariablePrefs
-	} from '$lib/stores/settings';
+	} from '#lib/stores/settings.js';
 
-	import { formatUtcOffset, formatZoned, getZonedHour, isSameDayInZone } from '$lib/utils/date';
-	import { useNow } from '$lib/utils/now.svelte';
+	import {
+		formatUtcOffset,
+		formatZoned,
+		getZonedHour,
+		getZonedOffsetSeconds,
+		isSameDayInZone
+	} from '#lib/utils/date.js';
+	import { useNow } from '#lib/utils/now.svelte.js';
 
-	import { groupHover, setGroupHover } from '$lib/charts';
-	import * as m from '$lib/paraglide/messages';
+	import { groupHover, setGroupHover } from '#lib/charts/index.js';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import { getTempStyle } from '../../utils/colors';
 	import { getWeatherDescription, getWeatherIconName } from '../../utils/weather-codes';
@@ -51,10 +57,11 @@
 		const rect = el.getBoundingClientRect();
 		if (rect.width <= 0 || cellData.length === 0) return;
 		const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-		const stepMs = (is3h ? 3 : 1) * 3600 * 1000;
-		const first = cellData[0].date.getTime();
-		const last = cellData[cellData.length - 1].date.getTime() + stepMs;
-		setGroupHover(METEOGRAM_GROUP, (first + frac * (last - first)) / 1000);
+		// within the hovered cell, the inverse of timeToFraction
+		const pos = frac * cellData.length;
+		const i = Math.min(cellData.length - 1, Math.floor(pos));
+		const start = cellData[i].date.getTime();
+		setGroupHover(METEOGRAM_GROUP, (start + (pos - i) * (cellEndMs(i) - start)) / 1000);
 	}
 
 	function clearTimeRowHover() {
@@ -105,29 +112,47 @@
 		};
 	}
 
+	// A cell runs until the next one starts: an hour, or three in 3h steps,
+	// except where the clocks change, which stretches that 3h cell to four hours
+	// or shrinks it to two. The day's last cell takes a full step.
+	function cellEndMs(i: number): number {
+		const next = cellData[i + 1];
+		return next ? next.date.getTime() : cellData[i].date.getTime() + (is3h ? 3 : 1) * 3_600_000;
+	}
+
+	// Where an instant sits along the row, interpolated within its own cell: a
+	// day the clocks change on has 23 or 25 hourly columns, so the hour of the
+	// day alone would misplace everything after the change.
 	function timeToFraction(date: Date): number {
-		const tz = data.timezone;
-		const hour = getZonedHour(date, tz);
-		const minutes = parseInt(formatZoned(date, tz, 'mm'), 10);
-		const totalMinutes = hour * 60 + minutes;
-
-		const firstHour = getZonedHour(cellData[0].date, tz);
-		const firstMin = firstHour * 60;
-
-		const step = is3h ? 3 : 1;
-		const lastHour = getZonedHour(cellData[cellData.length - 1].date, tz);
-		const lastMin = lastHour * 60 + step * 60;
-
-		const range = lastMin - firstMin;
-		if (range <= 0) return 0;
-		return Math.max(0, Math.min(1, (totalMinutes - firstMin) / range));
+		const t = date.getTime();
+		for (let i = 0; i < cellData.length; i++) {
+			const start = cellData[i].date.getTime();
+			const end = cellEndMs(i);
+			if (t < end) return Math.max(0, i + (t - start) / (end - start)) / cellData.length;
+		}
+		return 1;
 	}
 
 	function formatTime(date: Date): string {
 		return formatZoned(date, data.timezone, 'HH:mm');
 	}
 
-	let timezoneLabel = $derived(formatUtcOffset(data.utc_offset_seconds));
+	// The hours are wall-clock times in the location's zone, so the badge shows
+	// that zone's offset on this day, not the API's single offset for the whole
+	// response. A day the clocks change on gets both, which is also what explains
+	// its repeated (or missing) hour.
+	let timezoneLabel = $derived.by(() => {
+		const first = cellData[0];
+		const last = cellData[cellData.length - 1];
+		const from = first ? getZonedOffsetSeconds(first.date, data.timezone) : NaN;
+		const to = last ? getZonedOffsetSeconds(last.date, data.timezone) : NaN;
+		if (!Number.isFinite(from) || !Number.isFinite(to)) {
+			return formatUtcOffset(data.utc_offset_seconds);
+		}
+		return from === to
+			? formatUtcOffset(from)
+			: `${formatUtcOffset(from)} → ${formatUtcOffset(to)}`;
+	});
 
 	function findDailyIndex(date: Date): number {
 		return daily.dailyDates.findIndex((dd) => isSameDayInZone(dd, date, data.timezone));
@@ -158,14 +183,17 @@
 		return Math.min(100, (val / precipAbsMax) * 100);
 	}
 
-	// Precipitation is an amount per hour, so a 3h cell is the sum of its three
-	// 1h values (finite ones only; an all-NaN block past the horizon stays empty).
-	function getCellPrecip(idx: number): number | null {
+	// Precipitation is an amount per hour, so a 3h cell is the sum of the hours
+	// it spans, up to the next cell (see cellEndMs; finite ones only, an all-NaN
+	// block past the horizon stays empty).
+	function getCellPrecip(col: number): number | null {
 		const arr = data.hourly.precipitation;
+		const idx = cellData[col].idx;
 		if (!is3h) return arr[idx];
+		const end = cellData[col + 1]?.idx ?? idx + 3;
 		let sum = 0;
 		let any = false;
-		for (let i = idx; i < idx + 3 && i < arr.length; i++) {
+		for (let i = idx; i < end && i < arr.length; i++) {
 			if (finite(arr[i])) {
 				sum += arr[i];
 				any = true;
@@ -273,9 +301,10 @@
 	let cellData = $derived(
 		dayIdx.map((idx, i) => {
 			const date = data.hourlyDates[idx];
-			const tz = data.timezone;
-			const isNow =
-				formatZoned(date, tz, 'yyyy-MM-dd HH') === formatZoned(today, tz, 'yyyy-MM-dd HH');
+			// the hour this cell starts with, by instant: the hour the clocks go
+			// back to appears twice, and only one of the two is now
+			const sinceStart = today.getTime() - date.getTime();
+			const isNow = sinceStart >= 0 && sinceStart < 3_600_000;
 
 			// a column past the model's horizon: nothing to show in any row
 			const hasData = [
@@ -415,9 +444,8 @@
 		if (dayChanged) {
 			// today → the cell whose block contains "now"; otherwise → 06:00
 			const nowMs = today.getTime();
-			const stepMs = interval * 3600 * 1000;
 			const nowIdx = cellData.findIndex(
-				(c) => nowMs >= c.date.getTime() && nowMs < c.date.getTime() + stepMs
+				(c, i) => nowMs >= c.date.getTime() && nowMs < cellEndMs(i)
 			);
 			targetIdx =
 				nowIdx >= 0 ? nowIdx : cellData.findIndex((c) => getZonedHour(c.date, data.timezone) >= 6);
@@ -435,11 +463,10 @@
 	let chartHoverTime = $derived(groupHover(METEOGRAM_GROUP)); // epoch seconds, or null
 	let hoveredCol = $derived.by((): number => {
 		if (chartHoverTime == null || cellData.length === 0) return -1;
-		const stepMs = (is3h ? 3 : 1) * 3600 * 1000;
 		const tMs = chartHoverTime * 1000;
 		for (let i = 0; i < cellData.length; i++) {
 			const start = cellData[i].date.getTime();
-			if (tMs >= start && tMs < start + stepMs) return i;
+			if (tMs >= start && tMs < cellEndMs(i)) return i;
 		}
 		return -1;
 	});
@@ -888,8 +915,8 @@
 							{:else if rowKey === 'precipitation' && showRow('precipitation')}
 								<tr class="row" class:row-empty={rowHasData[rowKey] === false}>
 									{@render rowHeader('wi-raindrop', precipUnit, m.var_precipitation_short())}
-									{#each cellData as cell (cell.idx)}
-										{@const precip = getCellPrecip(cell.idx)}
+									{#each cellData as cell, i (cell.idx)}
+										{@const precip = getCellPrecip(i)}
 										{@const prob = hourly.precipitation_probability[cell.idx]}
 										<td
 											class:col-empty={!cell.hasData}

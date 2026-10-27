@@ -9,7 +9,7 @@
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 
-import { type Locale, deLocalizeHref, locales, localizeHref } from '$lib/paraglide/runtime';
+import { type Locale, deLocalizeHref, locales, localizeHref } from '#lib/paraglide/runtime.js';
 
 import type {
 	PathnameWithSearchOrHash,

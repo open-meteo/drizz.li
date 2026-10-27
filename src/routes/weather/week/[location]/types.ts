@@ -1,4 +1,4 @@
-import type { DaylightBand, WeekDailyData, WeekHourlyData } from '$lib/services/weather';
+import type { DaylightBand, WeekDailyData, WeekHourlyData } from '#lib/services/weather.js';
 
 export interface WeatherUnits {
 	temperature_unit: string;

@@ -4,34 +4,34 @@
 	import { fade } from 'svelte/transition';
 
 	import { afterNavigate, onNavigate } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	import {
 		mapTransitionCover,
 		markPageLoading,
 		markPageReady,
 		pageContentReady
-	} from '$lib/stores/page-transition.svelte';
-	import { hasStoredLocation, storedTheme } from '$lib/stores/settings';
+	} from '#lib/stores/page-transition.svelte.js';
+	import { hasStoredLocation, storedTheme } from '#lib/stores/settings.js';
 
 	import {
 		canStartViewTransition,
 		startViewTransition,
 		supportsViewTransitions
-	} from '$lib/utils/view-transition';
+	} from '#lib/utils/view-transition.js';
 
-	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Dialog from '#lib/components/ui/dialog/index.js';
 
-	import Footer from '$lib/components/navigation/footer.svelte';
-	import Header from '$lib/components/navigation/header.svelte';
-	import MobileBottomNav from '$lib/components/navigation/mobile-bottom-nav.svelte';
-	import MobileMoreSheet from '$lib/components/navigation/mobile-more-sheet.svelte';
-	import WeatherNav from '$lib/components/navigation/weather-nav.svelte';
-	import UpdateNotification from '$lib/components/update-notification.svelte';
+	import Footer from '#lib/components/navigation/footer.svelte';
+	import Header from '#lib/components/navigation/header.svelte';
+	import MobileBottomNav from '#lib/components/navigation/mobile-bottom-nav.svelte';
+	import MobileMoreSheet from '#lib/components/navigation/mobile-more-sheet.svelte';
+	import WeatherNav from '#lib/components/navigation/weather-nav.svelte';
+	import UpdateNotification from '#lib/components/update-notification.svelte';
 
-	import { routePath } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
-	import { initialLocation } from '$lib/services/geolocation';
+	import { routePath } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { initialLocation } from '#lib/services/geolocation.js';
 
 	import './layout.css';
 
@@ -43,7 +43,7 @@
 	// topbar would otherwise sit on its placeholder for the whole visit. Ask
 	// once here; the answer is shared with whatever asks next.
 	onMount(() => {
-		if (!get(page).data.location && !hasStoredLocation()) void initialLocation();
+		if (!page.data.location && !hasStoredLocation()) void initialLocation();
 	});
 
 	// keep the .dark class in sync with the persisted theme; in 'system' mode
@@ -129,7 +129,7 @@
 	// snapshots then hold real pixels and the maps page transitions like any
 	// other route.
 	const MAPS_ROUTE = '/weather/maps';
-	const onMapsPage = () => routePath(get(page).url.pathname).startsWith(MAPS_ROUTE);
+	const onMapsPage = () => routePath(page.url.pathname).startsWith(MAPS_ROUTE);
 
 	let loadingOverlay = $state(false);
 	let overlayCeilingTimer = 0;
@@ -256,6 +256,10 @@
 	}
 
 	onNavigate(async (navigation) => {
+		// Mirroring UI state into the query string (url-state.ts) is a shallow
+		// goto that stays on the page: nothing to load, nothing to transition.
+		if (navigation.shallow) return;
+
 		const pending =
 			PENDING_ROUTES.has(navigation.to?.route?.id ?? '') && !landsOnCurrentPage(navigation);
 		// Either way the flag is set explicitly: leaving a page that never resolved
@@ -301,6 +305,9 @@
 	let mainEl = $state<HTMLElement | null>(null);
 
 	afterNavigate((navigation) => {
+		// a shallow goto only rewrote the query string; the page did not change
+		if (navigation.shallow) return;
+
 		// The departure snapshot (if any) is taken by now, so the maps cover has
 		// done its job; lowering it here also means a later visit to the maps page
 		// starts from its own boot cover rather than a stuck one.
@@ -315,7 +322,7 @@
 	});
 
 	// the maps page embeds a full-bleed map: no padding, no scrolling
-	let fullBleed = $derived(routePath($page.url.pathname).startsWith('/weather/maps'));
+	let fullBleed = $derived(routePath(page.url.pathname).startsWith('/weather/maps'));
 
 	let sidebarCollapsed = $state(false);
 	let mobileMenuOpen = $state(false);

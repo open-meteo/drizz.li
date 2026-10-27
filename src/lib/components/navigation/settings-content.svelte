@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { type Theme, storedTheme } from '$lib/stores/settings';
+	import { type Theme, storedTheme } from '#lib/stores/settings.js';
 
-	import LanguageOptions from '$lib/components/language-options.svelte';
-	import UnitOptions from '$lib/components/unit-options.svelte';
+	import LanguageOptions from '#lib/components/language-options.svelte';
+	import UnitOptions from '#lib/components/unit-options.svelte';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 
 	import ThemeIcon from './theme-icon.svelte';
 

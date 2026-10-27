@@ -3,25 +3,25 @@
  * exactly as it was: which day is open, which model is plotted, which variables
  * are compared.
  *
- * Writes use `replaceState` rather than `goto`, so mirroring state never adds a
- * history entry or re-runs a load - the back button still means "the page
- * before", not "the previous day I clicked".
+ * Writes are shallow `goto` calls that replace the current entry, so mirroring
+ * state never adds a history entry or re-runs a load - the back button still
+ * means "the page before", not "the previous day I clicked".
  *
  * The base is `location`, deliberately not `page.url`. Shallow routing does not
- * republish the URL: `replaceState` writes the history entry (and files the
- * *previous* `page.url` in it, so a popstate can restore it) but leaves
- * `page.url` on the last navigated URL. Diffing against that stale value is
- * wrong in exactly one direction - clearing a parameter. Opening a day writes
- * `?day=`, `page.url` still has none, so asking to remove it produces a URL
- * identical to the stale one, the write is skipped as a no-op, and the
- * parameter stays in the address bar for good.
+ * republish the URL: it writes the history entry (and files the *previous*
+ * `page.url` in it, so a popstate can restore it) but leaves `page.url` on the
+ * last navigated URL. Diffing against that stale value is wrong in exactly one
+ * direction - clearing a parameter. Opening a day writes `?day=`, `page.url`
+ * still has none, so asking to remove it produces a URL identical to the stale
+ * one, the write is skipped as a no-op, and the parameter stays in the address
+ * bar for good.
  *
  * Reading `location` rather than a passed-in URL also removes the old trap that
  * callers had to pass it untracked: an effect that both read `$page.url` and
  * wrote to it looped until `effect_update_depth_exceeded` hung the page.
  */
-import { browser } from '$app/environment';
-import { replaceState } from '$app/navigation';
+import { browser } from '$app/env';
+import { goto } from '$app/navigation';
 
 export function syncSearchParams(updates: Record<string, string | null>): void {
 	if (!browser) return;
@@ -32,20 +32,16 @@ export function syncSearchParams(updates: Record<string, string | null>): void {
 		else next.searchParams.set(key, value);
 	}
 	if (next.href === current.href) return;
-	try {
-		replaceState(next, {});
-	} catch {
-		// A page whose state settles during mount can get here before the router
-		// has taken over. The URL is cosmetic, so retry on the next frame rather
-		// than letting it break the page.
+	// A page whose state settles during mount can get here before the router
+	// has taken over. The URL is cosmetic, so retry on the next frame rather
+	// than letting it break the page.
+	goto(next, { shallow: true, replace: true }).catch(() => {
 		requestAnimationFrame(() => {
-			try {
-				replaceState(next, {});
-			} catch {
+			goto(next, { shallow: true, replace: true }).catch(() => {
 				/* give up: the view still works, it just isn't linkable yet */
-			}
+			});
 		});
-	}
+	});
 }
 
 /**
@@ -72,8 +68,11 @@ export function listUnlessDefault(
 	return joined === fallback.join(',') ? null : joined;
 }
 
-/** Reads a comma-separated list, dropping empties. */
-export function readList(url: URL, key: string): string[] | null {
+/** Reads a comma-separated list, dropping empties. Takes a `URL` or `page.url`. */
+export function readList(
+	url: { searchParams: Pick<URLSearchParams, 'get'> },
+	key: string
+): string[] | null {
 	const raw = url.searchParams.get(key);
 	if (!raw) return null;
 	const list = raw

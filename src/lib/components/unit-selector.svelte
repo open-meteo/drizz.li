@@ -1,9 +1,9 @@
 <script lang="ts">
-	import * as Popover from '$lib/components/ui/popover';
+	import * as Popover from '#lib/components/ui/popover/index.js';
 
-	import UnitOptions from '$lib/components/unit-options.svelte';
+	import UnitOptions from '#lib/components/unit-options.svelte';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 </script>
 
 <Popover.Root>

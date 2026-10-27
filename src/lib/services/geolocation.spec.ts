@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { type EdgeGeo, pickNearest } from './geolocation';
 
-import type { GeoLocation } from '$lib/stores/settings';
+import type { GeoLocation } from '#lib/stores/settings.js';
 
 const city = (name: string, latitude: number, longitude: number, code: string): GeoLocation =>
 	({ id: 1, name, latitude, longitude, country_code: code }) as GeoLocation;

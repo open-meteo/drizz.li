@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { SvelteURL } from 'svelte/reactivity';
 
-	import { buildLocationRoute } from '$lib/utils/location';
+	import { page } from '$app/state';
 
-	import { LOCALE_LABELS, LOCALE_LIST } from '$lib/i18n';
-	import * as m from '$lib/paraglide/messages';
-	import { type Locale, getLocale, localizeHref } from '$lib/paraglide/runtime';
+	import { buildLocationRoute } from '#lib/utils/location.js';
+
+	import { LOCALE_LABELS, LOCALE_LIST } from '#lib/i18n.js';
+	import * as m from '#lib/paraglide/messages.js';
+	import { type Locale, getLocale, localizeHref } from '#lib/paraglide/runtime.js';
 
 	interface Props {
 		/** Called after a language is picked (used to close the menu around it). */
@@ -17,19 +18,19 @@
 
 	let current = $derived.by(() => {
 		// re-read on navigation: the URL is what decides the locale
-		void $page.url.pathname;
+		void page.url.pathname;
 		return getLocale();
 	});
 
 	/** The current page, in another language. */
 	function switchTo(locale: Locale): string {
-		const url = new SvelteURL($page.url);
+		const url = new SvelteURL(page.url.href);
 		// Older prerendered/name-only pages still carry the resolved city ID.
 		// Preserve it before changing language, rather than searching its name again.
-		if ($page.params.location && $page.data.location) {
+		if (page.params.location && page.data.location) {
 			url.pathname = url.pathname.replace(
 				/[^/]+\/?$/,
-				`${encodeURIComponent(buildLocationRoute($page.data.location))}/`
+				`${encodeURIComponent(buildLocationRoute(page.data.location))}/`
 			);
 		}
 		return localizeHref(url.pathname + url.search + url.hash, { locale });

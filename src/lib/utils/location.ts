@@ -5,11 +5,11 @@ import {
 	extractLocaleFromUrl,
 	getLocale,
 	localizeHref
-} from '$lib/paraglide/runtime';
+} from '#lib/paraglide/runtime.js';
 
 import locationAliases from './location-aliases.json';
 
-import type { GeoLocation } from '$lib/stores/settings';
+import type { GeoLocation } from '#lib/stores/settings.js';
 
 export const geoLocationNameToRoute = (name: string) => {
 	const lowerCase = name.toLowerCase().replaceAll(' ', '-');

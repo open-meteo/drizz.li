@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProsePage from '$lib/components/prose-page.svelte';
+	import ProsePage from '#lib/components/prose-page.svelte';
 </script>
 
 <ProsePage title="Informazioni su Drizz.li" subtitle="Un piccolo sito meteo open source.">

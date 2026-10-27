@@ -1,9 +1,9 @@
 import { isSameDay as isSameDayDateFns } from 'date-fns';
-import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { de, enGB, es, fr, it } from 'date-fns/locale';
 
-import * as m from '$lib/paraglide/messages';
-import { getLocale } from '$lib/paraglide/runtime';
+import * as m from '#lib/paraglide/messages.js';
+import { getLocale } from '#lib/paraglide/runtime.js';
 
 import type { Locale as DateFnsLocale } from 'date-fns';
 
@@ -92,6 +92,95 @@ export function getRelativeDayLabel(date: Date, timeZone: string): string {
 	if (isSameDayDateFns(zonedDate, yesterday)) return m.day_yesterday();
 
 	return formatZoned(d, timeZone, 'EEE d MMM');
+}
+
+/**
+ * Pins the API's daily timestamps to local noon of the days they stand for.
+ *
+ * Open-Meteo applies one utc offset to a whole response, the one in effect when
+ * the request is made, so its days start at that offset's midnight even past a
+ * DST change. On the other side of one (later in a forecast, or an archive range
+ * from the other half of the year) they start an hour off the local midnight,
+ * and a start at 23:00 is the day before in the IANA zone. The calendar date is
+ * read back with the API's own offset instead and re-anchored in the zone. Noon
+ * rather than midnight: zones like America/Santiago change their clocks at
+ * 00:00, and a midnight that does not exist resolves to the evening before again.
+ */
+export function localDayDates(
+	timestampsMs: number[],
+	utcOffsetSeconds: number,
+	timeZone: string
+): Date[] {
+	return timestampsMs.map((t) => {
+		const local = new Date(t + utcOffsetSeconds * 1000);
+		const noon = Number.isFinite(local.getTime())
+			? fromZonedTime(`${local.toISOString().slice(0, 10)}T12:00:00`, timeZone)
+			: local;
+		// a zone the runtime does not know leaves the API's own instant, which is
+		// still the right day as long as no DST change lies in between
+		return Number.isFinite(noon.getTime()) ? noon : new Date(t);
+	});
+}
+
+/**
+ * Index range `[start, end)` of the hours that fall on `days` consecutive local
+ * days, beginning with the day `from` falls on, or null when no hour does. Read
+ * off the hours themselves: a day the clocks change on runs 23 or 25 hours, so
+ * days cannot be counted in 24-hour steps. `end` stops at the end of the data
+ * when the hours run out first.
+ */
+export function localDayHours(
+	hours: Date[],
+	from: Date,
+	days: number,
+	timeZone: string
+): { start: number; end: number } | null {
+	const dayOf = (date: Date) => formatZoned(date, timeZone, 'yyyy-MM-dd');
+	let day = dayOf(from);
+	const start = day ? hours.findIndex((hour) => dayOf(hour) === day) : -1;
+	if (start === -1) return null;
+
+	let counted = 1;
+	for (let i = start + 1; i < hours.length; i++) {
+		const next = dayOf(hours[i]);
+		if (next === day) continue;
+		if (++counted > days) return { start, end: i };
+		day = next;
+	}
+	return { start, end: hours.length };
+}
+
+/**
+ * `localDayHours` as epoch ms: from the first hour of the first day to the
+ * first hour after the last one, or an hour past the last hour when the data
+ * ends first.
+ */
+export function localDaySpan(
+	hours: Date[],
+	from: Date,
+	days: number,
+	timeZone: string
+): { start: number; end: number } | null {
+	const range = localDayHours(hours, from, days, timeZone);
+	if (!range) return null;
+	const end = hours[range.end] ?? new Date(hours[range.end - 1].getTime() + 3_600_000);
+	return { start: hours[range.start].getTime(), end: end.getTime() };
+}
+
+/**
+ * The zone's UTC offset at an instant, in seconds, or NaN when it cannot be
+ * read. Follows the zone across DST changes, unlike the API's single
+ * `utc_offset_seconds` per response.
+ */
+export function getZonedOffsetSeconds(date: Date, timeZone: string): number {
+	// read through the formatter, which takes the offset at the instant itself;
+	// date-fns-tz's getTimezoneOffset instead takes the date's system-local
+	// fields as a wall-clock time in the zone, which is an hour off around a DST
+	// change and depends on the visitor's own zone
+	const match = /^([+-])(\d{2}):(\d{2})$/.exec(formatZoned(date, timeZone, 'xxx'));
+	if (!match) return NaN;
+	const seconds = Number(match[2]) * 3600 + Number(match[3]) * 60;
+	return match[1] === '-' ? -seconds : seconds;
 }
 
 /**

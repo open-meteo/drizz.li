@@ -89,7 +89,7 @@ npm run test       # vitest, single run
 
 Strings live in `messages/<locale>.json` and are compiled into
 `src/lib/paraglide/` (generated, gitignored) by the Paraglide Vite plugin.
-Add a key to every locale file; `import * as m from '$lib/paraglide/messages'`
+Add a key to every locale file; `import * as m from '#lib/paraglide/messages.js'`
 then exposes it as `m.your_key()`.
 
 Long-form pages (about, imprint, privacy) are not message keys but one Svelte
@@ -172,6 +172,9 @@ binding. `wrangler.jsonc` holds the whole deployment configuration; the build
 command is `npm run build`.
 
 ### 1. SPA fallback
+
+Listed city pages are prerendered in all five locales and all five weather views,
+so their localized canonical URLs return `200` with translated metadata.
 
 Pages that are not prerendered (unlisted cities, GPS coordinate routes like
 `/weather/week/52.09N5.12E/`) are served by `404.html`, which boots the app and

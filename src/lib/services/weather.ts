@@ -14,8 +14,10 @@ import { Model } from '@openmeteo/sdk/model';
 import { Unit } from '@openmeteo/sdk/unit';
 import { fetchWeatherApi } from 'openmeteo';
 
-import { type DaylightBand, buildDaylightBands } from '$lib/charts/bands';
-import * as m from '$lib/paraglide/messages';
+import { localDayDates, localDayHours } from '#lib/utils/date.js';
+
+import { type DaylightBand, buildDaylightBands } from '#lib/charts/bands.js';
+import * as m from '#lib/paraglide/messages.js';
 
 import type { VariableWithValues } from '@openmeteo/sdk/variable-with-values';
 import type { VariablesWithTime } from '@openmeteo/sdk/variables-with-time';
@@ -230,6 +232,7 @@ export interface WeekForecastResult {
 	timezone: string;
 	hourlyTimestamps: number[];
 	hourlyDates: Date[];
+	/** Local noon of each day in `timezone`, see `localDayDates`. */
 	dailyDates: Date[];
 	daylightBands: DaylightBand[];
 }
@@ -427,6 +430,34 @@ function weekHourlyFromByName(byName: Record<string, number[]>): WeekHourlyData 
 }
 
 /**
+ * Hours fetched beyond the requested days, on either side. The API lays its
+ * hours out on a single utc offset, today's (see `localDayDates`), so on days
+ * with another offset the first local day would start late or the last one end
+ * early. `hoursOnDays` then cuts the series back to the local days.
+ *
+ * One hour covers a DST change (Antarctica/Troll jumps two). Three are for the
+ * archive, where today's offset also applies to past decades: since 1940 one
+ * hour covers 331 of 418 zones and three cover 404; the remaining polar stations
+ * and Pacific islands are off by four hours up to a day.
+ */
+const EDGE_HOURS = 3;
+
+/** Index range of the hourly timestamps that fall on the local days of `dailyDates`. */
+function hoursOnDays(
+	timestampsMs: number[],
+	dailyDates: Date[],
+	timezone: string
+): { start: number; end: number } {
+	const hours = timestampsMs.map((t) => new Date(t));
+	return (
+		localDayHours(hours, dailyDates[0], dailyDates.length, timezone) ?? {
+			start: 0,
+			end: timestampsMs.length
+		}
+	);
+}
+
+/**
  * Fetches the 7-day (week) weather forecast for a single location and model.
  * Returns typed hourly and daily data structures.
  */
@@ -451,6 +482,12 @@ export async function fetchWeekForecast(params: WeekForecastParams): Promise<Wee
 		precipitation_unit: params.precipitation_unit ?? 'mm',
 		forecast_days: forecastDays,
 		past_days: pastDays,
+		// the hourly range, set apart from the daily *_days above: counts from
+		// today's midnight in the API's offset, EDGE_HOURS wider on both sides
+		// (within the forecast API's 16 days)
+		initial_hours: 0,
+		past_hours: pastDays * 24 + EDGE_HOURS,
+		forecast_hours: Math.min(forecastDays * 24 + EDGE_HOURS, 16 * 24),
 		models: modelParam,
 		timezone: params.timezone
 	};
@@ -471,8 +508,13 @@ export async function fetchWeekForecast(params: WeekForecastParams): Promise<Wee
 	const hourlyBlock = response.hourly()!;
 	const dailyBlock = response.daily()!;
 
-	// Hourly: variables are in the same order as WEEK_HOURLY_VARS
-	const hourlyTimestamps = getTimestamps(hourlyBlock);
+	// Daily: variables are in the same order as WEEK_DAILY_VARS
+	const dailyDates = localDayDates(getTimestamps(dailyBlock), utcOffsetSeconds, timezone);
+
+	// Hourly: cut back to the local days (see EDGE_HOURS)
+	const allHours = getTimestamps(hourlyBlock);
+	const hours = hoursOnDays(allHours, dailyDates, timezone);
+	const hourlyTimestamps = allHours.slice(hours.start, hours.end);
 	const hourlyDates = hourlyTimestamps.map((t) => new Date(t));
 
 	// Values come back in the requested order; index them by API name so
@@ -480,13 +522,10 @@ export async function fetchWeekForecast(params: WeekForecastParams): Promise<Wee
 	const byName: Record<string, number[]> = {};
 	hourlyVars.forEach((name, i) => {
 		const variable = hourlyBlock.variables(i);
-		byName[name] = variable ? getValues(variable) : [];
+		byName[name] = variable ? getValues(variable).slice(hours.start, hours.end) : [];
 	});
 
 	const hourly = weekHourlyFromByName(byName);
-
-	// Daily: variables are in the same order as WEEK_DAILY_VARS
-	const dailyDates = getDates(dailyBlock);
 
 	const sunriseVar = dailyBlock.variables(3)!;
 	const sunsetVar = dailyBlock.variables(4)!;
@@ -866,6 +905,7 @@ export interface HistoricalForecastResult {
 	timezone: string;
 	hourlyTimestamps: number[];
 	hourlyDates: Date[];
+	/** Local noon of each day in `timezone`, see `localDayDates`. */
 	dailyDates: Date[];
 	daylightBands: DaylightBand[];
 }
@@ -893,6 +933,30 @@ const HISTORICAL_DAILY_VARS = [
 // ─── Historical (Archive) Fetch ─────────────────────────────────────────────
 
 /**
+ * `start_hour` / `end_hour` of an archive request: the hourly range, set apart
+ * from the daily `start_date` / `end_date` so it reaches EDGE_HOURS past the
+ * requested days on either side. The API reads them as wall time in its offset,
+ * so the dates are parsed as UTC only to step whole hours. The archive rejects
+ * hours before 1940 instead of clipping them; the end needs no such guard, as
+ * the historical page keeps the end date days behind today.
+ */
+function archiveHours(startDate: string, endDate: string): Record<string, string> {
+	const start = Date.parse(`${startDate}T00:00Z`);
+	const end = Date.parse(`${endDate}T00:00Z`);
+	// malformed dates are the API's to reject
+	if (!Number.isFinite(start) || !Number.isFinite(end)) return {};
+
+	const hour = 3_600_000;
+	const firstServed = Date.UTC(1940, 0, 1);
+	const iso = (ms: number) => new Date(ms).toISOString().slice(0, 16);
+	return {
+		start_hour: iso(Math.max(start - EDGE_HOURS * hour, firstServed)),
+		// inclusive: the last day's 23:00 plus the margin
+		end_hour: iso(end + (23 + EDGE_HOURS) * hour)
+	};
+}
+
+/**
  * Fetches reanalysis (ERA5) weather for a past date range from the Open-Meteo
  * archive API. Returns the same hourly shape as the week forecast (so the
  * existing meteograms and hourly table render it unchanged) plus a richer daily
@@ -911,6 +975,7 @@ export async function fetchHistoricalWeather(
 		longitude: params.longitude,
 		start_date: params.start_date,
 		end_date: params.end_date,
+		...archiveHours(params.start_date, params.end_date),
 		hourly: hourlyVars.join(','),
 		daily: HISTORICAL_DAILY_VARS.join(','),
 		temperature_unit: params.temperature_unit ?? 'celsius',
@@ -933,18 +998,22 @@ export async function fetchHistoricalWeather(
 	const hourlyBlock = response.hourly()!;
 	const dailyBlock = response.daily()!;
 
-	const hourlyTimestamps = getTimestamps(hourlyBlock);
+	// Daily variables come back in HISTORICAL_DAILY_VARS order.
+	const dailyDates = localDayDates(getTimestamps(dailyBlock), utcOffsetSeconds, timezone);
+
+	// cut back to the local days (see EDGE_HOURS)
+	const allHours = getTimestamps(hourlyBlock);
+	const hours = hoursOnDays(allHours, dailyDates, timezone);
+	const hourlyTimestamps = allHours.slice(hours.start, hours.end);
 	const hourlyDates = hourlyTimestamps.map((t) => new Date(t));
 
 	const byName: Record<string, number[]> = {};
 	hourlyVars.forEach((name, i) => {
 		const variable = hourlyBlock.variables(i);
-		byName[name] = variable ? getValues(variable) : [];
+		byName[name] = variable ? getValues(variable).slice(hours.start, hours.end) : [];
 	});
 	const hourly = weekHourlyFromByName(byName);
 
-	// Daily variables come back in HISTORICAL_DAILY_VARS order.
-	const dailyDates = getDates(dailyBlock);
 	const d = (i: number): number[] => {
 		const v = dailyBlock.variables(i);
 		return v ? getValues(v) : [];

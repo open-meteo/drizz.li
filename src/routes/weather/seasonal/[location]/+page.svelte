@@ -3,24 +3,24 @@
 	import { get } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 
-	import { reportPageReady } from '$lib/stores/page-transition.svelte';
-	import { setActiveLocation, storedSeasonalModel, storedUnits } from '$lib/stores/settings';
+	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
+	import { setActiveLocation, storedSeasonalModel, storedUnits } from '#lib/stores/settings.js';
 
-	import { skeletonOut } from '$lib/utils/skeleton-fade';
+	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
 
-	import { Label } from '$lib/components/ui/label';
-	import { Switch } from '$lib/components/ui/switch';
+	import { Label } from '#lib/components/ui/label/index.js';
+	import { Switch } from '#lib/components/ui/switch/index.js';
 
-	import { ChartContainer, ChartToolbar } from '$lib/components/charts';
-	import LocationMetadata from '$lib/components/location-metadata.svelte';
+	import { ChartContainer, ChartToolbar } from '#lib/components/charts/index.js';
+	import LocationMetadata from '#lib/components/location-metadata.svelte';
 
-	import * as m from '$lib/paraglide/messages';
+	import * as m from '#lib/paraglide/messages.js';
 	import {
 		type ClimateNormals,
 		type SeasonalForecastResult,
 		fetchClimateNormals,
 		fetchSeasonalForecast
-	} from '$lib/services/weather';
+	} from '#lib/services/weather.js';
 
 	import { useHeroActions } from '../../hero.svelte';
 	import { defaultParameters, seasonalModelGroups } from '../../options';
@@ -30,7 +30,7 @@
 	import SeasonalMonths from './SeasonalMonths.svelte';
 	import { buildMonthOutlooks, sliceSeasonal } from './outlook';
 
-	import type { CanvasChart } from '$lib/charts';
+	import type { CanvasChart } from '#lib/charts/index.js';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();

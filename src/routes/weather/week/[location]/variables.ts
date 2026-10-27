@@ -4,9 +4,9 @@
  * (data field, render style, colour, unit family) so the panels can be
  * assembled dynamically from a user-defined layout.
  */
-import { defaultVariablePrefs } from '$lib/stores/settings';
+import { defaultVariablePrefs } from '#lib/stores/settings.js';
 
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages.js';
 
 import { getColor } from '../../utils/colors';
 import {
@@ -17,8 +17,8 @@ import {
 	getWindUnit
 } from './types';
 
-import type { ChartSeries } from '$lib/charts';
-import type { WeekHourlyData } from '$lib/services/weather';
+import type { ChartSeries } from '#lib/charts/index.js';
+import type { WeekHourlyData } from '#lib/services/weather.js';
 
 /** Families of variables that share a y-axis and unit. */
 export type UnitKind =

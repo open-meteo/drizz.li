@@ -3,10 +3,10 @@
 
 	import { goto } from '$app/navigation';
 
-	import { buildLocationRoute } from '$lib/utils/location';
+	import { buildLocationRoute } from '#lib/utils/location.js';
 
-	import { href } from '$lib/i18n';
-	import { initialLocation } from '$lib/services/geolocation';
+	import { href } from '#lib/i18n.js';
+	import { initialLocation } from '#lib/services/geolocation.js';
 
 	// at build time this page knows nothing about the visitor, so the redirect
 	// target is resolved in the browser rather than baked to the default city
@@ -15,7 +15,7 @@
 	onMount(() => {
 		void initialLocation().then((location) => {
 			goto(href('/weather/compare/[location]', { location: buildLocationRoute(location) }), {
-				replaceState: true
+				replace: true
 			});
 		});
 	});

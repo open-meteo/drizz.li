@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { buildLocationRoute } from '$lib/utils/location';
+	import { buildLocationRoute } from '#lib/utils/location.js';
 
-	import * as m from '$lib/paraglide/messages';
-	import { localizeHref } from '$lib/paraglide/runtime';
+	import * as m from '#lib/paraglide/messages.js';
+	import { locales, localizeHref } from '#lib/paraglide/runtime.js';
 
-	import type { GeoLocation } from '$lib/stores/settings';
+	import type { GeoLocation } from '#lib/stores/settings.js';
 
 	let {
 		location,
@@ -15,6 +15,7 @@
 	} = $props();
 
 	let locationName = $derived([location.name, location.country_code].filter(Boolean).join(', '));
+	let isCoordinateLocation = $derived(location.feature_code === 'COORD' || !location.id);
 	let viewTitle = $derived(
 		{
 			week: m.page_week_subtitle,
@@ -35,16 +36,27 @@
 	);
 	// Build from the resolved location so aliases, query options, and fragments
 	// all point at the same location page, with its language and trailing slash.
-	let canonical = $derived(
-		new URL(
-			localizeHref(`/weather/${view}/${encodeURIComponent(buildLocationRoute(location))}/`),
-			'https://drizz.li'
-		).href
+	let locationPath = $derived(
+		`/weather/${view}/${encodeURIComponent(buildLocationRoute(location))}/`
+	);
+	let canonical = $derived(new URL(localizeHref(locationPath), 'https://drizz.li').href);
+	let alternates = $derived(
+		locales.map((locale) => ({
+			locale,
+			href: new URL(localizeHref(locationPath, { locale }), 'https://drizz.li').href
+		}))
 	);
 </script>
 
 <svelte:head>
 	<title>{m.seo_location_title({ view: viewTitle, location: locationName })}</title>
 	<meta name="description" content={description} />
-	<link rel="canonical" href={canonical} />
+	{#if isCoordinateLocation}
+		<meta name="robots" content="noindex" />
+	{:else}
+		<link rel="canonical" href={canonical} />
+		{#each alternates as { locale, href } (locale)}
+			<link rel="alternate" hreflang={locale} {href} />
+		{/each}
+	{/if}
 </svelte:head>

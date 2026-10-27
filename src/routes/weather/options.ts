@@ -1,4 +1,4 @@
-import { legacyLocationId } from '$lib/utils/location';
+import { legacyLocationId } from '#lib/utils/location.js';
 
 export const defaultParameters = {
 	timeformat: 'iso8601',
