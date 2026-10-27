@@ -452,5 +452,11 @@
 	"sounding_help_mouse": "Hover to inspect · Click to pin · ←/→ change hour",
 	"sounding_help_touch": "Tap or drag to pin",
 	"sounding_help_pinned": "Pinned · Click or tap again to release · Esc clears",
-	"sounding_chart_help": "Chart help"
+	"sounding_chart_help": "Chart help",
+	"seo_location_title": "{view} in {location} | Drizz.li",
+	"seo_week_description": "Weekly weather forecast for {location}: daily temperatures, precipitation, wind, and detailed hourly forecasts.",
+	"seo_compare_description": "Compare weather models for {location}: explore differences in temperature, precipitation, and wind forecasts.",
+	"seo_14day_description": "14-day ensemble weather forecast for {location}: explore temperature and precipitation trends and forecast uncertainty.",
+	"seo_seasonal_description": "Seasonal weather outlook for {location}: monthly temperature and precipitation trends compared with climate normals.",
+	"seo_historical_description": "Explore historical weather for {location}: past temperatures, precipitation, and comparisons with climate normals."
 }

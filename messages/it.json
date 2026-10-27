@@ -452,5 +452,11 @@
 	"sounding_help_mouse": "Passa il cursore per leggere · Clicca per fissare · ←/→ cambia ora",
 	"sounding_help_touch": "Tocca o trascina per fissare",
 	"sounding_help_pinned": "Selezione fissata · Clicca o tocca di nuovo per sbloccare · Esc cancella",
-	"sounding_chart_help": "Guida al diagramma"
+	"sounding_chart_help": "Guida al diagramma",
+	"seo_location_title": "{view} a {location} | Drizz.li",
+	"seo_week_description": "Previsioni meteo settimanali per {location}: temperature giornaliere, precipitazioni, vento e previsioni orarie dettagliate.",
+	"seo_compare_description": "Confronta i modelli meteo per {location}: differenze nelle previsioni di temperatura, precipitazioni e vento.",
+	"seo_14day_description": "Previsioni meteo ensemble a 14 giorni per {location}: tendenze di temperatura e precipitazioni e incertezza delle previsioni.",
+	"seo_seasonal_description": "Prospettive meteo stagionali per {location}: tendenze mensili di temperatura e precipitazioni rispetto alle normali climatiche.",
+	"seo_historical_description": "Esplora il meteo storico di {location}: temperature e precipitazioni passate e confronti con le normali climatiche."
 }
