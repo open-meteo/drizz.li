@@ -15,6 +15,7 @@
 	import { Switch } from '#lib/components/ui/switch/index.js';
 
 	import { ChartContainer, ChartToolbar } from '#lib/components/charts/index.js';
+	import LocationMetadata from '#lib/components/location-metadata.svelte';
 
 	import { CHART_COLORS, CanvasChart, type ChartSeries, isColumnUnit } from '#lib/charts/index.js';
 	import * as m from '#lib/paraglide/messages.js';
@@ -342,6 +343,8 @@
 		return defs;
 	});
 </script>
+
+<LocationMetadata {location} view="14-day" />
 
 <!-- Model selection forms part of the shared forecast heading. -->
 {#snippet heroActions()}

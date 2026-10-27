@@ -19,6 +19,8 @@
 	import { buildLocationRoute } from '#lib/utils/location.js';
 	import { syncSearchParams, unlessDefault } from '#lib/utils/url-state.js';
 
+	import LocationMetadata from '#lib/components/location-metadata.svelte';
+
 	import { href } from '#lib/i18n.js';
 	import * as m from '#lib/paraglide/messages.js';
 	import {
@@ -403,11 +405,7 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Drizz.li | {m.page_week_title()}</title>
-	<link rel="canonical" href="https://drizz.li/weather/week" />
-	<meta name="description" content="Weekly weather forecast with detailed hourly data" />
-</svelte:head>
+<LocationMetadata {location} view="week" />
 
 <!-- Model selection forms part of the shared forecast heading. -->
 {#snippet heroActions()}
