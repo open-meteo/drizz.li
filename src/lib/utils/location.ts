@@ -181,11 +181,15 @@ function finishResolve(
 		event.url
 	).pathname;
 	if (deLocalizeHref(event.url.pathname) !== canonicalPath) {
+		// SvelteKit restricts search during prerendering and hash in universal
+		// loads. Read the serialized URL and preserve its suffix on a plain URL;
+		// prerender requests naturally have no visitor query or fragment.
+		const redirectUrl = new URL(event.url.href);
 		throw redirect(
 			303,
 			localizeHref(canonicalPath, { locale: extractLocaleFromUrl(event.url) ?? getLocale() }) +
-				event.url.search +
-				event.url.hash
+				redirectUrl.search +
+				redirectUrl.hash
 		);
 	}
 
