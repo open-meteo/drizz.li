@@ -2,7 +2,7 @@
 	import { buildLocationRoute } from '#lib/utils/location.js';
 
 	import * as m from '#lib/paraglide/messages.js';
-	import { locales, localizeHref } from '#lib/paraglide/runtime.js';
+	import { localizeHref } from '#lib/paraglide/runtime.js';
 
 	import type { GeoLocation } from '#lib/stores/settings.js';
 
@@ -40,12 +40,6 @@
 		`/weather/${view}/${encodeURIComponent(buildLocationRoute(location))}/`
 	);
 	let canonical = $derived(new URL(localizeHref(locationPath), 'https://drizz.li').href);
-	let alternates = $derived(
-		locales.map((locale) => ({
-			locale,
-			href: new URL(localizeHref(locationPath, { locale }), 'https://drizz.li').href
-		}))
-	);
 </script>
 
 <svelte:head>
@@ -55,8 +49,5 @@
 		<meta name="robots" content="noindex" />
 	{:else}
 		<link rel="canonical" href={canonical} />
-		{#each alternates as { locale, href } (locale)}
-			<link rel="alternate" hreflang={locale} {href} />
-		{/each}
 	{/if}
 </svelte:head>
