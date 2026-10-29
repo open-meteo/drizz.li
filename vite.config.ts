@@ -9,6 +9,8 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
+import { paraglideOptions } from './paraglide.config.js';
+
 import type { IncomingMessage, ServerResponse } from 'http';
 import type { Plugin, PreviewServer, ViteDevServer } from 'vite';
 
@@ -128,28 +130,9 @@ const buildVersion = () => {
 	}
 };
 
-// Every locale carries its own path prefix, English included, so a URL always
-// says which language it is in. `trailingSlash: 'always'` (see routes/+layout.ts)
-// means the patterns have to match both `/de/weather/week/` and `/de`.
-const LOCALES = ['en', 'de', 'es', 'fr', 'it'] as const;
-
-const urlPatterns = [
-	{
-		pattern: '/:path(.*)?',
-		localized: LOCALES.map((locale) => [locale, `/${locale}/:path(.*)?`] as [string, string])
-	}
-];
-
 export default defineConfig({
 	plugins: [
-		paraglideVitePlugin({
-			project: './project.inlang',
-			outdir: './src/lib/paraglide',
-			// the URL is authoritative; the cookie only carries a choice forward to
-			// the next bare visit, and the browser's languages seed a first visit
-			strategy: ['url', 'cookie', 'preferredLanguage', 'baseLocale'],
-			urlPatterns
-		}),
+		paraglideVitePlugin(paraglideOptions),
 		tailwindcss(),
 		sveltekit({
 			// Consult https://svelte.dev/docs/kit/integrations
@@ -178,7 +161,7 @@ export default defineConfig({
 					console.warn(`prerender skipped ${path}: ${message}`);
 				},
 				entries: ((): Array<'*' | `/${string}`> => {
-					// Locale lives in the path (see `urlPatterns` above), so a localized URL
+					// Locale lives in the path (see paraglide.config.js), so a localized URL
 					// is not a route SvelteKit can discover on its own - each one has to be
 					// listed. Prerender city pages in every locale so localized canonical
 					// URLs return 200 with their translated metadata.
@@ -214,10 +197,16 @@ export default defineConfig({
 						const citiesPath = resolve('src/routes/weather/locations/city-names100.json');
 						const raw = readFileSync(citiesPath, 'utf-8');
 						const cities = JSON.parse(raw);
+						const aliases: Record<string, number> = JSON.parse(
+							readFileSync('src/lib/utils/location-aliases.json', 'utf-8')
+						);
 						if (Array.isArray(cities)) {
 							const cityEntries = locales.flatMap((locale) =>
 								cities.flatMap((c) =>
-									cityRoutes.map((route): `/${string}` => `/${locale}${route}/${c}`)
+									cityRoutes.flatMap((route): `/${string}`[] => [
+										`/${locale}${route}/${c}`,
+										`/${locale}${route}/${c}_${aliases[c]}`
+									])
 								)
 							);
 							// Keep the default wildcard to include other routes

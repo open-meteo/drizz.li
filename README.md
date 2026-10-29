@@ -137,6 +137,14 @@ per-location route). Everything else - unlisted cities, coordinate routes,
 localized city pages - is served by the SPA fallback described below. A
 transient geocoding failure skips that one page instead of failing the build.
 
+City URLs use `name_geonamesId` in every language. The ID determines the city;
+the geocoder localizes its name without changing its identity. Existing popular
+name-only URLs are pinned to IDs in `src/lib/utils/location-aliases.json` (from
+the GeoNames city data) and redirect to the ID-bearing URL. Keep that mapping in
+sync when adding prerendered cities. Other old names resolve once through search.
+`paraglide.config.js` supplies the same locale and trailing-slash settings to
+both Vite and `npm run paraglide`.
+
 ## Releases
 
 Releases are cut by [semantic-release](https://semantic-release.gitbook.io/)
