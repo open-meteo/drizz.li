@@ -4,7 +4,13 @@
 	import { fade } from 'svelte/transition';
 
 	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
-	import { setActiveLocation, storedSeasonalModel, storedUnits } from '#lib/stores/settings.js';
+	import {
+		requestTimezone,
+		setActiveLocation,
+		storedSeasonalModel,
+		storedTimezone,
+		storedUnits
+	} from '#lib/stores/settings.js';
 
 	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
 
@@ -112,7 +118,7 @@
 			temperature_unit: tempUnit as 'celsius' | 'fahrenheit',
 			wind_speed_unit: params.wind_speed_unit as 'kmh' | 'ms' | 'mph' | 'kn',
 			precipitation_unit: precipUnit as 'mm' | 'inch',
-			timezone: loc.timezone
+			timezone: requestTimezone(loc, $storedTimezone)
 		})
 			.then((r) => {
 				if (version !== requestVersion) return;

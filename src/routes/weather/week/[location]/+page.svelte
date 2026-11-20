@@ -7,9 +7,11 @@
 
 	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
 	import {
+		requestTimezone,
 		setActiveLocation,
 		storedChartLayout,
 		storedModel,
+		storedTimezone,
 		storedUnits,
 		storedVariablePrefs
 	} from '#lib/stores/settings.js';
@@ -270,7 +272,7 @@
 		return JSON.stringify({
 			latitude: loc.latitude!,
 			longitude: loc.longitude!,
-			timezone: loc.timezone,
+			timezone: requestTimezone(loc, $storedTimezone),
 			model,
 			hourly: [...hourlyVars].sort(),
 			temperature_unit: params.temperature_unit,
