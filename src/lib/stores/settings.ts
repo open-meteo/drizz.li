@@ -202,6 +202,24 @@ export const defaultUnits: UnitPrefs = {
 export const storedUnits = persisted<UnitPrefs>('units_v1', defaultUnits);
 
 /**
+ * Timezone every forecast is shown in: 'auto' follows the location being
+ * viewed, anything else is an IANA zone the visitor picked in the settings.
+ */
+export const storedTimezone = persisted<string>('timezone_v1', 'auto');
+
+/** Zones picked in the settings before, newest first; they lead the picker's list. */
+export const storedRecentTimezones = persisted<string[]>('recent_timezones_v1', []);
+
+/** The `timezone` to request a location's forecast with. */
+export function requestTimezone(location: GeoLocation, preference: string): string {
+	if (preference !== 'auto') return preference;
+	// Coordinate locations (GPS, map picks, coordinate URLs) carry a 'UTC'
+	// placeholder rather than a zone of their own, so the API derives it from
+	// the point instead.
+	return location.feature_code === 'COORD' || !location.timezone ? 'auto' : location.timezone;
+}
+
+/**
  * Whether the "nearby cities" panel on the week page is open.
  *
  * Persisted because it decides whether the panel's data is fetched at all: it

@@ -6,7 +6,13 @@
 	import { page } from '$app/state';
 
 	import { markPageReady, reportPageReady } from '#lib/stores/page-transition.svelte.js';
-	import { setActiveLocation, storedModel, storedUnits } from '#lib/stores/settings.js';
+	import {
+		requestTimezone,
+		setActiveLocation,
+		storedModel,
+		storedTimezone,
+		storedUnits
+	} from '#lib/stores/settings.js';
 
 	import { formatZoned } from '#lib/utils/date.js';
 	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
@@ -247,6 +253,7 @@
 		const modelList = [...appliedModels];
 		const hourlyVars = [...appliedHourly];
 		const loc = location;
+		const timezone = requestTimezone(loc, $storedTimezone);
 		const units = {
 			temperature_unit: params.temperature_unit as 'celsius' | 'fahrenheit',
 			wind_speed_unit: params.wind_speed_unit as 'kmh' | 'ms' | 'mph' | 'kn',
@@ -288,7 +295,7 @@
 					],
 					models: modelList,
 					...units,
-					timezone: loc.timezone
+					timezone
 				},
 				{ signal: controller.signal }
 			)

@@ -6,7 +6,13 @@
 	import { page } from '$app/state';
 
 	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
-	import { setActiveLocation, storedEnsembleModel, storedUnits } from '#lib/stores/settings.js';
+	import {
+		requestTimezone,
+		setActiveLocation,
+		storedEnsembleModel,
+		storedTimezone,
+		storedUnits
+	} from '#lib/stores/settings.js';
 
 	import { skeletonOut } from '#lib/utils/skeleton-fade.js';
 	import { syncSearchParams, unlessDefault } from '#lib/utils/url-state.js';
@@ -130,7 +136,7 @@
 			temperature_unit: params.temperature_unit as 'celsius' | 'fahrenheit',
 			wind_speed_unit: params.wind_speed_unit as 'kmh' | 'ms' | 'mph' | 'kn',
 			precipitation_unit: params.precipitation_unit as 'mm' | 'inch',
-			timezone: loc.timezone
+			timezone: requestTimezone(loc, $storedTimezone)
 		})
 			.then((result: EnsembleForecastResult) => {
 				if (version !== requestVersion) return;

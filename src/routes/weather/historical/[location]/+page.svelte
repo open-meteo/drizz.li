@@ -6,9 +6,11 @@
 
 	import { reportPageReady } from '#lib/stores/page-transition.svelte.js';
 	import {
+		requestTimezone,
 		setActiveLocation,
 		storedArchiveModel,
 		storedChartLayout,
+		storedTimezone,
 		storedUnits,
 		storedVariablePrefs
 	} from '#lib/stores/settings.js';
@@ -134,7 +136,7 @@
 			temperature_unit: params.temperature_unit as 'celsius' | 'fahrenheit',
 			wind_speed_unit: params.wind_speed_unit as 'kmh' | 'ms' | 'mph' | 'kn',
 			precipitation_unit: params.precipitation_unit as 'mm' | 'inch',
-			timezone: loc.timezone
+			timezone: requestTimezone(loc, $storedTimezone)
 		})
 			.then((r) => {
 				if (version !== requestVersion) return;
