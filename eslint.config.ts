@@ -14,6 +14,7 @@ export default defineConfig([
 		'build',
 		'coverage',
 		'.svelte-kit',
+		'shadcn-upstream',
 		// wrangler's bundling scratch space (generated, gitignored)
 		'.wrangler',
 		'.vscode',
