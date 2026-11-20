@@ -1,5 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 
+import { building } from '$app/env';
+
 import { deLocalizeHref, localizeHref } from '#lib/paraglide/runtime.js';
 
 import type { GeoLocation } from '#lib/stores/settings.js';
@@ -155,7 +157,8 @@ function finishResolve(
 	// otherwise every localized URL would bounce back to English.
 	const canonicalPath = `${routePrefix}${buildLocationRoute(location)}/`;
 	if (deLocalizeHref(event.url.pathname) !== canonicalPath) {
-		throw redirect(303, localizeHref(canonicalPath));
+		// Canonicalizing the city must not discard the selected forecast view.
+		throw redirect(303, localizeHref(canonicalPath) + (building ? '' : event.url.search));
 	}
 
 	return location;
