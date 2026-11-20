@@ -20,12 +20,12 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
 		"coverage": "vitest run --coverage",
-		"upgrade:ui": "npx shadcn-svelte@latest add alert button card checkbox command dialog input label popover select separator switch -y -o && prettier --write src/lib/components/ui"
+		"upgrade:ui": "node scripts/update-shadcn.mjs"
 	},
 	"devDependencies": {
 		"@inlang/paraglide-js": "^3.2.1",
 		"@internationalized/date": "^3.12.2",
-		"@lucide/svelte": "^1.70.0",
+		"@lucide/svelte": "^1.77.0",
 		"@sveltejs/adapter-static": "^4.0.0",
 		"@sveltejs/kit": "^3.1.1",
 		"@sveltejs/load-config": "^0.2.2",
@@ -49,6 +49,7 @@
 		"prettier": "^3.9.5",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.1",
+		"shadcn-svelte": "^1.8.1",
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.7.5",
 		"svelte-persisted-store": "^0.12.0",

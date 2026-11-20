@@ -12,6 +12,8 @@ package-lock.json
 
 # Miscellaneous
 /static/
+# unmodified shadcn-svelte CLI output, the merge base for upgrade:ui
+shadcn-upstream
 
 # inlang/paraglide regenerates these during `npm ci` (prepare); not prettier-formatted
 /project.inlang/.meta.json
